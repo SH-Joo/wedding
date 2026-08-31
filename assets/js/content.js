@@ -102,5 +102,8 @@ const CONTENT = {
   /* ── 연결 설정 ────────────────────────────────────────────── */
   // GitHub Secrets 에서 채워집니다. 비워두면 각 기능이 연습 모드로 동작합니다.
   endpoint:   P.rsvpEndpoint || '',   // 구글 Apps Script 웹앱 주소
-  kakaoJsKey: P.kakaoJsKey   || '',   // 카카오 개발자 JavaScript 키
+  // 카카오 JavaScript 키는 원래 브라우저에 노출되는 값입니다.
+  // developers.kakao.com 플랫폼에 등록한 도메인에서만 동작하므로
+  // 그대로 적어 둡니다. KAKAO_JS_KEY 시크릿을 넣으면 그쪽이 우선합니다.
+  kakaoJsKey: P.kakaoJsKey || '345adf595e06fb6386e99aba221da592',
 };
