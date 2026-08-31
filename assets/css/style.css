@@ -172,6 +172,14 @@ button,input,select,textarea{font:inherit; color:inherit}
   width:100%; height:100%; object-fit:cover; object-position:center top;
   animation:shotIn 1.1s var(--ease) both;
 }
+/* 커버가 아닌 사진은 안내 높이(--veil-h)만큼 위에서 끝냅니다.
+   그러지 않으면 사진이 장소·버튼 아래까지 파고들어 글씨를 가립니다. */
+.shot.is-plain img{
+  height:calc(100% - var(--veil-h, 200px));
+  object-position:center;
+  -webkit-mask-image:linear-gradient(to bottom, #000 calc(100% - 18px), transparent);
+          mask-image:linear-gradient(to bottom, #000 calc(100% - 18px), transparent);
+}
 @keyframes shotIn{from{opacity:0; transform:scale(1.05)}}
 
 /* 사진이 몇 장 더 있는지 알리고, 누르면 전체화면으로 엽니다 */

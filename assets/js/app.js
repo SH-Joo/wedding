@@ -282,10 +282,12 @@
 
   async function renderShots() {
     const items = [
-      { label: 'Cover', alt: NAMES + ' 웨딩 사진',
+      // 화면에는 아래를 크림색으로 이어붙인 수정본을 쓰고,
+      // 확대하면 손대지 않은 원본을 보여줍니다.
+      { label: 'Cover', alt: NAMES + ' 웨딩 사진', cover: true,
         thumb: 'assets/img/title/fresh-tall-720.webp',
         src:   'assets/img/title/fresh-tall-1080.webp',
-        full:  'assets/img/title/fresh-tall-1080.webp',
+        full:  'assets/img/title/fresh-1600.webp',
         srcset:'assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w' },
       { label: 'Poster', alt: NAMES + ' 웨딩 포스터',
         thumb: 'assets/img/title/mag-720.webp',
@@ -333,6 +335,9 @@
     });
 
     showShot(0);
+    measureVeil();
+    window.addEventListener('resize', measureVeil, { passive: true });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureVeil);
 
     // 큰 사진을 누르면 전체화면. 썸네일과 버튼은 각자 동작합니다.
     $('#shotImg').addEventListener('click', () => openLightbox(G.i));
@@ -344,9 +349,20 @@
     const it = G.items[i];
     const img = $('#shotImg');
     img.src = it.src;
-    img.srcset = it.srcset;
+    img.srcset = it.srcset || '';
     img.alt = it.alt;
+
+    // 커버 사진은 아래쪽이 이미 크림색이라 안내가 그 위에 얹힙니다.
+    // 나머지 사진은 안내 자리를 비켜 그 위에서 끝나야 글씨를 가리지 않습니다.
+    $('#shot').classList.toggle('is-plain', !it.cover);
+
     $$('#thumbs .thumb').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+  }
+
+  // 안내가 차지하는 높이를 재서 사진이 그만큼 비켜서게 합니다
+  function measureVeil() {
+    const veil = $('.veil');
+    if (veil) $('#shot').style.setProperty('--veil-h', veil.offsetHeight + 'px');
   }
 
   /* ── 사진 크게 보기 ─────────────────────────────────────── */
