@@ -228,7 +228,9 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 /* 날짜 한 줄 — 표시용 숫자라 Prata 를 씁니다 */
 .dateline{
   display:flex; align-items:center; gap:var(--s3); flex:0 0 auto;
-  margin:var(--s6) 0 var(--s6);
+  /* 아래 여백은 혼주 위 여백(--s5)과 같게 둡니다. 다르면 시가
+     위아래로 치우쳐 보입니다. 위 여백은 가운데 맞춤이 알아서 냅니다. */
+  margin:0 0 var(--s5);
   font-family:var(--serif); font-size:var(--t-md);
   letter-spacing:var(--ls-num); color:var(--ink);
   font-variant-numeric:tabular-nums; white-space:nowrap;
