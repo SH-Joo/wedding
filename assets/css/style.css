@@ -29,18 +29,32 @@ button,input,select,textarea{font:inherit; color:inherit}
 [hidden]{display:none !important}
 
 /* ═══ 한 화면씩 넘어가기 ═══════════════════════════════════
-   브라우저 스크롤 스냅에 맡기지 않고 위치를 직접 옮깁니다.
-   기기에 따라 관성 때문에 두 장씩 지나가는 일이 있었습니다. */
+
+   크롬 안드로이드의 주소창은 내용을 덮지 않고 화면을 밀어냅니다.
+   그래서 보이는 높이가 두 값 사이를 오갑니다. 여기에 높이를 묶으면
+   스크롤 도중 바닥이 움직여 장이 어긋납니다.
+
+   그래서 100lvh — 주소창이 숨은 상태의 높이 — 에만 묶습니다.
+   이 값은 정의상 변하지 않습니다. 맨 아래 --nav-h 는 네비게이션
+   막대에 내주고, 주소창이 있을 때는 그 자리가 화면 밖으로 밀려
+   막대가 보이지 않습니다. 장 높이는 어느 쪽이든 그대로입니다.
+
+   장을 옮기는 것도 브라우저 스크롤 스냅에 맡기지 않습니다.
+   기기에 따라 관성을 못 잡아 두 장씩 지나갔습니다.            */
+
+:root{ --nav-h:64px; }
+
 .deck{
-  position:fixed; inset:0;
+  position:fixed; left:0; right:0; top:0;
+  height:100lvh;
   max-width:var(--page); margin-inline:auto;
   display:flex; flex-direction:column; overflow:hidden;
   background:var(--bg);
 }
 
-/* 장이 지나가는 통로. 높이는 JS 가 픽셀(--rail)로 못박습니다. */
+/* 장이 지나가는 통로 */
 .rail{
-  flex:0 0 auto; height:var(--rail, 80svh);
+  flex:0 0 auto; height:calc(100lvh - var(--nav-h));
   position:relative; overflow:hidden;
   touch-action:pan-y;
 }
@@ -51,7 +65,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 .rail.is-dragging .rail__inner{transition:none}
 
 .scr{
-  height:var(--rail, 80svh);
+  height:calc(100lvh - var(--nav-h));
   display:flex; flex-direction:column;
   padding:var(--sec-y) var(--gutter);
   position:relative; overflow:hidden;
@@ -69,20 +83,24 @@ button,input,select,textarea{font:inherit; color:inherit}
 /* 드물게 내용이 한 화면을 넘치면 그 장만 안에서 스크롤됩니다 */
 .scr.is-tall{overflow-y:auto; -webkit-overflow-scrolling:touch}
 
+/* lvh 를 모르는 오래된 브라우저 — JS 가 잰 값을 씁니다 */
+@supports not (height: 100lvh){
+  .deck{height:var(--lvh, 100vh)}
+  .rail, .scr{height:calc(var(--lvh, 100vh) - var(--nav-h))}
+}
+
 /* ═══ 아래 막대 ═════════════════════════════════════════════
-   주소창이 숨어 화면이 커지면 통로(--rail)는 그대로 두고
-   이 막대가 남는 높이를 흡수합니다. 그래서 빈 공간이 안 생기고,
-   장 높이가 변하지 않으니 스크롤이 어긋나지도 않습니다. */
+   주소창이 있으면 이 자리가 화면 밖으로 밀려 보이지 않고,
+   주소창이 숨으면 나타납니다. 장 높이는 그대로입니다. */
 .nav{
-  flex:1 1 auto; min-height:46px;
+  flex:0 0 auto; height:var(--nav-h);
   display:flex; align-items:center;
-  padding-bottom:env(safe-area-inset-bottom);
   background:var(--bg); border-top:1px solid var(--line);
   transition:background .45s var(--ease), border-color .45s var(--ease);
 }
 .nav button{
   flex:1; appearance:none; border:0; background:transparent; cursor:pointer;
-  padding:12px 2px; font-family:var(--myeongjo); font-size:12.5px;
+  padding:10px 2px; font-family:var(--myeongjo); font-size:12.5px;
   letter-spacing:.02em; color:var(--faint);
   transition:color .25s var(--ease);
 }
@@ -102,7 +120,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 
 /* 화면을 눕히거나 아주 낮으면 통째로 이어 붙여 보여줍니다 */
 @media (max-height:460px){
-  .deck{position:static; max-width:var(--page); margin:0 auto; display:block; overflow:visible}
+  .deck{position:static; display:block; height:auto; overflow:visible}
   .rail{height:auto; overflow:visible}
   .rail__inner{transform:none !important}
   .scr{height:auto; min-height:0}

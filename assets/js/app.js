@@ -492,13 +492,27 @@
     const navBtns = $$('#nav button');
     DECK.count = scrs.length;
 
-    // 통로 높이를 픽셀로 못박습니다. 주소창이 숨어 화면이 커져도
-    // 이 값은 그대로 두고 아래 막대가 남는 높이를 흡수합니다.
+    // 높이는 CSS 가 100lvh 로 정합니다. JS 는 그 결과를 읽기만 합니다.
+    // 주소창이 오가도 lvh 는 변하지 않으므로 이 값도 변하지 않습니다.
     function measure() {
-      DECK.h = Math.max(320, window.innerHeight - 46);
-      document.documentElement.style.setProperty('--rail', DECK.h + 'px');
+      DECK.h = rail.clientHeight;
       scrs.forEach((sc) => sc.classList.toggle('is-tall', sc.scrollHeight > DECK.h + 4));
       paint(false);
+    }
+
+    // lvh 를 모르는 오래된 브라우저를 위해, 지금까지 본 가장 큰 높이를
+    // 기억해 뒀다가 씁니다. 주소창이 숨은 상태의 높이가 곧 그 값입니다.
+    if (!CSS.supports('height', '100lvh')) {
+      let biggest = 0;
+      const noteHeight = () => {
+        if (window.innerHeight <= biggest) return;
+        biggest = window.innerHeight;
+        document.documentElement.style.setProperty('--lvh', biggest + 'px');
+        measure();
+      };
+      noteHeight();
+      window.addEventListener('scroll', noteHeight, { passive: true });
+      window.addEventListener('resize', noteHeight, { passive: true });
     }
 
     function paint(animate) {
@@ -591,8 +605,8 @@
       else if (e.key === 'End') { e.preventDefault(); go(DECK.count - 1); }
     });
 
-    // 세로만 달라진 것(주소창이 숨거나 나타난 것)은 무시하고,
-    // 가로 폭이 달라졌을 때 — 화면을 돌렸을 때만 다시 잽니다.
+    // 높이가 lvh 에 묶여 있어 주소창이 오가도 다시 잴 일이 없습니다.
+    // 화면을 돌려 가로 폭이 달라졌을 때만 다시 잽니다.
     let lastWidth = window.innerWidth;
     window.addEventListener('resize', () => {
       if (window.innerWidth === lastWidth) return;

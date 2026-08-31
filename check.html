@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>화면 값 확인</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0; font:14px/1.6 -apple-system,'Apple SD Gothic Neo',system-ui,sans-serif;
+       background:#15120F; color:#E9E4D6}
+  .panel{position:fixed; left:0; right:0; top:0; z-index:5;
+         background:#15120F; border-bottom:1px solid #3a332c; padding:10px 12px}
+  h1{margin:0 0 8px; font-size:14px; color:#E8B4BE}
+  table{width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums}
+  td{padding:2px 0; font-size:12.5px}
+  td:first-child{color:#9a9184; width:52%}
+  td:last-child{text-align:right; font-weight:600}
+  .warn{color:#F2A0AC}
+  .ok{color:#9FD8A8}
+  .probe{position:fixed; left:-99px; width:1px}
+  #lvh{height:100lvh} #svh{height:100svh} #dvh{height:100dvh} #vh{height:100vh}
+  #fx{position:fixed; inset:0; pointer-events:none}
+  .filler{padding:340px 12px; text-align:center; color:#6E6555; font-size:12px}
+  .hint{margin:8px 0 0; font-size:11.5px; color:#9a9184; line-height:1.5}
+  .copy{margin-top:8px; width:100%; padding:9px; background:#B01133; color:#fff;
+        border:0; font:inherit; font-size:13px; cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="probe" id="lvh"></div>
+<div class="probe" id="svh"></div>
+<div class="probe" id="dvh"></div>
+<div class="probe" id="vh"></div>
+<div id="fx"></div>
+
+<div class="panel">
+  <h1>화면 값 확인 — 위아래로 여러 번 스크롤해 주세요</h1>
+  <table id="out"></table>
+  <p class="hint">주소창이 숨었다 나타나게 몇 번 스크롤한 뒤, 아래 버튼을 눌러
+    복사한 내용을 그대로 붙여넣어 주세요.</p>
+  <button class="copy" id="copy" type="button">결과 복사하기</button>
+</div>
+
+<div class="filler">↓ 스크롤 ↓</div>
+<div class="filler">↓ 계속 ↓</div>
+<div class="filler">↓ 조금 더 ↓</div>
+<div class="filler">↑ 다시 위로 ↑</div>
+<div class="filler">↑ 끝 ↑</div>
+
+<script>
+  var seen = { innerH: [], visualH: [], lvh: [], svh: [], dvh: [], fx: [] };
+  function px(el){ return Math.round(el.getBoundingClientRect().height); }
+  function track(k, v){
+    if (!isFinite(v)) return;
+    var a = seen[k];
+    if (a.indexOf(v) < 0) { a.push(v); a.sort(function(x,y){return x-y}); }
+  }
+  function span(a){ return a.length ? (a.length === 1 ? a[0] + ' (고정)' : a[0] + ' ~ ' + a[a.length-1] + ' (' + a.length + '종)') : '-'; }
+
+  function read(){
+    track('innerH', window.innerHeight);
+    track('visualH', window.visualViewport ? Math.round(window.visualViewport.height) : NaN);
+    track('lvh', px(document.getElementById('lvh')));
+    track('svh', px(document.getElementById('svh')));
+    track('dvh', px(document.getElementById('dvh')));
+    track('fx',  px(document.getElementById('fx')));
+
+    var lvhFixed = seen.lvh.length === 1;
+    var fxFixed  = seen.fx.length === 1;
+    var rows = [
+      ['UA 폭 (CSS px)', window.innerWidth],
+      ['화면 배율 DPR', (window.devicePixelRatio || 1).toFixed(2)],
+      ['innerHeight', span(seen.innerH)],
+      ['visualViewport', span(seen.visualH)],
+      ['100lvh', span(seen.lvh) + (lvhFixed ? ' ✔' : ' ✖ 변함')],
+      ['100svh', span(seen.svh)],
+      ['100dvh', span(seen.dvh)],
+      ['fixed inset:0', span(seen.fx) + (fxFixed ? ' ✔' : ' ✖ 변함')],
+      ['주소창 차지 높이', seen.innerH.length > 1 ? (seen.innerH[seen.innerH.length-1] - seen.innerH[0]) + 'px' : '아직 안 움직임'],
+      ['화면 회전', screen.orientation ? screen.orientation.type : '-'],
+    ];
+    var html = '';
+    for (var i = 0; i < rows.length; i++){
+      var v = String(rows[i][1]);
+      var cls = v.indexOf('✖') >= 0 ? ' class="warn"' : v.indexOf('✔') >= 0 ? ' class="ok"' : '';
+      html += '<tr><td>' + rows[i][0] + '</td><td' + cls + '>' + v + '</td></tr>';
+    }
+    document.getElementById('out').innerHTML = html;
+  }
+
+  read();
+  addEventListener('scroll', read, { passive: true });
+  addEventListener('resize', read, { passive: true });
+  if (window.visualViewport) {
+    visualViewport.addEventListener('resize', read);
+    visualViewport.addEventListener('scroll', read);
+  }
+  setInterval(read, 400);
+
+  document.getElementById('copy').addEventListener('click', function(){
+    var lines = ['[화면 값]'];
+    var t = document.querySelectorAll('#out tr');
+    for (var i = 0; i < t.length; i++){
+      lines.push(t[i].cells[0].textContent + ': ' + t[i].cells[1].textContent);
+    }
+    lines.push('UA: ' + navigator.userAgent);
+    var text = lines.join('\n');
+    if (navigator.clipboard) navigator.clipboard.writeText(text);
+    this.textContent = '복사했습니다 — 붙여넣어 주세요';
+  });
+</script>
+</body>
+</html>
