@@ -247,7 +247,6 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   padding:var(--s3) 0; border-bottom:1px solid var(--line);
   vertical-align:top;
 }
-.tab tr:first-child td{border-top:1px solid var(--accent)}
 .tab tr:last-child td{border-bottom:0}
 
 /* 왼쪽 칸 — 시각 또는 분류. 표 안의 숫자는 본문 글꼴로 통일합니다. */
