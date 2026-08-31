@@ -406,47 +406,61 @@
     }, { passive: true });
   }
 
-  /* ── 공유하기 ───────────────────────────────────────────── */
+  /* ── 공유하기 ───────────────────────────────────────────
+     카카오 SDK 는 페이지가 뜰 때 미리 불러 둡니다.
+     버튼을 누른 뒤에 불러오면 await 로 기다리는 사이 사용자 클릭
+     맥락이 끊겨, 모바일 브라우저가 카카오톡 창 띄우기를 조용히
+     막아버립니다. 미리 준비해 두면 클릭 즉시 열립니다. */
 
-  function wireShare() {
-    $('#shareLink').addEventListener('click', () => copy(location.href, '링크를 복사했습니다'));
-    $('#addCalendar').addEventListener('click', downloadIcs);
+  let kakaoReady = false;
 
-    $('#shareKakao').addEventListener('click', async () => {
-      if (!CONTENT.kakaoJsKey) return copy(location.href, '링크를 복사했습니다');
+  function primeKakao() {
+    if (!CONTENT.kakaoJsKey) return;
+    const s = el('script');
+    s.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
+    s.crossOrigin = 'anonymous';
+    s.onload = () => {
       try {
-        await loadKakao();
-        window.Kakao.Share.sendDefault({
-          objectType: 'feed',
-          content: {
-            title: CONTENT.share.title,
-            description: CONTENT.share.description,
-            imageUrl: new URL(CONTENT.share.image, location.href).href,
-            link: { mobileWebUrl: location.href, webUrl: location.href },
-          },
-          buttons: [{ title: '청첩장 열기', link: { mobileWebUrl: location.href, webUrl: location.href } }],
-        });
-      } catch (e) {
-        // 대부분 developers.kakao.com 플랫폼에 도메인이 등록되지 않은 경우입니다.
-        console.error('[카카오 공유 실패]', e, '현재 주소:', location.origin);
-        copy(location.href, '공유에 실패해 링크를 복사했습니다');
+        if (!window.Kakao.isInitialized()) window.Kakao.init(CONTENT.kakaoJsKey);
+        kakaoReady = window.Kakao.isInitialized();
+      } catch (err) {
+        console.error('[카카오] 초기화 실패 — 앱키를 확인해 주세요', err);
       }
-    });
+    };
+    s.onerror = () => console.error('[카카오] SDK 를 불러오지 못했습니다');
+    document.head.appendChild(s);
   }
 
-  function loadKakao() {
-    return new Promise((res, rej) => {
-      if (window.Kakao && window.Kakao.isInitialized()) return res();
-      const s = el('script');
-      s.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
-      s.crossOrigin = 'anonymous';
-      s.onload = () => {
-        try { window.Kakao.init(CONTENT.kakaoJsKey); res(); }
-        catch (err) { console.error('[카카오 init 실패]', err); rej(err); }
-      };
-      s.onerror = rej;
-      document.head.appendChild(s);
-    });
+  function shareKakao() {
+    if (!kakaoReady) {
+      copy(location.href, '카카오톡 공유가 준비되지 않아 링크를 복사했습니다');
+      return;
+    }
+    const url = location.href;
+    const img = new URL(CONTENT.share.image, location.href).href;
+    try {
+      // await 없이 클릭 그 자리에서 호출해야 창이 열립니다
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: CONTENT.share.title,
+          description: CONTENT.share.description,
+          imageUrl: img,
+          link: { mobileWebUrl: url, webUrl: url },
+        },
+        buttons: [{ title: '청첩장 열기', link: { mobileWebUrl: url, webUrl: url } }],
+      });
+    } catch (err) {
+      // 대부분 developers.kakao.com 에 도메인이 등록되지 않은 경우입니다
+      console.error('[카카오 공유 실패]', err, '현재 주소:', location.origin);
+      copy(url, '공유에 실패해 링크를 복사했습니다');
+    }
+  }
+
+  function wireShare() {
+    $('#shareKakao').addEventListener('click', shareKakao);
+    $('#shareLink').addEventListener('click', () => copy(location.href, '링크를 복사했습니다'));
+    $('#addCalendar').addEventListener('click', downloadIcs);
   }
 
   function downloadIcs() {
@@ -629,6 +643,7 @@
   wireNavi();
   renderContacts();
   wireShare();
+  primeKakao();
   wireCopy();
   wireLightbox();
   wireDeck();
