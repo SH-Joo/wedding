@@ -233,9 +233,9 @@
       // 본인 · 아버지 · 어머니 순서로 한 줄씩
       const people = [
         { role: ko, name: p.name, phone: p.phone, accounts: accounts },
-        { role: ko + ' 아버지', name: p.father.name, phone: p.father.phone,
+        { role: '아버지', name: p.father.name, phone: p.father.phone,
           dead: p.father.deceased, accounts: [] },
-        { role: ko + ' 어머니', name: p.mother.name, phone: p.mother.phone,
+        { role: '어머니', name: p.mother.name, phone: p.mother.phone,
           dead: p.mother.deceased, accounts: [] },
       ].filter(x => x.name);
 
