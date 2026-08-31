@@ -503,7 +503,31 @@
       if (i === 0) return;
       if (s.scrollHeight > s.clientHeight + 4) s.classList.add('is-tall');
     });
-    window.addEventListener('resize', fit, { passive: true });
+    // 각 장의 높이를 픽셀로 못박습니다.
+    // 크롬은 화면을 꽉 채운 내부 스크롤 영역도 루트 스크롤러로 보고
+    // 주소창을 숨깁니다. 그때 vh 계열을 쓰면 다섯 장 높이가 한꺼번에
+    // 바뀌면서 스크롤 도중 바닥이 움직여 두 장씩 넘어가 버립니다.
+    const lockHeight = () => {
+      document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+    };
+    lockHeight();
+
+    // 세로 길이만 달라진 것(주소창이 숨거나 나타난 것)은 무시하고,
+    // 가로 폭이 달라졌을 때 — 즉 화면을 돌렸을 때만 다시 잽니다.
+    let lastWidth = window.innerWidth;
+    window.addEventListener('resize', () => {
+      if (window.innerWidth === lastWidth) return;
+      lastWidth = window.innerWidth;
+      lockHeight();
+      fit();
+    }, { passive: true });
+
+    window.addEventListener('orientationchange', () => setTimeout(() => {
+      lastWidth = window.innerWidth;
+      lockHeight();
+      fit();
+    }, 250));
+
     window.addEventListener('load', fit);
     fit();
     window.__fitDeck = fit;
