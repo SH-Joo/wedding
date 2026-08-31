@@ -53,12 +53,6 @@
     });
 
     $('#footNames').textContent = NAMES;
-    $('#coverWhen').textContent =
-      `${D.getFullYear()}.${pad(D.getMonth() + 1)}.${pad(D.getDate())}. `
-      + `${WEEK[D.getDay()]}요일 ${D.getHours() >= 12 ? 'PM' : 'AM'} `
-      + pad(D.getHours() % 12 === 0 ? 12 : D.getHours() % 12) + ':' + pad(D.getMinutes());
-    $('#coverDday').textContent = dday();
-
     // 날짜 한 줄 — 2026. 11. 28 · SAT 6 PM
     const h = D.getHours();
     const ampm = h >= 12 ? 'PM' : 'AM';
@@ -274,81 +268,60 @@
   }
 
   /* ── 사진 ───────────────────────────────────────────────
-     커버의 큰 사진이 곧 갤러리입니다. 아래 썸네일을 누르면 바뀌고,
-     사진을 누르면 전체화면으로 열립니다.
-     images/album/ 의 사진은 배포할 때 tools/build_media.py 가
-     assets/data/album.json 으로 정리해 둡니다. */
+     표지(1장 화면)는 images/Title 의 두 장만 씁니다.
+     images/album 의 사진은 앨범 화면에서 격자로 보여줍니다.
+     둘 다 크게 보기는 같은 뷰어를 씁니다. */
 
-  const G = { items: [], i: 0 };
+  const COVERS = [
+    // 화면에는 아래를 크림색으로 이어붙인 수정본, 확대하면 원본
+    { label: 'Cover', alt: NAMES + ' 웨딩 사진', fit: 'cover',
+      src:  'assets/img/title/fresh-tall-1080.webp',
+      full: 'assets/img/title/fresh-1600.webp',
+      srcset: 'assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w' },
+    // 잡지 표지는 배경이 크림색이라 통째로 보여줘도 이음매가 없습니다
+    { label: 'Poster', alt: NAMES + ' 웨딩 포스터', fit: 'contain',
+      src:  'assets/img/title/mag-1080.webp',
+      full: 'assets/img/title/mag-1600.webp',
+      srcset: 'assets/img/title/mag-720.webp 720w, assets/img/title/mag-1080.webp 1080w, assets/img/title/mag-1600.webp 1600w' },
+  ];
 
-  async function renderShots() {
-    const items = [
-      // 화면에는 아래를 크림색으로 이어붙인 수정본을 쓰고,
-      // 확대하면 손대지 않은 원본을 보여줍니다.
-      { label: 'Cover', alt: NAMES + ' 웨딩 사진', cover: true,
-        thumb: 'assets/img/title/fresh-tall-720.webp',
-        src:   'assets/img/title/fresh-tall-1080.webp',
-        full:  'assets/img/title/fresh-1600.webp',
-        srcset:'assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w' },
-      { label: 'Poster', alt: NAMES + ' 웨딩 포스터',
-        thumb: 'assets/img/title/mag-720.webp',
-        src:   'assets/img/title/mag-1080.webp',
-        full:  'assets/img/title/mag-1600.webp',
-        srcset:'assets/img/title/mag-720.webp 720w, assets/img/title/mag-1080.webp 1080w, assets/img/title/mag-1600.webp 1600w' },
-    ];
+  const G = { list: COVERS, i: 0, cover: 0, album: [] };
 
-    try {
-      const res = await fetch('assets/data/album.json', { cache: 'no-cache' });
-      if (res.ok) {
-        const data = await res.json();
-        (data.items || []).forEach((it, n) => {
-          items.push({
-            label: 'Photo ' + pad(n + 1),
-            alt: it.alt || (NAMES + ' 웨딩 사진 ' + (n + 1)),
-            thumb: it.src['480'],
-            src:   it.src['960'],
-            full:  it.src['1600'],
-            srcset: it.src['480'] + ' 480w, ' + it.src['960'] + ' 960w, ' + it.src['1600'] + ' 1600w',
-          });
-        });
-      }
-    } catch (e) {
-      // 매니페스트가 없으면 표지 두 장만 보여줍니다
-    }
-
-    G.items = items;
-
-    // 사진이 여러 장이라는 걸 한눈에 보이도록 썸네일을 깔아 둡니다
-    const box = $('#thumbs');
-    items.forEach((it, i) => {
-      const b = el('button', 'thumb');
+  function renderCover() {
+    const dots = $('#dots');
+    COVERS.forEach((it, i) => {
+      const b = el('button');
       b.type = 'button';
       b.setAttribute('aria-pressed', String(i === 0));
-      b.setAttribute('aria-label', (i + 1) + '번째 사진 보기');
-      const img = el('img');
-      img.src = it.thumb;
-      img.alt = '';
-      img.loading = i < 8 ? 'eager' : 'lazy';
-      img.decoding = 'async';
-      b.appendChild(img);
-      b.addEventListener('click', () => showShot(i));
-      box.appendChild(b);
+      b.setAttribute('aria-label', (i + 1) + '번째 표지 보기');
+      b.addEventListener('click', () => showCover(i));
+      dots.appendChild(b);
     });
 
-    showShot(0);
-    measureVeil();
-    window.addEventListener('resize', measureVeil, { passive: true });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureVeil);
-
-    // 큰 사진을 누르면 전체화면. 썸네일과 버튼은 각자 동작합니다.
-    $('#shotImg').addEventListener('click', () => { if (!swiped) openLightbox(G.i); });
-    $('#shotZoom').addEventListener('click', () => openLightbox(G.i));
-
+    showCover(0);
+    $('#shotImg').addEventListener('click', () => { if (!swiped) openLightbox(COVERS, G.cover); });
+    $('#shotZoom').addEventListener('click', () => openLightbox(COVERS, G.cover));
     wireShotSwipe();
   }
 
-  // 큰 사진을 좌우로 밀어 넘깁니다. 위아래 스와이프는 화면 넘김이
-  // 가져가야 하므로, 가로가 더 큰 움직임일 때만 사진을 바꿉니다.
+  function showCover(i) {
+    G.cover = i;
+    const it = COVERS[i];
+    const img = $('#shotImg');
+    img.src = it.src;
+    img.srcset = it.srcset;
+    img.alt = it.alt;
+    $('#shot').classList.toggle('is-fit', it.fit === 'contain');
+
+    // 넘어가는 게 바로 보이도록 짧게 나타납니다
+    img.style.animation = 'none';
+    void img.offsetWidth;
+    img.style.animation = 'swap .26s var(--ease)';
+
+    $$('#dots button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+  }
+
+  // 표지를 좌우로 밀어 넘깁니다. 위아래는 화면 넘김이 가져갑니다.
   let swiped = false;
 
   function wireShotSwipe() {
@@ -356,7 +329,7 @@
     let x0 = 0, y0 = 0, tracking = false;
 
     shot.addEventListener('touchstart', (e) => {
-      if (e.touches.length > 1 || G.items.length < 2) return;
+      if (e.touches.length > 1 || COVERS.length < 2) return;
       x0 = e.touches[0].clientX;
       y0 = e.touches[0].clientY;
       tracking = true;
@@ -369,39 +342,62 @@
       const dx = e.changedTouches[0].clientX - x0;
       const dy = e.changedTouches[0].clientY - y0;
       if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
-      swiped = true;                       // 이 손짓은 탭이 아닙니다
-      step(dx < 0 ? 1 : -1);
+      swiped = true;
+      showCover((G.cover + (dx < 0 ? 1 : -1) + COVERS.length) % COVERS.length);
     }, { passive: true });
   }
 
-  function step(by) {
-    showShot((G.i + by + G.items.length) % G.items.length);
-  }
+  /* ── 앨범 ───────────────────────────────────────────────
+     images/album/ 에 넣은 사진을 배포할 때 tools/build_media.py 가
+     assets/data/album.json 으로 정리해 둡니다. 사진이 없으면 앨범
+     화면과 네비게이션 칸이 통째로 사라집니다. */
 
-  function showShot(i) {
-    G.i = i;
-    const it = G.items[i];
-    const img = $('#shotImg');
-    img.src = it.src;
-    img.srcset = it.srcset || '';
-    img.alt = it.alt;
+  async function renderAlbum() {
+    let items = [];
+    try {
+      const res = await fetch('assets/data/album.json', { cache: 'no-cache' });
+      if (res.ok) {
+        const data = await res.json();
+        items = (data.items || []).map((it, n) => ({
+          label: 'Photo ' + pad(n + 1),
+          alt: it.alt || (NAMES + ' 웨딩 사진 ' + (n + 1)),
+          thumb: it.src['480'],
+          src: it.src['960'],
+          full: it.src['1600'],
+        }));
+      }
+    } catch (e) {
+      // 매니페스트가 없으면 앨범 화면을 숨긴 채로 둡니다
+    }
 
-    // 넘어가는 게 바로 보이도록 짧게 나타납니다
-    img.style.animation = 'none';
-    void img.offsetWidth;
-    img.style.animation = 'swap .26s var(--ease)';
+    G.album = items;
+    const scr = $('#albumScr');
 
-    // 커버 사진은 아래쪽이 이미 크림색이라 안내가 그 위에 얹힙니다.
-    // 나머지 사진은 안내 자리를 비켜 그 위에서 끝나야 글씨를 가리지 않습니다.
-    $('#shot').classList.toggle('is-plain', !it.cover);
+    if (!items.length) {
+      scr.remove();
+      const btn = $('#nav [data-album]');
+      if (btn) btn.remove();
+      $$('#nav button').forEach((b, i) => { b.dataset.go = String(i); });
+      return;
+    }
 
-    $$('#thumbs .thumb').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
-  }
+    scr.hidden = false;
+    $('#albumCount').textContent = items.length + '장';
 
-  // 안내가 차지하는 높이를 재서 사진이 그만큼 비켜서게 합니다
-  function measureVeil() {
-    const veil = $('.veil');
-    if (veil) $('#shot').style.setProperty('--veil-h', veil.offsetHeight + 'px');
+    const box = $('#album');
+    items.forEach((it, i) => {
+      const b = el('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', (i + 1) + '번째 사진 크게 보기');
+      const img = el('img');
+      img.src = it.thumb;
+      img.alt = '';
+      img.loading = i < 9 ? 'eager' : 'lazy';
+      img.decoding = 'async';
+      b.appendChild(img);
+      b.addEventListener('click', () => openLightbox(items, i));
+      box.appendChild(b);
+    });
   }
 
   /* ── 사진 크게 보기 ─────────────────────────────────────── */
@@ -409,8 +405,9 @@
   let lbReturn = null;
   let lbPushed = false;
 
-  function openLightbox(i) {
-    if (!G.items.length) return;
+  function openLightbox(list, i) {
+    if (!list || !list.length) return;
+    G.list = list;
     lbReturn = document.activeElement;
     G.i = i;
     paintLightbox();
@@ -428,21 +425,21 @@
   function closeLightbox(fromHistory) {
     $('#lightbox').hidden = true;
     document.body.style.overflow = '';
-    showShot(G.i);
+    if (G.list === COVERS) showCover(G.i);
     if (lbReturn) lbReturn.focus({ preventScroll: true });
     const pushed = lbPushed;
     lbPushed = false;
     if (!fromHistory && pushed) history.back();
   }
   function moveLightbox(step) {
-    G.i = (G.i + step + G.items.length) % G.items.length;
+    G.i = (G.i + step + G.list.length) % G.list.length;
     paintLightbox();
   }
   function paintLightbox() {
-    const it = G.items[G.i];
+    const it = G.list[G.i];
     $('#lightboxImg').src = it.full;
     $('#lightboxImg').alt = it.alt;
-    $('#lightboxCount').textContent = `${pad(G.i + 1)} / ${pad(G.items.length)}`;
+    $('#lightboxCount').textContent = `${pad(G.i + 1)} / ${pad(G.list.length)}`;
   }
 
   function wireLightbox() {
@@ -731,5 +728,6 @@
   wireCopy();
   wireLightbox();
   wireDeck();
-  renderShots().then(() => { if (window.__fitDeck) window.__fitDeck(); });
+  renderCover();
+  renderAlbum().then(() => { if (window.__fitDeck) window.__fitDeck(); });
 })();

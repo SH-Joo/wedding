@@ -135,7 +135,6 @@
     setRadio('attend', r.attend);
     $('output[name="adults"]').value = r.adults != null ? r.adults : 1;
     $('output[name="kids"]').value   = r.kids   != null ? r.kids   : 0;
-    setRadio('meal', r.meal);
     $('#message').value = r.message || '';
     $('#consent').checked = true;
     $('#attendOnly').hidden = r.attend === '미참석';
@@ -183,7 +182,7 @@
       });
     });
 
-    // 미참석을 고르면 인원·식사 항목을 접습니다
+    // 미참석을 고르면 인원 항목을 접습니다
     $$('input[name="attend"]').forEach(r => {
       r.addEventListener('change', () => { $('#attendOnly').hidden = r.value === '미참석'; });
     });
@@ -214,7 +213,6 @@
       ['name',    !String(fd.get('name') || '').trim()],
       ['phone',   !PHONE.test(fd.get('phone') || '')],
       ['attend',  !attend],
-      ['meal',    !skip && !fd.get('meal')],
       ['consent', !fd.get('consent')],
     ]);
     if (!passed) return null;
@@ -229,7 +227,7 @@
       adults: skip ? 0 : +$('output[name="adults"]').value,
       kids:   skip ? 0 : +$('output[name="kids"]').value,
       timeslot: '',
-      meal:    skip ? '' : fd.get('meal'),
+      meal:    '',
       message: String(fd.get('message') || '').trim(),
       ua: navigator.userAgent,
     };

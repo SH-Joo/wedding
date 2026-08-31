@@ -45,28 +45,22 @@
   <div class="rail" id="rail">
     <div class="rail__inner" id="railInner">
 
-      <!-- ══ 01 커버 · 사진 ═════════════════════════════════ -->
+      <!-- ══ 01 표지 ═════════════════════════════════════════ -->
       <section class="scr cover" aria-label="표지">
         <div class="shot" id="shot">
           <img id="shotImg" src="assets/img/title/fresh-tall-1080.webp"
                srcset="assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w"
                sizes="(max-width:500px) 100vw, 500px"
                alt="" fetchpriority="high">
-
           <button class="shot__more" type="button" id="shotZoom" aria-label="사진 크게 보기">
             <span aria-hidden="true">⤢</span>
           </button>
+        </div>
 
-          <!-- 사진 아래쪽 크림색으로 자연스럽게 이어집니다 -->
-          <div class="veil">
-            <hr class="veil__rule">
-            <p class="veil__where">
-              <span data-c="wedding.venue"></span>
-              <small><span id="coverWhen"></span> <em id="coverDday"></em></small>
-            </p>
-            <div class="thumbs" id="thumbs" aria-label="사진 고르기"></div>
-            <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
-          </div>
+        <div class="cover__foot">
+          <div class="dots" id="dots" aria-label="표지 고르기"></div>
+          <hr class="veil__rule">
+          <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
         </div>
       </section>
 
@@ -82,8 +76,8 @@
 
         <p class="dateline"><i></i><span id="mastMeta"></span><i></i></p>
 
+        <p class="sub">Program <i></i></p>
         <table class="tab">
-          <thead><tr><th class="t-when">Time</th><th>Program</th></tr></thead>
           <tbody id="timeline"></tbody>
         </table>
       </section>
@@ -109,7 +103,13 @@
         <table class="tab tab--ways"><tbody id="ways"></tbody></table>
       </section>
 
-      <!-- ══ 04 참석 · 연락처 · 인사 ════════════════════════ -->
+      <!-- ══ 04 앨범 ═════════════════════════════════════════ -->
+      <section class="scr scr--album" id="albumScr" aria-label="앨범" hidden>
+        <p class="eyebrow"><b>03</b> Album <i></i> <span id="albumCount"></span></p>
+        <div class="album" id="album"></div>
+      </section>
+
+      <!-- ══ 05 참석 · 연락처 · 인사 ════════════════════════════ -->
       <section class="scr scr--red finale" aria-label="참석 의사와 연락처">
         <span class="edge edge--l" aria-hidden="true">Happily</span>
         <span class="edge edge--r" aria-hidden="true">Ever After</span>
@@ -144,10 +144,11 @@
   <!-- 주소창이 숨어 화면이 커지면 이 막대가 남는 높이를 흡수합니다.
        그래서 빈 공간이 생기지 않습니다. -->
   <nav class="nav" id="nav" aria-label="화면 이동">
-    <button type="button" data-go="0"><span>갤러리</span></button>
+    <button type="button" data-go="0"><span>표지</span></button>
     <button type="button" data-go="1"><span>인사말</span></button>
     <button type="button" data-go="2"><span>오시는 길</span></button>
-    <button type="button" data-go="3"><span>연락하기</span></button>
+    <button type="button" data-go="3" data-album><span>앨범</span></button>
+    <button type="button" data-go="4"><span>연락하기</span></button>
   </nav>
 
 </div>
@@ -245,15 +246,9 @@
           <p class="field__hint">본인을 포함한 인원으로 적어 주세요.</p>
         </div>
 
-        <div class="field" data-field="meal">
-          <span>식사하고 가시나요? <em>필수</em></span>
-          <div class="choices">
-            <label class="choice"><input type="radio" name="meal" value="식사함"><span>식사함</span></label>
-            <label class="choice"><input type="radio" name="meal" value="안 함"><span>안 함</span></label>
-            <label class="choice"><input type="radio" name="meal" value="미정"><span>미정</span></label>
-          </div>
-          <p class="field__err">선택해 주세요.</p>
-        </div>
+        <p class="field__note">
+          <b>안내</b> 1부와 2부 사이에 착석하신 테이블에서 식사가 진행됩니다.
+        </p>
       </div>
 
       <div class="field">

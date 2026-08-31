@@ -57,7 +57,7 @@ const CONTENT = {
 
     // 오시는 길. chips 에 넣은 값은 알약 모양으로 표시됩니다.
     ways: [
-      { label: 'Parking', text: '호텔 주차빌딩 4시간 무료' },
+      { label: 'Parking', text: '호텔 주차빌딩 5시간 무료' },
       { label: 'Subway',  text: '수인분당선 수내역 3번 출구' },
       { label: 'Bus',     chips: ['220', '370', '117', '누리4'] },
       { label: 'Shuttle', legs: [
