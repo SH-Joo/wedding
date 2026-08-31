@@ -170,12 +170,14 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 /* ═══ 01 표지 ═══════════════════════════════════════════════ */
 .cover{padding:0}
 .shot{flex:1 1 auto; min-height:0; position:relative; overflow:hidden; background:var(--bg)}
+/* 두 장 모두 잘라내지 않고 통째로 보여줍니다.
+   cover 로 채우면 화면 비율에 따라 아치 가장자리가 잘립니다.
+   남는 자리는 크림색인데, 잡지 표지는 배경이 같은 색이라 안 보이고
+   커버 사진은 인쇄된 판처럼 앉습니다. */
 .shot > img{
-  width:100%; height:100%; object-fit:cover; object-position:center top;
+  width:100%; height:100%; object-fit:contain; object-position:center;
   animation:shotIn 1.1s var(--ease) both;
 }
-/* 잡지 표지는 배경이 크림색이라 통째로 보여줘도 이음매가 없습니다 */
-.shot.is-fit > img{object-fit:contain; object-position:center}
 @keyframes shotIn{from{opacity:0; transform:scale(1.05)}}
 @keyframes swap{from{opacity:0}}
 @keyframes riseIn{from{opacity:0; transform:translateY(10px)}}
@@ -359,15 +361,6 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 
 /* ═══ 05 참석 · 연락처 · 인사 ═══════════════════════════════ */
 .finale{text-align:center}
-.rsvp__mark{
-  margin:0; font-family:var(--myeongjo); font-weight:400;
-  font-size:var(--t-xl); line-height:var(--lh-tight);
-  letter-spacing:var(--ls-ko-lg); color:var(--paper);
-}
-.rsvp__when{
-  margin:var(--s2) 0 0; font-size:var(--t-sm); color:#F6E7DC;
-}
-.rsvp__mine{margin:var(--s3) 0 0; font-size:var(--t-sm); color:#EBCFD5}
 
 .finale__mark{
   margin:0; font-family:var(--serif); font-size:var(--t-2xl);

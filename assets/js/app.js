@@ -312,12 +312,12 @@
 
   const COVERS = [
     // 화면에는 아래를 크림색으로 이어붙인 수정본, 확대하면 원본
-    { label: 'Cover', alt: NAMES + ' 웨딩 사진', fit: 'cover',
+    { label: 'Cover', alt: NAMES + ' 웨딩 사진',
       src:  'assets/img/title/fresh-tall-1080.webp',
       full: 'assets/img/title/fresh-1600.webp',
       srcset: 'assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w' },
     // 잡지 표지는 배경이 크림색이라 통째로 보여줘도 이음매가 없습니다
-    { label: 'Poster', alt: NAMES + ' 웨딩 포스터', fit: 'contain',
+    { label: 'Poster', alt: NAMES + ' 웨딩 포스터',
       src:  'assets/img/title/mag-1080.webp',
       full: 'assets/img/title/mag-1600.webp',
       srcset: 'assets/img/title/mag-720.webp 720w, assets/img/title/mag-1080.webp 1080w, assets/img/title/mag-1600.webp 1600w' },
@@ -349,7 +349,6 @@
     img.src = it.src;
     img.srcset = it.srcset;
     img.alt = it.alt;
-    $('#shot').classList.toggle('is-fit', it.fit === 'contain');
 
     // 넘어가는 게 바로 보이도록 짧게 나타납니다
     img.style.animation = 'none';
