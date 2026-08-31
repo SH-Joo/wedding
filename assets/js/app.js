@@ -53,8 +53,11 @@
     });
 
     $('#footNames').textContent = NAMES;
-    $('#coverDday').textContent = dday() === 'D-DAY' ? '오늘입니다' :
-      dday().startsWith('D-') ? '예식까지 ' + dday().slice(2) + '일' : '';
+    $('#coverWhen').textContent =
+      `${D.getFullYear()}.${pad(D.getMonth() + 1)}.${pad(D.getDate())}. `
+      + `${WEEK[D.getDay()]}요일 ${D.getHours() >= 12 ? 'PM' : 'AM'} `
+      + pad(D.getHours() % 12 === 0 ? 12 : D.getHours() % 12) + ':' + pad(D.getMinutes());
+    $('#coverDday').textContent = dday();
 
     // 날짜 한 줄 — 2026. 11. 28 · SAT 6 PM
     const h = D.getHours();
@@ -223,45 +226,42 @@
     [['groom', '신랑'], ['bride', '신부']].forEach(([side, ko]) => {
       const p = CONTENT.couple[side];
       const accounts = (CONTENT.accounts[side] || []).filter(a => a.number);
-      const parents = [p.father, p.mother].filter(x => x && x.name && !x.deceased);
-      const parentNames = parents.map(x => x.name).join(' · ');
 
-      // 본인 줄
-      const row = el('div', 'who');
-      const who = el('p');
-      who.appendChild(document.createTextNode(p.name));
-      who.appendChild(el('small', null,
-        `${ko}${parentNames ? ' · ' + parentNames + '의 ' + (p.rank || '') : ''}`));
-      row.appendChild(who);
+      const group = el('div', 'side');
+      group.appendChild(el('h3', null, ko + '측'));
 
-      const btns = el('div');
-      if (p.phone) btns.appendChild(telBtn('전화', p.phone, `${ko} ${p.name}에게 전화`));
-      accounts.forEach(a => {
-        const b = el('button', 'pill pill--sm', '계좌');
-        b.type = 'button';
-        b.setAttribute('aria-label', `${ko} ${a.name} 계좌번호 복사`);
-        b.addEventListener('click', () =>
-          copy([a.bank, a.number, a.name].filter(Boolean).join(' '), '계좌번호를 복사했습니다'));
-        btns.appendChild(b);
+      // 본인 · 아버지 · 어머니 순서로 한 줄씩
+      const people = [
+        { role: ko, name: p.name, phone: p.phone, accounts: accounts },
+        { role: ko + ' 아버지', name: p.father.name, phone: p.father.phone,
+          dead: p.father.deceased, accounts: [] },
+        { role: ko + ' 어머니', name: p.mother.name, phone: p.mother.phone,
+          dead: p.mother.deceased, accounts: [] },
+      ].filter(x => x.name);
+
+      people.forEach(x => {
+        const row = el('div', 'who');
+        row.appendChild(el('span', 'who__role', x.role));
+        row.appendChild(el('p', 'who__name', (x.dead ? '故 ' : '') + x.name));
+
+        const act = el('div', 'who__act');
+        if (x.phone && !x.dead) {
+          act.appendChild(telBtn('전화', x.phone, `${x.role} ${x.name}에게 전화`));
+        }
+        x.accounts.forEach(acc => {
+          const b = el('button', 'pill pill--sm', '계좌');
+          b.type = 'button';
+          b.setAttribute('aria-label', `${x.role} ${acc.name} 계좌번호 복사`);
+          b.addEventListener('click', () =>
+            copy([acc.bank, acc.number, acc.name].filter(Boolean).join(' '),
+                 '계좌번호를 복사했습니다'));
+          act.appendChild(b);
+        });
+        row.appendChild(act);
+        group.appendChild(row);
       });
-      if (btns.children.length) row.appendChild(btns);
-      box.appendChild(row);
 
-      // 혼주 줄 — 연락처가 있는 분만
-      const reachable = parents.filter(x => x.phone);
-      if (!reachable.length) return;
-      const prow = el('div', 'who');
-      const pwho = el('p');
-      pwho.appendChild(document.createTextNode(parentNames));
-      pwho.appendChild(el('small', null, `${ko} 혼주`));
-      prow.appendChild(pwho);
-      const pbtns = el('div');
-      reachable.forEach((x, i) => {
-        const label = reachable.length > 1 ? (i === 0 ? '아버님' : '어머님') : '전화';
-        pbtns.appendChild(telBtn(label, x.phone, `${ko} 혼주 ${x.name}에게 전화`));
-      });
-      prow.appendChild(pbtns);
-      box.appendChild(prow);
+      box.appendChild(group);
     });
   }
 

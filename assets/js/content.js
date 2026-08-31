@@ -51,8 +51,8 @@ const CONTENT = {
       { time: '17:30', title: '하객 입장', desc: '' },
       { time: '18:00', title: '1부 · 예식', desc: '30분간 진행됩니다', key: true },
       { time: '18:30', title: '만찬',       desc: '예식이 끝나면 자리에서 그대로 이어집니다' },
-      { time: '19:00', title: '2부 · 케이크 커팅', desc: '샴페인과 함께하는 시간입니다', key: true },
-      { time: '20:00', title: '환송', desc: '' },
+      { time: '19:00', title: '2부', desc: '케이크 커팅과 샴페인 건배제의가 있습니다', key: true },
+      { time: '20:00', title: '폐식', desc: '셔틀버스가 정자역으로 출발합니다' },
     ],
 
     // 오시는 길. chips 에 넣은 값은 알약 모양으로 표시됩니다.
