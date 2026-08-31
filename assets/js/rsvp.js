@@ -105,6 +105,9 @@
     find.hidden = view !== 'find';
     done.hidden = view !== 'done';
     findRow.hidden = view !== 'form';
+    // 수정 안내 배너는 '수정 중인 폼'일 때만 보입니다.
+    // 화면 전환에서 빠뜨리면 전달을 마친 뒤에도 계속 남습니다.
+    $('#rsvpEditing').hidden = !(view === 'form' && editingId);
     panel.scrollTop = 0;
   }
 
@@ -236,7 +239,6 @@
       const payload = validate();
       if (!payload) return;
 
-      const label = btn.textContent;
       btn.disabled = true;
       btn.textContent = '전달하는 중…';
       try {
@@ -244,6 +246,9 @@
         if (!res.ok) throw new Error(res.error || 'FAILED');
 
         store.set(KEY_MINE, { id: res.id, name: payload.name, phone: payload.phone });
+        // 전달이 끝났으니 '수정 중' 상태를 놓아줍니다.
+        // 다음에 고치려면 '응답 수정하기' 로 다시 불러오면 됩니다.
+        editingId = '';
         $('#rsvpDoneMsg').innerHTML = res.updated
           ? `${payload.name}님의 응답을 수정했습니다.<br>알려 주셔서 감사합니다.`
           : `${payload.name}님의 응답을 전달했습니다.<br>귀한 마음 감사드립니다.`;
@@ -255,7 +260,7 @@
         toast('전달에 실패했습니다. 잠시 후 다시 시도해 주세요');
       } finally {
         btn.disabled = false;
-        btn.textContent = label;
+        btn.textContent = editingId ? '수정 내용 전달하기' : '전달하기';
       }
     });
   }
