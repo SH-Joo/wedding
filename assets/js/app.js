@@ -223,7 +223,8 @@
   function renderContacts() {
     const box = $('#contacts');
 
-    [['groom', '신랑'], ['bride', '신부']].forEach(([side, ko]) => {
+    // 인사말에서 신랑 혼주가 먼저 나오니, 여기서는 신부측을 앞에 둡니다
+    [['bride', '신부'], ['groom', '신랑']].forEach(([side, ko]) => {
       const p = CONTENT.couple[side];
       const accounts = (CONTENT.accounts[side] || []).filter(a => a.number);
 
