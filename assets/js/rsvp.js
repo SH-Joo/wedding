@@ -31,6 +31,7 @@
 
   let editingId = '';
   let lastFocus = null;
+  let pushed = false;
 
   /* ── 서버로 보내기 ──────────────────────────────────────────
      Content-Type 을 text/plain 으로 두면 브라우저가 사전 확인 요청을
@@ -92,12 +93,19 @@
     panel.scrollTop = 0;
     const first = modal.querySelector('.modal__panel input, .modal__panel button');
     if (first) first.focus({ preventScroll: true });
+
+    // 뒤로가기가 사이트를 벗어나지 않고 팝업만 닫도록
+    try { history.pushState({ overlay: 'rsvp' }, ''); pushed = true; } catch (e) {}
   }
 
-  function closeModal() {
+  // fromHistory 는 뒤로가기로 불려온 경우입니다
+  function closeModal(fromHistory) {
     modal.hidden = true;
     document.body.style.overflow = '';
     if (lastFocus) lastFocus.focus({ preventScroll: true });
+    const was = pushed;
+    pushed = false;
+    if (!fromHistory && was) history.back();
   }
 
   function setView(view) {
@@ -328,6 +336,9 @@
 
     modal.addEventListener('click', e => {
       if (e.target.closest('[data-close]')) closeModal();
+    });
+    window.addEventListener('popstate', () => {
+      if (!modal.hidden) closeModal(true);
     });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !modal.hidden) closeModal();

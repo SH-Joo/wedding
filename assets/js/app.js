@@ -369,6 +369,7 @@
   /* ── 사진 크게 보기 ─────────────────────────────────────── */
 
   let lbReturn = null;
+  let lbPushed = false;
 
   function openLightbox(i) {
     if (!G.items.length) return;
@@ -378,12 +379,22 @@
     $('#lightbox').hidden = false;
     document.body.style.overflow = 'hidden';
     $('[data-lb-close]').focus({ preventScroll: true });
+
+    // 뒤로가기가 사이트를 벗어나지 않고 사진 보기만 닫도록
+    // 방문 기록을 한 칸 쌓아 둡니다.
+    try { history.pushState({ overlay: 'photo' }, ''); lbPushed = true; } catch (e) {}
   }
-  function closeLightbox() {
+
+  // fromHistory 는 뒤로가기로 불려온 경우입니다. 그때는 기록을
+  // 되감으면 안 됩니다 — 이미 브라우저가 되감은 뒤니까요.
+  function closeLightbox(fromHistory) {
     $('#lightbox').hidden = true;
     document.body.style.overflow = '';
     showShot(G.i);
     if (lbReturn) lbReturn.focus({ preventScroll: true });
+    const pushed = lbPushed;
+    lbPushed = false;
+    if (!fromHistory && pushed) history.back();
   }
   function moveLightbox(step) {
     G.i = (G.i + step + G.items.length) % G.items.length;
@@ -409,6 +420,10 @@
       if (e.key === 'Escape') closeLightbox();
       if (e.key === 'ArrowLeft') moveLightbox(-1);
       if (e.key === 'ArrowRight') moveLightbox(1);
+    });
+
+    window.addEventListener('popstate', () => {
+      if (!box.hidden) closeLightbox(true);
     });
 
     let x0 = null;
