@@ -310,11 +310,12 @@
      둘 다 크게 보기는 같은 뷰어를 씁니다. */
 
   const COVERS = [
-    // 화면에는 아래를 크림색으로 이어붙인 수정본, 확대하면 원본
+    // 손대지 않은 원본을 그대로 보여줍니다
     { label: 'Cover', alt: NAMES + ' 웨딩 사진',
-      src:  'assets/img/title/fresh-tall-1080.webp',
+      src:  'assets/img/title/fresh-1080.webp',
       full: 'assets/img/title/fresh-1600.webp',
-      srcset: 'assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w' },
+      srcset: 'assets/img/title/fresh-720.webp 720w, assets/img/title/fresh-1080.webp 1080w,'
+            + ' assets/img/title/fresh-1600.webp 1600w' },
     // 잡지 표지는 배경이 크림색이라 통째로 보여줘도 이음매가 없습니다
     { label: 'Poster', alt: NAMES + ' 웨딩 포스터',
       src:  'assets/img/title/mag-1080.webp',

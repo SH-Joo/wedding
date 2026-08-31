@@ -5,7 +5,7 @@
   python tools/build_media.py
 
 하는 일
-  images/Title/  →  assets/img/title/   커버·표지 (여러 크기)
+  images/Title/  →  assets/img/title/   표지 두 장 (여러 크기, 손대지 않음)
   images/album/  →  assets/img/album/   갤러리 (여러 크기 + 흐린 미리보기)
                  →  assets/data/album.json
                  →  assets/img/og.jpg   카카오톡 링크 카드 1200x630
@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:
-    from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageOps
+    from PIL import Image, ImageDraw, ImageEnhance, ImageOps
 except ImportError:
     sys.exit("Pillow 가 필요합니다:  python -m pip install pillow")
 
@@ -39,7 +39,6 @@ OUT_TITLE = ROOT / "assets" / "img" / "title"
 OUT_ALBUM = ROOT / "assets" / "img" / "album"
 OUT_DATA = ROOT / "assets" / "data"
 OUT_OG = ROOT / "assets" / "img" / "og.jpg"
-OUT_CSS = ROOT / "assets" / "css" / "generated.css"
 OUT_MAP = ROOT / "assets" / "img" / "map.webp"
 
 PHOTO_EXT = {".jpg", ".jpeg", ".png", ".webp", ".JPG", ".JPEG", ".PNG", ".WEBP"}
@@ -58,22 +57,6 @@ TITLE_ROLES = [
     ("fresh", ["산뜻", "fresh"]),   # 첫 화면 커버
     ("mag", ["화려", "잡지", "mag"]),  # 본문 중반 잡지 표지
 ]
-
-# 커버(fresh) 세로 크롭
-# 아래쪽 영문 문단을 버리고, 사진 끝에 '바닥 연장'을 덧붙입니다.
-# 사진 맨 아랫줄 색에서 시작해 페이지 배경색으로 끝나는 띠라,
-# 사진이 페이지에 그대로 이어져 이음매가 보이지 않습니다.
-FRESH_TALL_TOP = 0.080      # 위쪽 아치를 더 덜어 아래 여백을 늡니다
-FRESH_TALL_BOTTOM = 0.895   # 날짜 배지 타원 바로 아래 (타원은 0.856~0.886)
-FRESH_TALL_FOOT = 0.0      # 완성 높이 중 바닥 연장이 차지하는 비율
-FRESH_TALL_RATIO = 0.680     # 완성본 가로/세로
-# 바닥 연장을 넉넉히 두는 이유:
-#   화면에서 사진 아래에 장소·버튼 안내가 겹칩니다. 연장이 짧으면
-#   그 안내가 날짜 배지를 덮거나, object-fit:cover 가 배지를 잘라냅니다.
-#   FOOT 0 = 크림색 이어붙임 없음. 표지 아래에 글씨를 얹지 않습니다.
-#   RATIO 0.68 = 아치가 온전히 들어가는 최소 비율(0.667)보다 조금 넉넉.
-#   화면에서는 contain 으로 통째로 보여주므로 더 잘리지 않습니다.
-PAGE_BG = (0xE9, 0xE4, 0xD6)   # tokens.css 의 --bg 와 같아야 합니다
 
 # OG 카드 — 잡지 포스터에서 잘라낼 세로 구간 (제목 + 이름 + 날짜 + 커플 상단)
 OG_TOP = 0.075
@@ -174,96 +157,7 @@ def build_title():
             size = save_webp(im, OUT_TITLE / f"{role}-{w}.webp", w)
             log(f"      {role}-{w}.webp  {size[0]}x{size[1]}  {kb(OUT_TITLE / f'{role}-{w}.webp')}")
 
-        # 커버는 폰 전용 세로 크롭을 하나 더 만듭니다.
-        # 아래쪽 영문 문단을 버려 참석 버튼이 앉을 바닥 여백을 남깁니다.
-        if role == "fresh":
-            top = round(im.height * FRESH_TALL_TOP)
-            bot = round(im.height * FRESH_TALL_BOTTOM)
-            photo_h = bot - top
-            full_h = round(photo_h / (1 - FRESH_TALL_FOOT))
-            foot_h = full_h - photo_h
-            if FRESH_TALL_RATIO <= 0:
-                crop_w = im.width          # 원본 폭 그대로
-            else:
-                crop_w = min(im.width, round(full_h * FRESH_TALL_RATIO))
-            left = (im.width - crop_w) // 2
-
-            photo = im.crop((left, top, left + crop_w, bot))
-
-            # 바닥 연장 — 사진 맨 아랫줄에서 이어받아 페이지 배경색으로.
-            # 단색으로 채우면 사진 아래 좌우의 어두운 벽과 층이 져서
-            # 가로 이음매가 보입니다. 열마다 제 색에서 출발시킵니다.
-            if foot_h <= 0:
-                base = bottom_color(photo)   # generated.css 용
-                for w in (720, 1080):
-                    size = save_webp(photo, OUT_TITLE / f"fresh-tall-{w}.webp", w)
-                    log(f"      fresh-tall-{w}.webp  {size[0]}x{size[1]}  "
-                        f"{kb(OUT_TITLE / f'fresh-tall-{w}.webp')}")
-                found["_footColor"] = base
-                log("      바닥 연장 없음 — 원본 크롭 그대로")
-                continue
-
-            overlap = max(8, photo.height // 40)
-            blend_h = foot_h + overlap
-
-            row = photo.crop((0, photo.height - max(2, photo.height // 300),
-                              photo.width, photo.height))
-            row = row.resize((crop_w, 1), Image.LANCZOS)
-            # 크게 흐려 구두·벽 색이 세로로 번져 보이지 않게 합니다
-            row = row.filter(ImageFilter.GaussianBlur(radius=crop_w / 9))
-            stretched = row.resize((crop_w, blend_h), Image.NEAREST)
-
-            solid = Image.new("RGB", (crop_w, blend_h), PAGE_BG)
-
-            def _ramp(fn):
-                g = Image.new("L", (1, blend_h))
-                g.putdata([fn(y) for y in range(blend_h)])
-                return g.resize((crop_w, blend_h), Image.NEAREST)
-
-            # 위쪽 60% 안에 크림색으로 완전히 가라앉습니다
-            def _to_cream(y):
-                t = min(1.0, (y / max(1, blend_h - 1)) / 0.6)
-                return round(255 * t * t * (3 - 2 * t))
-            foot = Image.composite(solid, stretched, _ramp(_to_cream))
-
-            # 사진 위로 조금 겹쳐 시작해 이음매 선을 없앱니다
-            def _fade_in(y):
-                t = min(1.0, y / overlap)
-                return round(255 * t * t * (3 - 2 * t))
-
-            tall = Image.new("RGB", (crop_w, full_h), PAGE_BG)
-            tall.paste(photo, (0, 0))
-            tall.paste(foot, (0, photo.height - overlap), _ramp(_fade_in))
-
-            base = bottom_color(photo)
-
-            for w in (720, 1080):
-                size = save_webp(tall, OUT_TITLE / f"fresh-tall-{w}.webp", w)
-                log(f"      fresh-tall-{w}.webp  {size[0]}x{size[1]}  "
-                    f"{kb(OUT_TITLE / f'fresh-tall-{w}.webp')}")
-            found["_footColor"] = base
-            log(f"      바닥 연장 {foot_h}px  {base} → #E9E4D6")
-
     return found
-
-
-def bottom_color(im: Image.Image) -> str:
-    """
-    커버 사진 맨 아래 '밝은 바닥면' 색을 뽑습니다.
-
-    단순 평균을 내면 어두운 아치 벽이나 인물의 구두가 섞여 실제
-    바닥보다 어둡게 나옵니다. 밝은 쪽 절반만 골라 평균을 냅니다.
-    """
-    band = max(4, im.height // 200)
-    strip = im.crop((0, im.height - band, im.width, im.height))
-    strip = strip.resize((80, 4), Image.LANCZOS)
-
-    px = list(strip.getdata())
-    px.sort(key=lambda c: 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2])
-    bright = px[len(px) // 2:]          # 밝은 쪽 절반
-    n = len(bright)
-    rgb = tuple(round(sum(c[i] for c in bright) / n) for i in range(3))
-    return "#%02X%02X%02X" % rgb
 
 
 # ── OG 카드 ──────────────────────────────────────────────────────
@@ -289,6 +183,22 @@ def build_og(mag_src: Path):
     OUT_OG.parent.mkdir(parents=True, exist_ok=True)
     card.save(OUT_OG, "JPEG", quality=88, optimize=True, progressive=True)
     log(f"  og.jpg  1200x630  {kb(OUT_OG)}")
+
+
+def read_coords():
+    """content.js 에서 좌표와 예식장 이름을 읽습니다."""
+    src = (ROOT / "assets" / "js" / "content.js").read_text(encoding="utf-8")
+
+    def grab(key, cast=str):
+        m = re.search(key + r":\s*'?([^,'\n]+)'?", src)
+        if not m:
+            raise SystemExit(f"content.js 에서 {key} 를 찾지 못했습니다.")
+        return cast(m.group(1).strip())
+
+    return {"lat": grab("lat", float), "lng": grab("lng", float), "venue": grab("venue")}
+
+
+CONTENT_COORDS = read_coords()
 
 
 # ── 지도 ─────────────────────────────────────────────────────────
@@ -435,21 +345,13 @@ def main():
         log("  ! 잡지 표지가 없어 og.jpg 를 건너뜁니다")
 
     log("\n[지도]")
+    w = CONTENT_COORDS
     try:
-        build_map(37.38082, 127.10399, "더블트리 바이 힐튼 서울 판교")
+        build_map(w["lat"], w["lng"], w["venue"])
     except Exception as err:
         log(f"  ! 지도를 건너뜁니다 ({err})")
 
     log("\n[갤러리]")
-    foot = titles.get("_footColor", "#EFECE3")
-    OUT_CSS.parent.mkdir(parents=True, exist_ok=True)
-    OUT_CSS.write_text(
-        "/* build_media.py 가 사진에서 뽑아 만듭니다. 직접 고치지 마세요. */" + chr(10)
-        + ":root{ --cover-foot:%s; }" % foot + chr(10),
-        encoding="utf-8",
-    )
-    log("  generated.css   --cover-foot:%s" % foot)
-
     items = build_album()
 
     log(f"\n끝났습니다. 갤러리 {len(items)}장.")
