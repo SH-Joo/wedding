@@ -46,19 +46,25 @@
     <div class="rail__inner" id="railInner">
 
       <!-- ══ 01 커버 · 사진 ═════════════════════════════════ -->
-      <section class="scr cover" aria-label="사진">
+      <section class="scr cover" aria-label="표지">
         <div class="shot" id="shot">
           <img id="shotImg" src="assets/img/title/fresh-tall-1080.webp"
                srcset="assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w"
                sizes="(max-width:500px) 100vw, 500px"
                alt="" fetchpriority="high">
-          <button class="shot__zoom" type="button" id="shotZoom" aria-label="사진 크게 보기">⤢</button>
-        </div>
 
-        <div class="thumbs" id="thumbs" aria-label="사진 고르기"></div>
+          <button class="shot__more" type="button" id="shotZoom">
+            <span aria-hidden="true">⤢</span><span id="shotCount"></span>
+          </button>
 
-        <div class="cover__foot">
-          <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
+          <!-- 사진 아래쪽 크림색으로 자연스럽게 이어집니다 -->
+          <div class="veil">
+            <p class="veil__where">
+              <span data-c="wedding.venue"></span>
+              <small><span data-c="wedding.hall"></span> · <span id="coverDday"></span></small>
+            </p>
+            <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
+          </div>
         </div>
       </section>
 

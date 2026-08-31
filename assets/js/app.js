@@ -53,6 +53,8 @@
     });
 
     $('#footNames').textContent = NAMES;
+    $('#coverDday').textContent = dday() === 'D-DAY' ? '오늘입니다' :
+      dday().startsWith('D-') ? '예식까지 ' + dday().slice(2) + '일' : '';
 
     // 매스트헤드 — 2026.11.28 / SATURDAY 6 PM · D-89
     const date = $('#mastDate');
@@ -318,27 +320,14 @@
 
     G.items = items;
 
-    const box = $('#thumbs');
-    items.forEach((it, i) => {
-      const b = el('button', 'thumb');
-      b.type = 'button';
-      b.setAttribute('aria-pressed', String(i === 0));
-      b.setAttribute('aria-label', (i + 1) + '번째 사진 보기');
-      const img = el('img');
-      img.src = it.thumb;
-      img.alt = '';
-      img.loading = i < 8 ? 'eager' : 'lazy';
-      img.decoding = 'async';
-      b.appendChild(img);
-      b.addEventListener('click', () => showShot(i));
-      box.appendChild(b);
-    });
-
+    // 사진이 몇 장인지 알리고, 누르면 전체화면으로 넘깁니다
+    $('#shotCount').textContent = items.length > 1 ? items.length + '장' : '크게';
     showShot(0);
+
     $('#shot').addEventListener('click', (e) => {
-      if (!e.target.closest('.shot__zoom')) openLightbox(G.i);
+      if (e.target.closest('[data-rsvp-open]')) return;   // 버튼은 그대로 둡니다
+      openLightbox(G.i);
     });
-    $('#shotZoom').addEventListener('click', () => openLightbox(G.i));
   }
 
   function showShot(i) {
@@ -348,7 +337,6 @@
     img.src = it.src;
     img.srcset = it.srcset;
     img.alt = it.alt;
-    $$('#thumbs .thumb').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
   }
 
   /* ── 사진 크게 보기 ─────────────────────────────────────── */

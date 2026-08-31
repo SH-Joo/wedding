@@ -161,41 +161,54 @@ button,input,select,textarea{font:inherit; color:inherit}
   pointer-events:none; margin:0; mix-blend-mode:multiply;
 }
 
-/* ═══ 커버 · 사진 ═══════════════════════════════════════════
-   사진 아래쪽에 '바닥 연장'(사진 끝 색 → 페이지 크림색)이 이미
-   그려져 있어, 넘쳐 잘리더라도 티가 나지 않습니다. */
-.cover{padding:0; gap:0}
+/* ═══ 커버 ══════════════════════════════════════════════════
+   사진이 화면을 통째로 채웁니다. 사진 아래쪽에는 만들 때 이미
+   크림색 띠가 그려져 있어서, 아래 안내가 얹혀도 이음매가 없습니다.
+   썸네일 줄과 버튼을 사진 밖에 두면 사진 높이가 그만큼 줄어들어
+   날짜 배지가 경계에 걸려 잘렸습니다. 이제 겹쳐 놓습니다. */
+.cover{padding:0}
 .shot{flex:1 1 auto; min-height:0; position:relative; overflow:hidden; background:var(--bg)}
-.shot img{width:100%; height:100%; object-fit:cover; object-position:center top}
-.shot__zoom{
-  position:absolute; right:10px; top:10px;
-  appearance:none; cursor:pointer; width:34px; height:34px;
-  border:1px solid rgba(21,18,15,.18); border-radius:999px;
-  background:rgba(244,240,230,.82); color:var(--ink);
-  font-size:14px; line-height:1; display:grid; place-items:center;
-  backdrop-filter:blur(2px);
+.shot img{
+  width:100%; height:100%; object-fit:cover; object-position:center top;
+  animation:shotIn 1.1s var(--ease) both;
 }
-.shot__zoom:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+@keyframes shotIn{from{opacity:0; transform:scale(1.05)}}
 
-.thumbs{
-  flex:0 0 auto; display:flex; gap:4px; padding:6px var(--gutter) 0;
-  overflow-x:auto; scrollbar-width:none;
+/* 사진이 몇 장 더 있는지 알리고, 누르면 전체화면으로 엽니다 */
+.shot__more{
+  position:absolute; right:12px; top:12px; z-index:2;
+  appearance:none; cursor:pointer;
+  display:flex; align-items:center; gap:6px;
+  border:1px solid rgba(21,18,15,.16); border-radius:999px;
+  background:rgba(244,240,230,.86); color:var(--ink);
+  font-family:var(--serif); font-size:11px; letter-spacing:.1em;
+  padding:6px 13px; backdrop-filter:blur(3px);
+  animation:veilIn .8s var(--ease) .5s both;
 }
-.thumbs::-webkit-scrollbar{display:none}
-.thumb{
-  appearance:none; cursor:pointer; flex:0 0 auto;
-  width:46px; aspect-ratio:3/4; padding:0; overflow:hidden; border:0;
-  background:var(--sunk); position:relative; opacity:.42;
-  transition:opacity .25s var(--ease);
-}
-.thumb img{width:100%; height:100%; object-fit:cover}
-.thumb[aria-pressed="true"]{opacity:1}
-.thumb[aria-pressed="true"]::after{content:''; position:absolute; inset:0; border:2px solid var(--accent)}
-.thumb:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.shot__more:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
-.cover__foot{
-  flex:0 0 auto; display:flex; justify-content:center;
-  padding:12px var(--gutter) 14px;
+/* 사진 아래에 겹치는 안내 */
+.veil{
+  position:absolute; left:0; right:0; bottom:0; z-index:1;
+  display:flex; flex-direction:column; align-items:center; gap:14px;
+  padding:74px var(--gutter) 20px;
+  background:linear-gradient(to bottom,
+    rgba(233,228,214,0) 0%, rgba(233,228,214,.72) 42%, var(--bg) 74%);
+}
+.veil__where{
+  margin:0; text-align:center;
+  font-family:var(--myeongjo); font-size:15px; line-height:1.55; color:var(--ink);
+  animation:veilIn .8s var(--ease) .45s both;
+}
+.veil__where small{
+  display:block; margin-top:4px;
+  font-family:var(--sans); font-size:12.5px; color:var(--muted); letter-spacing:.01em;
+}
+.veil .pill{animation:veilIn .8s var(--ease) .62s both}
+@keyframes veilIn{from{opacity:0; transform:translateY(10px)}}
+
+@media (prefers-reduced-motion:reduce){
+  .shot img, .shot__more, .veil__where, .veil .pill{animation:none}
 }
 
 /* ═══ 버튼 — 사진 속 2026.11.28 배지와 같은 얇은 선 타원 ════ */
