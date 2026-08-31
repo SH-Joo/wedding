@@ -6,6 +6,11 @@
    ═══════════════════════════════════════════════════════════════ */
 
 *{box-sizing:border-box}
+/* 문서 자체는 스크롤하지 않고 .deck 안에서만 스크롤합니다.
+   이렇게 잠가두면 브라우저가 주소창을 숨기지 않아 화면 높이가 변하지 않습니다.
+   dvh 로 두면 스크롤 도중 주소창이 숨으며 모든 섹션 높이가 한꺼번에 바뀌어
+   한 장이 아니라 두 장씩 넘어가 버립니다. */
+html,body{height:100%; overflow:hidden; overscroll-behavior:none}
 html{-webkit-text-size-adjust:100%}
 body{
   margin:0; background:var(--bg); color:var(--ink);
@@ -25,14 +30,15 @@ button,input,select,textarea{font:inherit; color:inherit}
 
 /* ═══ 한 화면씩 넘어가는 스크롤 ═════════════════════════════ */
 .deck{
-  height:100dvh; overflow-y:scroll; overflow-x:hidden;
+  height:100%; overflow-y:scroll; overflow-x:hidden;
+  overscroll-behavior-y:contain;
   scroll-snap-type:y mandatory; scroll-behavior:smooth;
   -webkit-overflow-scrolling:touch;
   max-width:var(--page); margin:0 auto;
   position:relative; background:var(--bg);
 }
 .scr{
-  height:100dvh; scroll-snap-align:start; scroll-snap-stop:always;
+  height:100%; scroll-snap-align:start; scroll-snap-stop:always;
   display:flex; flex-direction:column;
   padding:var(--sec-y) var(--gutter);
   position:relative; overflow:hidden;
@@ -52,7 +58,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 /* 내용이 화면보다 길어진 장은 스냅을 풀어 갇히지 않게 합니다.
    첫 장(커버)에는 절대 붙이지 않습니다 — 스냅 지점이 사라지면
    브라우저가 커버를 통째로 건너뜁니다. app.js 의 fit() 참고. */
-.scr.is-tall{height:auto; min-height:100dvh; scroll-snap-align:none; overflow:visible}
+.scr.is-tall{height:auto; min-height:100%; scroll-snap-align:none; overflow:visible}
 
 /* 손가락으로 쓰는 기기에서는 좌우 여백만 조금 줄입니다.
    폭 제한(--page)은 그대로 둡니다. 없애면 화면 폭이 넓게 잡히는 환경
@@ -63,6 +69,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 
 /* 화면을 눕히거나 아주 낮으면 스냅을 끕니다 */
 @media (max-height:520px){
+  html,body{height:auto; overflow:visible}
   .deck{scroll-snap-type:none; height:auto; overflow:visible}
   .scr{height:auto; min-height:0}
 }
