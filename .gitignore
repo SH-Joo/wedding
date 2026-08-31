@@ -1,0 +1,16 @@
+# 연락처·계좌번호. 배포할 때 GitHub Secrets 에서 만들어집니다.
+assets/js/private.js
+
+# tools/build_media.py 가 만들어 내는 것들. 커밋하지 않습니다.
+assets/img/title/
+assets/img/album/
+assets/img/og.jpg
+assets/css/generated.css
+assets/data/album.json
+
+# 작업 중 파일
+_preview.html
+_probe.html
+_smoke.html
+.DS_Store
+Thumbs.db

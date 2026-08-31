@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>디자인 초안 — 주시헌 &amp; 황유나</title>
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Gowun+Batang:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+<style>
+/* ═══ 디자인 토큰 ═══════════════════════════════════════════ */
+:root{
+  --bg:#E9E4D6; --paper:#F4F0E6; --sunk:#DED8C7;
+  --ink:#15120F; --muted:#5E574C; --faint:#6E6555;
+  --accent:#B01133; --deep:#7E0C24; --line:#CFC7B4;
+
+  --serif:'Prata', 'Times New Roman', serif;
+  --myeongjo:'Gowun Batang', serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif;
+
+  --page:520px; --gutter:28px; --sec-y:54px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+}
+img{display:block; max-width:100%}
+button,input,select,textarea{font:inherit; color:inherit}
+
+/* ═══ 한 화면씩 넘어가는 스크롤 ═════════════════════════════ */
+.deck{
+  height:100svh; overflow-y:scroll; overflow-x:hidden;
+  scroll-snap-type:y mandatory; scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+  max-width:var(--page); margin:0 auto;
+  position:relative; background:var(--bg);
+}
+.scr{
+  height:100svh; scroll-snap-align:start; scroll-snap-stop:always;
+  display:flex; flex-direction:column;
+  padding:var(--sec-y) var(--gutter);
+  position:relative; overflow:hidden;
+  container-type:inline-size;
+}
+/* 세로 가운데 맞춤을 auto 여백으로. 자리가 모자라면 아래로만 넘칩니다. */
+.scr:not(.cover)::before,
+.scr:not(.cover)::after{content:''; display:block; flex:0 0 auto}
+.scr:not(.cover)::before{margin-top:auto}
+.scr:not(.cover)::after{margin-bottom:auto}
+
+.scr--paper{background:var(--paper)}
+.scr--red{background:var(--accent); color:var(--paper)}
+
+.scr.is-tall{height:auto; min-height:100svh; scroll-snap-align:none; overflow:visible}
+
+/* 창이 낮을수록 폭을 줄입니다. 커버가 세로로 길어서(1:1.82)
+   폭이 넓으면 화면 높이를 넘겨 날짜 배지가 잘립니다. */
+@media (min-width:520px) and (max-height:900px){ .deck{--page:430px} }
+@media (min-width:520px) and (max-height:780px){ .deck{--page:370px} }
+@media (min-width:520px) and (max-height:700px){ .deck{--page:330px} }
+@media (max-height:520px){
+  .deck{scroll-snap-type:none; height:auto; overflow:visible}
+  .scr{height:auto; min-height:0}
+}
+
+/* ═══ 가장자리를 감싸는 세로 타이포 ═════════════════════════ */
+.edge{
+  position:absolute; top:0; bottom:0; display:flex; align-items:center;
+  writing-mode:vertical-rl; pointer-events:none; user-select:none;
+  font-family:var(--serif); font-size:clamp(22px,7cqw,38px);
+  letter-spacing:.05em; text-transform:uppercase;
+  color:var(--ink); opacity:.06; white-space:nowrap;
+}
+.edge--l{left:-.16em; transform:rotate(180deg)}
+.edge--r{right:-.16em}
+.scr--red .edge{color:var(--paper); opacity:.12}
+
+/* ═══ 섹션 레이블 ═══════════════════════════════════════════ */
+.eyebrow{
+  display:flex; align-items:baseline; gap:11px; margin:0 0 var(--eb-gap,30px);
+  font-family:var(--serif); font-size:10px;
+  letter-spacing:.32em; text-transform:uppercase; color:var(--accent);
+  flex:0 0 auto;
+}
+.eyebrow i{flex:1; height:1px; background:currentColor; opacity:.4; transform:translateY(-3px)}
+.scr--red .eyebrow{color:#EFD6C6}
+
+.folio{
+  position:fixed; right:12px; bottom:11px; z-index:5;
+  font-family:var(--serif); font-size:10px; letter-spacing:.16em;
+  color:var(--faint); font-variant-numeric:tabular-nums; pointer-events:none; margin:0;
+  mix-blend-mode:multiply;
+}
+
+/* ═══ 커버 ══════════════════════════════════════════════════
+   사진 아래쪽에 '바닥 연장'이 이미 그려져 있어 페이지 크림색으로
+   그대로 이어집니다. 잘라내지 않으므로 날짜 배지가 항상 보입니다. */
+.cover{padding:0}
+/* 화면 높이에 딱 맞춥니다. 넘치면 아래쪽 '바닥 연장'(크림색 띠)부터
+   잘려나가는데, 그 아래 페이지도 같은 크림색이라 티가 나지 않습니다.
+   height:auto 로 두면 낮은 창에서 화면을 넘겨 스냅 지점이 사라지고
+   첫 장이 통째로 건너뛰어집니다. */
+.cover__img{
+  width:100%; height:calc(100svh - 108px); min-height:300px;
+  object-fit:cover; object-position:center top;
+}
+.cover__foot{
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:14px;
+  padding:0 var(--gutter) calc(12px + env(safe-area-inset-bottom));
+}
+
+/* 사진 속 2026.11.28 배지와 같은 얇은 선 타원 */
+.pill{
+  appearance:none; cursor:pointer;
+  border:1px solid currentColor; border-radius:999px;
+  background:transparent; color:var(--ink);
+  font-family:var(--myeongjo); font-size:15px; letter-spacing:.14em;
+  padding:12px 30px; transition:.3s var(--ease);
+}
+.pill:hover{background:var(--ink); color:var(--paper)}
+.pill:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.scr--red .pill{color:var(--paper)}
+.scr--red .pill:hover{background:var(--paper); color:var(--accent)}
+.pill--lg{font-size:16px; padding:14px 38px}
+.pill--sm{font-size:12.5px; padding:7px 15px; letter-spacing:.03em}
+.pill--solid{background:var(--accent); border-color:var(--accent); color:#fff}
+.pill--solid:hover{background:var(--deep); border-color:var(--deep); color:#fff}
+
+.cue{
+  font-family:var(--serif); font-size:9px; letter-spacing:.4em;
+  text-transform:uppercase; color:var(--faint);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.cue::after{content:''; width:1px; height:18px; background:var(--line)}
+
+/* ═══ 매스트헤드 ════════════════════════════════════════════ */
+.masthead{text-align:center; flex:0 0 auto}
+.masthead__date{
+  font-family:var(--serif); margin:0;
+  font-size:clamp(40px,15vw,74px); line-height:.94; letter-spacing:-.015em;
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+@supports (font-size:1cqw){ .masthead__date{font-size:15.5cqw} }
+.masthead__date i{font-style:normal; color:var(--accent)}
+.masthead__meta{
+  display:flex; align-items:center; justify-content:center; gap:11px;
+  margin:16px 0 0;
+  font-family:var(--serif); font-size:9.5px;
+  letter-spacing:.3em; text-transform:uppercase; color:var(--muted);
+}
+.masthead__meta i{flex:1; height:1px; background:var(--line)}
+
+/* ═══ 인사말 ════════════════════════════════════════════════ */
+.poem{
+  font-family:var(--myeongjo); font-size:16px; line-height:2;
+  letter-spacing:-.012em; margin:38px 0 0; white-space:pre-line;
+}
+.poem::first-letter{
+  float:left; font-family:var(--serif); font-size:46px; line-height:.88;
+  color:var(--accent); margin:4px 10px 0 0;
+}
+.signoff{
+  margin:30px 0 0; text-align:right;
+  font-family:var(--myeongjo); font-size:13px; line-height:2.1; color:var(--muted);
+}
+.signoff b{font-weight:400; color:var(--ink); font-size:14.5px}
+.signoff em{font-style:normal; color:var(--accent); padding:0 4px}
+
+.copy{color:var(--muted); font-size:14px; line-height:1.9; white-space:pre-line; margin:0}
+.scr--red .copy{color:#F3E6DB}
+
+/* ═══ 표 조판 ═══════════════════════════════════════════════ */
+.tab{width:100%; border-collapse:collapse; margin:0; flex:0 0 auto}
+.tab th{
+  font-family:var(--serif); font-weight:400; font-size:9px;
+  letter-spacing:.26em; text-transform:uppercase; color:var(--accent);
+  text-align:left; padding:0 0 8px; border-bottom:1px solid var(--accent);
+}
+.tab td{padding:11px 0; border-bottom:1px solid var(--line); vertical-align:top}
+.tab tr:last-child td{border-bottom:0}
+.tab .t-when{
+  width:54px; padding-top:12px; font-family:var(--serif); font-size:13.5px;
+  font-variant-numeric:tabular-nums; white-space:nowrap; padding-right:16px;
+}
+.tab .t-what{font-family:var(--myeongjo); font-size:15px; line-height:1.5; padding-top:9px}
+.tab .t-what small{
+  display:block; font-family:var(--sans); font-size:12px;
+  color:var(--muted); margin-top:3px; letter-spacing:0;
+}
+.tab tr.is-key .t-when{color:var(--accent)}
+.tab tr.is-key .t-what{font-weight:700}
+
+.tab--ways .t-when{
+  width:64px; font-size:9px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--accent); padding-top:14px;
+}
+.tab--ways .t-what{padding-top:11px}
+.tab--ways .t-what{font-family:var(--sans); font-size:13.5px; color:var(--muted)}
+/* 셔틀 시각과 버스 번호에 함께 씁니다 */
+.chips{
+  display:flex; flex-wrap:wrap; gap:5px; margin:6px 0 0;
+  font-family:var(--serif); font-size:11.5px; color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.chips span{border:1px solid var(--line); border-radius:999px; padding:2px 9px}
+.chips:first-child{margin-top:0}
+.leg{display:block; font-size:11.5px; color:var(--faint); margin-top:10px; font-style:normal}
+.leg:first-child{margin-top:0}
+
+/* ═══ 오시는 길 ═════════════════════════════════════════════ */
+.venue{margin:0 0 18px; flex:0 0 auto}
+.venue h2{margin:0; font-family:var(--myeongjo); font-size:19px; font-weight:400; line-height:1.45}
+.venue p{margin:5px 0 0; font-size:13px; color:var(--muted)}
+.map{
+  width:100%; flex:1 1 auto; min-height:110px; max-height:180px;
+  background:var(--sunk); border:1px solid var(--line);
+  display:grid; place-items:center;
+  font-family:var(--serif); font-size:10px; letter-spacing:.3em; color:var(--faint);
+  filter:saturate(.55) contrast(.95);
+}
+.btnrow{display:flex; gap:6px; margin:12px 0 22px; flex:0 0 auto}
+.btnrow .pill{flex:1; padding-inline:0; text-align:center}
+
+/* ═══ 갤러리 ════════════════════════════════════════════════ */
+.stage{
+  margin-inline:calc(var(--gutter) * -1);
+  aspect-ratio:3/4; background:var(--bg);
+  position:relative; overflow:hidden; flex:0 0 auto;
+}
+.stage img{width:100%; height:100%; object-fit:cover}
+.stage__ph{
+  position:absolute; inset:0; display:grid; place-items:center; background:var(--sunk);
+  font-family:var(--serif); font-size:13px; letter-spacing:.34em; color:var(--faint);
+}
+.stage__cap{
+  position:absolute; left:0; right:0; bottom:0; padding:28px 16px 10px;
+  display:flex; justify-content:space-between; align-items:flex-end;
+  font-family:var(--serif); font-size:9px; letter-spacing:.26em;
+  text-transform:uppercase; color:#F7F3EA;
+  background:linear-gradient(to top, rgba(21,18,15,.62), transparent);
+}
+.thumbs{display:flex; gap:4px; margin-top:4px; overflow-x:auto; scrollbar-width:none; flex:0 0 auto}
+.thumbs::-webkit-scrollbar{display:none}
+.thumb{
+  appearance:none; cursor:pointer; flex:0 0 auto;
+  width:calc((100% - 20px) / 6); min-width:44px; aspect-ratio:3/4;
+  padding:0; overflow:hidden; border:0; background:var(--sunk);
+  display:grid; place-items:center; position:relative;
+  font-family:var(--serif); font-size:10px; color:var(--muted);
+  opacity:.45; transition:.25s var(--ease);
+}
+.thumb img{width:100%; height:100%; object-fit:cover}
+.thumb[aria-pressed="true"]{opacity:1}
+.thumb[aria-pressed="true"]::after{content:''; position:absolute; inset:0; border:2px solid var(--accent)}
+.thumb:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* ═══ 크림슨 피날레 ═════════════════════════════════════════ */
+.finale{text-align:center}
+.rsvp__mark{
+  font-family:var(--serif); margin:0; line-height:1;
+  font-size:clamp(28px,9vw,44px); letter-spacing:.06em; color:var(--paper);
+}
+@supports (font-size:1cqw){ .rsvp__mark{font-size:9.5cqw} }
+.rsvp__when{
+  margin:14px 0 0; font-family:var(--myeongjo); font-size:15.5px; color:#fff;
+}
+.rsvp__when b{font-weight:400; border-bottom:1px solid rgba(255,255,255,.5); padding-bottom:2px}
+.finale__mark{
+  font-family:var(--serif); margin:0; line-height:.96;
+  font-size:clamp(28px,11vw,52px); color:var(--paper);
+}
+@supports (font-size:1cqw){ .finale__mark{font-size:11.5cqw} }
+.finale__names{
+  margin:12px 0 0; font-family:var(--myeongjo); font-size:16px;
+  letter-spacing:.06em; color:var(--paper);
+}
+.finale hr{border:0; height:1px; background:rgba(244,240,230,.3); margin:30px 0}
+
+.who{
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding:10px 0; border-bottom:1px solid rgba(244,240,230,.22); text-align:left;
+}
+.who:last-of-type{border-bottom:0}
+.who p{margin:0; font-family:var(--myeongjo); font-size:15px; line-height:1.4; color:var(--paper)}
+.who p small{display:block; font-family:var(--sans); font-size:11.5px; color:#EBCFD5; margin-top:2px}
+.who div{display:flex; gap:5px; flex:0 0 auto}
+
+/* ═══ 참석 의사 팝업 ════════════════════════════════════════ */
+.modal[hidden]{display:none}
+.modal{position:fixed; inset:0; z-index:40; display:flex; align-items:flex-end; justify-content:center}
+.modal__scrim{position:absolute; inset:0; background:rgba(21,18,15,.55); border:0; padding:0; cursor:pointer}
+.modal__panel{
+  position:relative; width:100%; max-width:var(--page);
+  max-height:92svh; overflow-y:auto; background:var(--paper); color:var(--ink);
+  padding:26px var(--gutter) calc(26px + env(safe-area-inset-bottom));
+  animation:rise .35s var(--ease);
+}
+@keyframes rise{from{transform:translateY(24px); opacity:0}}
+.modal__head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px}
+.modal__title{
+  margin:0; font-family:var(--serif); font-size:26px; letter-spacing:.05em; line-height:1;
+}
+.modal__title + p{margin:8px 0 0; font-size:13px; color:var(--muted)}
+.modal__x{
+  appearance:none; border:0; background:transparent; cursor:pointer;
+  font-size:20px; line-height:1; color:var(--muted); padding:2px 0 0 12px;
+}
+.modal__x:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+.field{margin-top:18px}
+.field > span, .field > label{
+  display:block; font-size:12.5px; color:var(--faint); margin-bottom:7px;
+  font-weight:600; letter-spacing:.01em;
+}
+.field em{font-style:normal; color:var(--accent); font-weight:400}
+.input{
+  width:100%; padding:12px 14px; background:#fff;
+  border:1px solid var(--line); border-radius:0; font-size:16px;
+}
+.input:focus{outline:2px solid var(--accent); outline-offset:-1px; border-color:var(--accent)}
+.choices{display:flex; gap:6px}
+.choice{flex:1}
+.choice input{position:absolute; opacity:0; pointer-events:none}
+.choice span{
+  display:block; text-align:center; padding:11px 4px; cursor:pointer;
+  border:1px solid var(--line); background:#fff; font-size:14px; transition:.2s var(--ease);
+}
+.choice input:checked + span{background:var(--accent); border-color:var(--accent); color:#fff}
+.choice input:focus-visible + span{outline:2px solid var(--accent); outline-offset:2px}
+.count{display:flex; align-items:center; gap:0; border:1px solid var(--line); background:#fff; width:max-content}
+.count button{
+  appearance:none; border:0; background:transparent; cursor:pointer;
+  width:42px; height:42px; font-size:18px; color:var(--accent);
+}
+.count output{width:46px; text-align:center; font-family:var(--serif); font-size:16px}
+.modal__submit{width:100%; margin-top:24px; padding:15px; font-size:15px}
+.modal__note{margin:12px 0 0; font-size:11.5px; color:var(--faint); line-height:1.6}
+
+.done{text-align:center; padding:20px 0 8px}
+.done p:first-child{
+  font-family:var(--serif); font-size:30px; margin:0 0 10px; color:var(--accent); letter-spacing:.04em;
+}
+
+/* 초안 안내 */
+.memo{
+  position:fixed; left:0; right:0; top:0; z-index:9;
+  background:var(--ink); color:#C9BFB1; padding:5px 14px;
+  font-size:11px; text-align:center; line-height:1.5; margin:0;
+}
+.memo b{color:#E8B4BE}
+
+@media (prefers-reduced-motion:reduce){
+  .deck{scroll-behavior:auto}
+  .modal__panel{animation:none}
+  *{transition:none !important}
+}
+</style>
+</head>
+<body>
+
+<p class="memo"><b>디자인 초안</b> — 위아래로 조금만 밀면 한 장씩 넘어갑니다.</p>
+<p class="folio" id="folio">01 / 05</p>
+
+<div class="deck" id="deck">
+
+  <!-- ══ 01 커버 ══ -->
+  <section class="scr cover">
+    <picture>
+      <source srcset="assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w"
+              sizes="(max-width:520px) 100vw, 520px">
+      <img class="cover__img" src="assets/img/title/fresh-tall-1080.webp"
+           alt="주시헌 황유나 웨딩 사진" fetchpriority="high">
+    </picture>
+    <div class="cover__foot">
+      <button class="pill pill--lg" type="button" data-rsvp>참석 의사 전하기</button>
+      <span class="cue">Scroll</span>
+    </div>
+  </section>
+
+  <!-- ══ 02 인사말 + 식순 ══ -->
+  <section class="scr">
+    <span class="edge edge--l">After Love</span>
+    <span class="edge edge--r">Our Wedding</span>
+
+    <div class="masthead">
+      <p class="masthead__date">2026<i>.</i>11<i>.</i>28</p>
+      <p class="masthead__meta"><i></i>Saturday 6 PM<i></i></p>
+    </div>
+
+    <p class="poem">서로가 마주 보며 다져온 사랑을
+이제 함께 한 곳을 바라보며
+걸어갈 수 있는 큰 사랑으로 키우고자 합니다.</p>
+
+    <p class="signoff">
+      주윤홍 <em>·</em> 이현미 의 장남 <b>주시헌</b><br>
+      황성국 <em>·</em> 한선미 의 장녀 <b>황유나</b>
+    </p>
+
+    <table class="tab" style="margin-top:38px">
+      <thead><tr><th class="t-when">Time</th><th>Program</th></tr></thead>
+      <tbody>
+        <tr><td class="t-when">17:30</td><td class="t-what">하객 입장</td></tr>
+        <tr class="is-key"><td class="t-when">18:00</td><td class="t-what">1부 · 예식<small>30분간 진행됩니다</small></td></tr>
+        <tr><td class="t-when">18:30</td><td class="t-what">만찬<small>예식이 끝나면 자리에서 그대로 이어집니다</small></td></tr>
+        <tr class="is-key"><td class="t-when">19:00</td><td class="t-what">2부 · 케이크 커팅<small>샴페인과 함께하는 시간입니다</small></td></tr>
+        <tr><td class="t-when">20:00</td><td class="t-what">환송</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 03 오시는 길 ══ -->
+  <section class="scr scr--paper">
+    <span class="edge edge--r">Location</span>
+    <p class="eyebrow">Location <i></i> 판교</p>
+
+    <div class="venue">
+      <h2>더블트리 바이 힐튼 서울 판교</h2>
+      <p>그랜드볼룸 · 경기 성남시 분당구 백현로 26</p>
+    </div>
+
+    <div class="map">Map</div>
+    <div class="btnrow">
+      <button class="pill pill--sm" type="button">주소 복사</button>
+      <button class="pill pill--sm" type="button">카카오내비</button>
+      <button class="pill pill--sm" type="button">티맵</button>
+    </div>
+
+    <table class="tab tab--ways">
+      <tbody>
+        <tr><td class="t-when">Parking</td><td class="t-what">호텔 주차빌딩 4시간 무료</td></tr>
+        <tr><td class="t-when">Subway</td><td class="t-what">수인분당선 수내역 3번 출구</td></tr>
+        <tr><td class="t-when">Bus</td><td class="t-what"><span class="chips"><span>220</span><span>370</span><span>117</span><span>누리4</span></span></td></tr>
+        <tr><td class="t-when">Shuttle</td><td class="t-what">
+          <em class="leg">예식 전 · 정자역 2번 출구 → 호텔</em>
+          <span class="chips"><span>17:00</span><span>17:15</span><span>17:30</span><span>17:45</span></span>
+          <em class="leg">예식 후 · 호텔 → 정자역</em>
+          <span class="chips"><span>20:00</span><span>20:15</span><span>20:30</span><span>20:45</span></span>
+        </td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 04 갤러리 ══ -->
+  <section class="scr">
+    <p class="eyebrow" style="--eb-gap:16px">Gallery <i></i> <span id="stageCount">01 / 06</span></p>
+
+    <div class="stage" id="stage">
+      <img id="stageImg" src="assets/img/title/mag-1080.webp" alt="주시헌 황유나 웨딩 포스터">
+      <div class="stage__cap"><span id="stageLabel">Cover</span><span>Siheon &amp; Yuna</span></div>
+    </div>
+
+    <div class="thumbs" id="thumbs">
+      <button class="thumb" type="button" aria-pressed="true" aria-label="표지 보기"
+              data-src="assets/img/title/mag-1080.webp" data-label="Cover">
+        <img src="assets/img/title/mag-1080.webp" alt="">
+      </button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="1번째 사진 보기" data-label="Photo 01">01</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="2번째 사진 보기" data-label="Photo 02">02</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="3번째 사진 보기" data-label="Photo 03">03</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="4번째 사진 보기" data-label="Photo 04">04</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="5번째 사진 보기" data-label="Photo 05">05</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="6번째 사진 보기" data-label="Photo 06">06</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="7번째 사진 보기" data-label="Photo 07">07</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="8번째 사진 보기" data-label="Photo 08">08</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="9번째 사진 보기" data-label="Photo 09">09</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="10번째 사진 보기" data-label="Photo 10">10</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="11번째 사진 보기" data-label="Photo 11">11</button>
+      <button class="thumb" type="button" aria-pressed="false" aria-label="12번째 사진 보기" data-label="Photo 12">12</button>
+    </div>
+  </section>
+
+  <!-- ══ 05 크림슨 피날레 ══ -->
+  <section class="scr scr--red finale">
+    <span class="edge edge--l">Happily</span>
+    <span class="edge edge--r">Ever After</span>
+
+    <p class="rsvp__mark">R.S.V.P.</p>
+    <p class="rsvp__when">참석 여부를 <b>11월 27일</b>까지 알려주세요</p>
+    <p class="copy" style="text-align:center; margin-top:10px; font-size:13.5px">
+      귀하게 모실 수 있도록 잠시만 시간을 내어 주세요.</p>
+    <div style="display:flex; justify-content:center; margin-top:20px">
+      <button class="pill pill--lg" type="button" data-rsvp>참석 의사 전하기</button>
+    </div>
+
+    <hr>
+
+    <div class="who">
+      <p>주시헌<small>신랑 · 주윤홍 · 이현미의 장남</small></p>
+      <div><button class="pill pill--sm" type="button">전화</button><button class="pill pill--sm" type="button">계좌</button></div>
+    </div>
+    <div class="who">
+      <p>황유나<small>신부 · 황성국 · 한선미의 장녀</small></p>
+      <div><button class="pill pill--sm" type="button">전화</button><button class="pill pill--sm" type="button">계좌</button></div>
+    </div>
+    <div class="who">
+      <p>혼주께 연락<small>양가 아버님 · 어머님</small></p>
+      <div><button class="pill pill--sm" type="button">보기</button></div>
+    </div>
+
+    <hr>
+
+    <p class="finale__mark">Thank you</p>
+    <p class="finale__names">주시헌 &nbsp;·&nbsp; 황유나</p>
+
+    <div class="btnrow" style="margin:24px 0 0">
+      <button class="pill pill--sm" type="button">카카오톡 공유</button>
+      <button class="pill pill--sm" type="button">링크 복사</button>
+      <button class="pill pill--sm" type="button">캘린더</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- ══ 참석 의사 팝업 ══ -->
+<div class="modal" id="rsvpModal" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle" hidden>
+  <button class="modal__scrim" type="button" data-close aria-label="닫기"></button>
+  <div class="modal__panel">
+    <div class="modal__head">
+      <div>
+        <p class="modal__title" id="rsvpTitle">R.S.V.P.</p>
+        <p>11월 27일까지 알려주시면 정성껏 준비하겠습니다.</p>
+      </div>
+      <button class="modal__x" type="button" data-close aria-label="닫기">✕</button>
+    </div>
+
+    <form id="rsvpForm" novalidate>
+      <div class="field">
+        <span>어느 쪽 하객이신가요? <em>필수</em></span>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="side" value="신랑측"><span>신랑측</span></label>
+          <label class="choice"><input type="radio" name="side" value="신부측"><span>신부측</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="rName">성함 <em>필수</em></label>
+        <input class="input" type="text" id="rName" name="name" placeholder="성함을 입력해 주세요" maxlength="20">
+      </div>
+
+      <div class="field">
+        <label for="rPhone">연락처 <em>필수</em></label>
+        <input class="input" type="tel" id="rPhone" name="phone" placeholder="010-0000-0000"
+               inputmode="numeric" maxlength="13">
+      </div>
+
+      <div class="field">
+        <span>참석하시나요? <em>필수</em></span>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="attend" value="참석"><span>참석</span></label>
+          <label class="choice"><input type="radio" name="attend" value="미참석"><span>미참석</span></label>
+          <label class="choice"><input type="radio" name="attend" value="미정"><span>미정</span></label>
+        </div>
+      </div>
+
+      <div class="field" id="countField">
+        <span>몇 분이 오시나요?</span>
+        <div class="count">
+          <button type="button" data-step="-1" aria-label="인원 줄이기">−</button>
+          <output name="people">1</output>
+          <button type="button" data-step="1" aria-label="인원 늘리기">+</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="rMsg">전하고 싶은 말</label>
+        <textarea class="input" id="rMsg" name="message" rows="2" maxlength="200"
+                  placeholder="남기고 싶은 말씀이 있다면"></textarea>
+      </div>
+
+      <button class="pill pill--solid modal__submit" type="submit">전달하기</button>
+      <p class="modal__note">수집 항목: 성함, 연락처, 참석 정보 · 목적: 하객 규모와 식사 인원 확인 · 예식일로부터 1개월 이내 파기합니다.</p>
+    </form>
+
+    <div class="done" id="rsvpDone" hidden>
+      <p>Thank you</p>
+      <p class="copy" style="text-align:center">전해 주셔서 감사합니다.<br>귀한 걸음 정성껏 맞이하겠습니다.</p>
+      <button class="pill pill--sm" type="button" data-close style="margin-top:18px">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var deck  = document.getElementById('deck');
+  var folio = document.getElementById('folio');
+  var scrs  = Array.prototype.slice.call(deck.querySelectorAll('.scr'));
+  var total = String(scrs.length).padStart(2, '0');
+  folio.textContent = '01 / ' + total;
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        folio.textContent = String(scrs.indexOf(e.target) + 1).padStart(2, '0') + ' / ' + total;
+      }
+    });
+  }, { root: deck, threshold: 0.6 });
+  scrs.forEach(function (s) { io.observe(s); });
+
+  function fit() {
+    scrs.forEach(function (s, i) {
+      s.classList.remove('is-tall');
+      // 첫 장은 스냅을 절대 풀지 않습니다.
+      // 풀리면 스냅 지점이 사라져 브라우저가 커버를 건너뛰어 버립니다.
+      if (i === 0) return;
+      if (s.scrollHeight > s.clientHeight + 4) s.classList.add('is-tall');
+    });
+  }
+  addEventListener('resize', fit);
+  addEventListener('load', fit);
+  fit();
+
+  // ── 갤러리 ───────────────────────────────────────────────
+  var thumbs = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+  var stage = document.getElementById('stage');
+  var stageImg = document.getElementById('stageImg');
+  var stageLabel = document.getElementById('stageLabel');
+  var stageCount = document.getElementById('stageCount');
+  var shots = String(thumbs.length).padStart(2, '0');
+
+  function show(i) {
+    var t = thumbs[i];
+    var ph = stage.querySelector('.stage__ph');
+    if (t.dataset.src) {
+      stageImg.src = t.dataset.src;
+      stageImg.hidden = false;
+      if (ph) ph.remove();
+    } else {
+      stageImg.hidden = true;
+      if (!ph) {
+        ph = document.createElement('div');
+        ph.className = 'stage__ph';
+        stage.insertBefore(ph, stage.firstChild);
+      }
+      ph.textContent = t.dataset.label;
+    }
+    stageLabel.textContent = t.dataset.label;
+    stageCount.textContent = String(i + 1).padStart(2, '0') + ' / ' + shots;
+    thumbs.forEach(function (b, j) { b.setAttribute('aria-pressed', String(j === i)); });
+  }
+  thumbs.forEach(function (t, i) { t.addEventListener('click', function () { show(i); }); });
+
+  // ── 참석 의사 팝업 ───────────────────────────────────────
+  var modal = document.getElementById('rsvpModal');
+  var form  = document.getElementById('rsvpForm');
+  var done  = document.getElementById('rsvpDone');
+  var opener = null;
+
+  function openModal(btn) {
+    opener = btn;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    var first = modal.querySelector('input, button:not(.modal__scrim)');
+    if (first) first.focus();
+  }
+  function closeModal() {
+    modal.hidden = true;
+    document.body.style.overflow = '';
+    form.hidden = false;
+    done.hidden = true;
+    if (opener) opener.focus();
+  }
+  document.querySelectorAll('[data-rsvp]').forEach(function (b) {
+    b.addEventListener('click', function () { openModal(b); });
+  });
+  modal.addEventListener('click', function (e) {
+    if (e.target.closest('[data-close]')) closeModal();
+  });
+  addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !modal.hidden) closeModal();
+  });
+
+  // 연락처 자동 하이픈
+  var phone = document.getElementById('rPhone');
+  phone.addEventListener('input', function () {
+    var v = phone.value.replace(/\D/g, '').slice(0, 11);
+    phone.value = v.length > 7 ? v.slice(0, 3) + '-' + v.slice(3, 7) + '-' + v.slice(7)
+                : v.length > 3 ? v.slice(0, 3) + '-' + v.slice(3)
+                : v;
+  });
+
+  // 인원 세기
+  var out = form.querySelector('output[name="people"]');
+  form.querySelectorAll('[data-step]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var n = Math.min(20, Math.max(1, +out.value + (+b.dataset.step)));
+      out.value = n;
+    });
+  });
+
+  // 미참석이면 인원 칸을 접습니다
+  form.querySelectorAll('input[name="attend"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      document.getElementById('countField').hidden = (r.value === '미참석');
+    });
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();          // 초안이라 실제로 보내지는 않습니다
+    form.hidden = true;
+    done.hidden = false;
+  });
+</script>
+</body>
+</html>

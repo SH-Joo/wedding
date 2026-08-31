@@ -1,0 +1,70 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Pillow 설치
+        run: python -m pip install --quiet pillow
+
+      # images/Title 과 images/album 의 사진을 웹 크기로 줄이고
+      # 갤러리 목록(album.json)과 카카오톡 카드(og.jpg)를 만듭니다.
+      # 사진을 추가하려면 images/album/ 에 넣고 push 하면 끝입니다.
+      - name: 사진 준비
+        run: python tools/build_media.py
+
+      # 연락처·계좌번호는 레포에 없습니다. 여기서 Secrets 로부터 만들어 넣습니다.
+      # 레포 Settings → Secrets and variables → Actions 에 등록하세요.
+      - name: 비공개 정보 주입
+        run: |
+          cat > assets/js/private.js <<'EOF'
+          const PRIVATE = {
+            groomPhone:       '${{ secrets.GROOM_PHONE }}',
+            bridePhone:       '${{ secrets.BRIDE_PHONE }}',
+            groomFatherPhone: '${{ secrets.GROOM_FATHER_PHONE }}',
+            groomMotherPhone: '${{ secrets.GROOM_MOTHER_PHONE }}',
+            brideFatherPhone: '${{ secrets.BRIDE_FATHER_PHONE }}',
+            brideMotherPhone: '${{ secrets.BRIDE_MOTHER_PHONE }}',
+            account:          '${{ secrets.ACCOUNT }}',
+            rsvpEndpoint:     '${{ secrets.RSVP_ENDPOINT }}',
+            kakaoJsKey:       '${{ secrets.KAKAO_JS_KEY }}',
+          };
+          EOF
+
+      # 올릴 필요 없는 것들을 덜어냅니다.
+      # 특히 images/ 원본은 한 장에 2MB 라 그대로 두면 낭비입니다.
+      - name: 배포에 필요 없는 파일 정리
+        run: rm -rf images tools apps-script .github *.md design-draft.html
+
+      - name: Jekyll 처리 끄기
+        run: touch .nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

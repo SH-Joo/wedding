@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- 검색에 잡히지 않게 합니다. 지우지 마세요. -->
+<meta name="robots" content="noindex, nofollow">
+
+<title>결혼합니다</title>
+
+<!-- 카카오톡·메신저에 링크를 붙였을 때 뜨는 카드. 내용은 content.js 에서 채웁니다. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="">
+<meta property="og:description" content="">
+<meta property="og:image" content="">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#E9E4D6">
+
+<!-- 글꼴. tokens.css 에서 다른 글꼴로 바꾸면 이 주소도 함께 바꾸세요. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Gowun+Batang:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+<link rel="preload" as="image" href="assets/img/title/fresh-tall-1080.webp"
+      imagesrcset="assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w"
+      imagesizes="(max-width:520px) 100vw, 520px">
+
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/generated.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+
+<p class="folio" id="folio" aria-hidden="true"></p>
+
+<main class="deck" id="deck">
+
+  <!-- ══ 01 커버 ═══════════════════════════════════════════ -->
+  <section class="scr cover">
+    <picture>
+      <source srcset="assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w"
+              sizes="(max-width:520px) 100vw, 520px">
+      <img class="cover__img" id="coverImg" src="assets/img/title/fresh-tall-1080.webp"
+           alt="" fetchpriority="high">
+    </picture>
+    <div class="cover__foot">
+      <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
+      <span class="cue">Scroll</span>
+    </div>
+  </section>
+
+  <!-- ══ 02 인사말 + 식순 ══════════════════════════════════ -->
+  <section class="scr">
+    <span class="edge edge--l" aria-hidden="true">After Love</span>
+    <span class="edge edge--r" aria-hidden="true">Our Wedding</span>
+
+    <div class="masthead">
+      <h1 class="masthead__date" id="mastDate"></h1>
+      <p class="masthead__meta"><i></i><span id="mastMeta"></span><i></i></p>
+    </div>
+
+    <p class="poem" data-c="greeting.poem"></p>
+
+    <p class="signoff" id="signoff"></p>
+
+    <table class="tab" style="margin-top:38px">
+      <thead><tr><th class="t-when">Time</th><th>Program</th></tr></thead>
+      <tbody id="timeline"></tbody>
+    </table>
+  </section>
+
+  <!-- ══ 03 오시는 길 ══════════════════════════════════════ -->
+  <section class="scr scr--paper">
+    <span class="edge edge--r" aria-hidden="true">Location</span>
+    <p class="eyebrow">Location <i></i> 판교</p>
+
+    <div class="venue">
+      <h2><span data-c="wedding.venue"></span></h2>
+      <p><span data-c="wedding.hall"></span> · <span data-c="wedding.address"></span></p>
+    </div>
+
+    <div class="map" id="map"></div>
+
+    <div class="btnrow">
+      <button class="pill pill--sm" type="button" data-copy-target="wedding.address">주소 복사</button>
+      <button class="pill pill--sm" type="button" data-navi="kakao">카카오내비</button>
+      <button class="pill pill--sm" type="button" data-navi="tmap">티맵</button>
+    </div>
+
+    <table class="tab tab--ways"><tbody id="ways"></tbody></table>
+  </section>
+
+  <!-- ══ 04 갤러리 ═════════════════════════════════════════ -->
+  <section class="scr" id="gallerySection">
+    <p class="eyebrow" style="--eb-gap:16px">Gallery <i></i> <span id="stageCount">01 / 01</span></p>
+
+    <button class="stage" id="stage" type="button" aria-label="사진 크게 보기">
+      <img id="stageImg" src="assets/img/title/mag-1080.webp" alt="" loading="lazy">
+      <span class="stage__cap"><span id="stageLabel"></span><span>Siheon &amp; Yuna</span></span>
+    </button>
+
+    <div class="thumbs" id="thumbs" role="tablist" aria-label="사진 고르기"></div>
+  </section>
+
+  <!-- ══ 05 연락처 · RSVP · 인사 ═══════════════════════════ -->
+  <section class="scr scr--red finale">
+    <span class="edge edge--l" aria-hidden="true">Happily</span>
+    <span class="edge edge--r" aria-hidden="true">Ever After</span>
+
+    <p class="rsvp__mark">R.S.V.P.</p>
+    <p class="rsvp__when" data-deadline></p>
+    <p class="copy" style="text-align:center; margin-top:10px; font-size:13.5px">
+      귀하게 모실 수 있도록 잠시만 시간을 내어 주세요.</p>
+    <div style="display:flex; justify-content:center; margin-top:20px">
+      <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
+    </div>
+    <p class="rsvp__mine" id="rsvpMine" hidden></p>
+
+    <hr>
+
+    <div id="contacts"></div>
+
+    <hr>
+
+    <p class="finale__mark">Thank you</p>
+    <p class="finale__names" id="footNames"></p>
+
+    <div class="btnrow" style="margin:24px 0 0">
+      <button class="pill pill--sm" type="button" id="shareKakao">카카오톡 공유</button>
+      <button class="pill pill--sm" type="button" id="shareLink">링크 복사</button>
+      <button class="pill pill--sm" type="button" id="addCalendar">캘린더</button>
+    </div>
+  </section>
+
+</main>
+
+
+<!-- ══ 사진 크게 보기 ══════════════════════════════════════ -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="사진 크게 보기" hidden>
+  <img id="lightboxImg" src="" alt="">
+  <button class="lightbox__x" type="button" data-lb-close aria-label="닫기">✕</button>
+  <button class="lightbox__nav lightbox__nav--prev" type="button" data-lb-move="-1" aria-label="이전 사진">‹</button>
+  <button class="lightbox__nav lightbox__nav--next" type="button" data-lb-move="1" aria-label="다음 사진">›</button>
+  <p class="lightbox__count" id="lightboxCount"></p>
+</div>
+
+
+<!-- ══ 참석 의사 팝업 ══════════════════════════════════════ -->
+<div class="modal" id="rsvpModal" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle" hidden>
+  <button class="modal__scrim" type="button" data-close aria-label="닫기"></button>
+
+  <div class="modal__panel">
+    <div class="modal__head">
+      <div>
+        <p class="modal__title" id="rsvpTitle">R.S.V.P.</p>
+        <p data-deadline-short></p>
+      </div>
+      <button class="modal__x" type="button" data-close aria-label="닫기">✕</button>
+    </div>
+
+    <p class="modal__editing" id="rsvpEditing" hidden></p>
+
+    <form class="form" id="rsvpForm" novalidate>
+
+      <!-- 봇 잡는 함정 -->
+      <div class="trap" aria-hidden="true">
+        <label for="nickname">닉네임</label>
+        <input type="text" id="nickname" name="nickname" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="field" data-field="side">
+        <span>어느 쪽 하객이신가요? <em>필수</em></span>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="side" value="신랑측"><span>신랑측</span></label>
+          <label class="choice"><input type="radio" name="side" value="신부측"><span>신부측</span></label>
+        </div>
+        <p class="field__err">선택해 주세요.</p>
+      </div>
+
+      <div class="field" data-field="name">
+        <label for="name">성함 <em>필수</em></label>
+        <input class="input" type="text" id="name" name="name" placeholder="성함을 입력해 주세요"
+               autocomplete="name" maxlength="20">
+        <p class="field__err">성함을 입력해 주세요.</p>
+      </div>
+
+      <div class="field" data-field="phone">
+        <label for="phone">연락처 <em>필수</em></label>
+        <input class="input" type="tel" id="phone" name="phone" placeholder="010-0000-0000"
+               autocomplete="tel" inputmode="numeric" maxlength="13">
+        <p class="field__hint">식사 인원을 확정하기 위해서만 사용하며, 예식 후 파기합니다.</p>
+        <p class="field__err">연락처 형식을 확인해 주세요.</p>
+      </div>
+
+      <div class="field" data-field="attend">
+        <span>참석하시나요? <em>필수</em></span>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="attend" value="참석"><span>참석</span></label>
+          <label class="choice"><input type="radio" name="attend" value="미참석"><span>미참석</span></label>
+          <label class="choice"><input type="radio" name="attend" value="미정"><span>미정</span></label>
+        </div>
+        <p class="field__err">선택해 주세요.</p>
+      </div>
+
+      <!-- 미참석을 고르면 아래 두 항목은 자동으로 숨겨집니다 -->
+      <div id="attendOnly">
+        <div class="field">
+          <span>몇 분이 오시나요? <em>필수</em></span>
+          <div class="counts">
+            <div class="count" data-count="adults" data-min="1" data-max="20">
+              <span class="count__label">성인</span>
+              <div class="count__ctrl">
+                <button type="button" data-step="-1" aria-label="성인 인원 줄이기">−</button>
+                <output name="adults">1</output>
+                <button type="button" data-step="1" aria-label="성인 인원 늘리기">+</button>
+              </div>
+            </div>
+            <div class="count" data-count="kids" data-min="0" data-max="20">
+              <span class="count__label">아동</span>
+              <div class="count__ctrl">
+                <button type="button" data-step="-1" aria-label="아동 인원 줄이기">−</button>
+                <output name="kids">0</output>
+                <button type="button" data-step="1" aria-label="아동 인원 늘리기">+</button>
+              </div>
+            </div>
+          </div>
+          <p class="field__hint">본인을 포함한 인원으로 적어 주세요.</p>
+        </div>
+
+        <div class="field" data-field="meal">
+          <span>식사하고 가시나요? <em>필수</em></span>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="meal" value="식사함"><span>식사함</span></label>
+            <label class="choice"><input type="radio" name="meal" value="안 함"><span>안 함</span></label>
+            <label class="choice"><input type="radio" name="meal" value="미정"><span>미정</span></label>
+          </div>
+          <p class="field__err">선택해 주세요.</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="message">전하고 싶은 말</label>
+        <textarea class="input" id="message" name="message" maxlength="200"
+                  placeholder="남기고 싶은 말씀이 있다면 적어 주세요"></textarea>
+      </div>
+
+      <div class="field" data-field="consent">
+        <div class="consent">
+          <input type="checkbox" id="consent" name="consent">
+          <label for="consent">개인정보 수집 및 이용에 동의합니다. <em>필수</em></label>
+        </div>
+        <p class="field__hint" data-c="rsvp.privacy"></p>
+        <p class="field__err">동의가 필요합니다.</p>
+      </div>
+
+      <button class="pill pill--solid modal__submit" type="submit" id="rsvpSubmit">전달하기</button>
+    </form>
+
+    <p class="modal__foot" id="rsvpFindRow">
+      이미 응답하셨나요?
+      <button class="linkbtn" type="button" id="rsvpFindOpen">응답 수정하기</button>
+    </p>
+
+    <!-- 응답 찾기 -->
+    <form class="form" id="rsvpFindForm" novalidate hidden>
+      <p class="copy" style="font-size:13px">응답하실 때 적으신 성함과 연락처를 그대로 입력해 주세요.</p>
+      <div class="field" data-field="findName">
+        <label for="findName">성함</label>
+        <input class="input" type="text" id="findName" name="findName" maxlength="20" autocomplete="name">
+        <p class="field__err">성함을 입력해 주세요.</p>
+      </div>
+      <div class="field" data-field="findPhone">
+        <label for="findPhone">연락처</label>
+        <input class="input" type="tel" id="findPhone" name="findPhone" placeholder="010-0000-0000"
+               inputmode="numeric" maxlength="13" autocomplete="tel">
+        <p class="field__err">연락처 형식을 확인해 주세요.</p>
+      </div>
+      <button class="pill pill--solid modal__submit" type="submit" id="rsvpFindSubmit">내 응답 불러오기</button>
+      <p class="modal__foot">
+        <button class="linkbtn" type="button" id="rsvpFindCancel">처음부터 새로 작성하기</button>
+      </p>
+    </form>
+
+    <div class="done" id="rsvpDone" hidden>
+      <p class="done__mark">Thank you</p>
+      <p class="copy" style="text-align:center" id="rsvpDoneMsg"></p>
+      <button class="pill pill--sm" type="button" id="rsvpEdit" style="margin-top:18px">응답 수정하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/private.js"></script>
+<script src="assets/js/content.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/rsvp.js"></script>
+</body>
+</html>
