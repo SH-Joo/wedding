@@ -52,7 +52,6 @@
       tag.setAttribute('content', v || '');
     });
 
-    $('#coverImg').alt = NAMES + ' 웨딩 사진';
     $('#footNames').textContent = NAMES;
 
     // 매스트헤드 — 2026.11.28 / SATURDAY 6 PM · D-89
@@ -276,26 +275,27 @@
     return a;
   }
 
-  /* ── 갤러리 ─────────────────────────────────────────────── */
-  /* images/album/ 의 사진은 배포할 때 tools/build_media.py 가
-     assets/data/album.json 으로 정리해 둡니다. 여기서는 그걸 읽기만 합니다. */
+  /* ── 사진 ───────────────────────────────────────────────
+     커버의 큰 사진이 곧 갤러리입니다. 아래 썸네일을 누르면 바뀌고,
+     사진을 누르면 전체화면으로 열립니다.
+     images/album/ 의 사진은 배포할 때 tools/build_media.py 가
+     assets/data/album.json 으로 정리해 둡니다. */
 
   const G = { items: [], i: 0 };
 
-  async function renderGallery() {
-    const items = [];
-
-    // 잡지 표지는 언제나 첫 장입니다
-    items.push({
-      id: 'cover',
-      label: 'Cover',
-      alt: NAMES + ' 웨딩 포스터',
-      thumb: 'assets/img/title/mag-720.webp',
-      src: 'assets/img/title/mag-1080.webp',
-      full: 'assets/img/title/mag-1600.webp',
-      srcset: 'assets/img/title/mag-720.webp 720w, assets/img/title/mag-1080.webp 1080w,'
-            + ' assets/img/title/mag-1600.webp 1600w',
-    });
+  async function renderShots() {
+    const items = [
+      { label: 'Cover', alt: NAMES + ' 웨딩 사진',
+        thumb: 'assets/img/title/fresh-tall-720.webp',
+        src:   'assets/img/title/fresh-tall-1080.webp',
+        full:  'assets/img/title/fresh-tall-1080.webp',
+        srcset:'assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w' },
+      { label: 'Poster', alt: NAMES + ' 웨딩 포스터',
+        thumb: 'assets/img/title/mag-720.webp',
+        src:   'assets/img/title/mag-1080.webp',
+        full:  'assets/img/title/mag-1600.webp',
+        srcset:'assets/img/title/mag-720.webp 720w, assets/img/title/mag-1080.webp 1080w, assets/img/title/mag-1600.webp 1600w' },
+    ];
 
     try {
       const res = await fetch('assets/data/album.json', { cache: 'no-cache' });
@@ -303,51 +303,51 @@
         const data = await res.json();
         (data.items || []).forEach((it, n) => {
           items.push({
-            id: it.id,
             label: 'Photo ' + pad(n + 1),
-            alt: it.alt || `${NAMES} 웨딩 사진 ${n + 1}`,
+            alt: it.alt || (NAMES + ' 웨딩 사진 ' + (n + 1)),
             thumb: it.src['480'],
-            src: it.src['960'],
-            full: it.src['1600'],
-            srcset: `${it.src['480']} 480w, ${it.src['960']} 960w, ${it.src['1600']} 1600w`,
+            src:   it.src['960'],
+            full:  it.src['1600'],
+            srcset: it.src['480'] + ' 480w, ' + it.src['960'] + ' 960w, ' + it.src['1600'] + ' 1600w',
           });
         });
       }
     } catch (e) {
-      // 매니페스트가 없으면 표지만 보여줍니다
+      // 매니페스트가 없으면 표지 두 장만 보여줍니다
     }
 
     G.items = items;
-    const thumbs = $('#thumbs');
+
+    const box = $('#thumbs');
     items.forEach((it, i) => {
       const b = el('button', 'thumb');
       b.type = 'button';
       b.setAttribute('aria-pressed', String(i === 0));
-      b.setAttribute('aria-label', i === 0 ? '표지 보기' : `${i}번째 사진 보기`);
+      b.setAttribute('aria-label', (i + 1) + '번째 사진 보기');
       const img = el('img');
       img.src = it.thumb;
       img.alt = '';
       img.loading = i < 8 ? 'eager' : 'lazy';
       img.decoding = 'async';
       b.appendChild(img);
-      b.addEventListener('click', () => showStage(i));
-      thumbs.appendChild(b);
+      b.addEventListener('click', () => showShot(i));
+      box.appendChild(b);
     });
 
-    showStage(0);
-    $('#stage').addEventListener('click', () => openLightbox(G.i));
+    showShot(0);
+    $('#shot').addEventListener('click', (e) => {
+      if (!e.target.closest('.shot__zoom')) openLightbox(G.i);
+    });
+    $('#shotZoom').addEventListener('click', () => openLightbox(G.i));
   }
 
-  function showStage(i) {
+  function showShot(i) {
     G.i = i;
     const it = G.items[i];
-    const img = $('#stageImg');
+    const img = $('#shotImg');
     img.src = it.src;
     img.srcset = it.srcset;
-    img.sizes = '(max-width:520px) 100vw, 520px';
     img.alt = it.alt;
-    $('#stageLabel').textContent = it.label;
-    $('#stageCount').textContent = `${pad(i + 1)} / ${pad(G.items.length)}`;
     $$('#thumbs .thumb').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
   }
 
@@ -367,7 +367,7 @@
   function closeLightbox() {
     $('#lightbox').hidden = true;
     document.body.style.overflow = '';
-    showStage(G.i);
+    showShot(G.i);
     if (lbReturn) lbReturn.focus({ preventScroll: true });
   }
   function moveLightbox(step) {
@@ -478,59 +478,132 @@
     toast('캘린더에 추가했습니다');
   }
 
-  /* ── 화면 넘김 · 쪽번호 ─────────────────────────────────── */
+  /* ── 화면 넘기기 ───────────────────────────────────────
+     브라우저 스크롤 스냅에 맡기면 기기에 따라 관성 때문에 두 장씩
+     지나갑니다. 위치를 직접 옮겨 한 번에 정확히 한 장만 넘깁니다. */
+
+  const DECK = { i: 0, count: 0, h: 0, busy: false };
 
   function wireDeck() {
-    const deck = $('#deck');
-    const folio = $('#folio');
-    const scrs = $$('.scr', deck);
-    const total = pad(scrs.length);
-    folio.textContent = '01 / ' + total;
+    const deck  = $('#deck');
+    const rail  = $('#rail');
+    const inner = $('#railInner');
+    const scrs  = $$('.scr', inner);
+    const navBtns = $$('#nav button');
+    DECK.count = scrs.length;
 
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) folio.textContent = pad(scrs.indexOf(e.target) + 1) + ' / ' + total;
-        });
-      }, { root: deck, threshold: 0.6 });
-      scrs.forEach(s => io.observe(s));
+    // 통로 높이를 픽셀로 못박습니다. 주소창이 숨어 화면이 커져도
+    // 이 값은 그대로 두고 아래 막대가 남는 높이를 흡수합니다.
+    function measure() {
+      DECK.h = Math.max(320, window.innerHeight - 46);
+      document.documentElement.style.setProperty('--rail', DECK.h + 'px');
+      scrs.forEach((sc) => sc.classList.toggle('is-tall', sc.scrollHeight > DECK.h + 4));
+      paint(false);
     }
 
-    // 내용이 화면보다 길어진 장은 스냅을 풀어 갇히지 않게 합니다.
-    // 첫 장은 예외 — 스냅이 풀리면 브라우저가 커버를 통째로 건너뜁니다.
-    const fit = () => scrs.forEach((s, i) => {
-      s.classList.remove('is-tall');
-      if (i === 0) return;
-      if (s.scrollHeight > s.clientHeight + 4) s.classList.add('is-tall');
-    });
-    // 각 장의 높이를 픽셀로 못박습니다.
-    // 크롬은 화면을 꽉 채운 내부 스크롤 영역도 루트 스크롤러로 보고
-    // 주소창을 숨깁니다. 그때 vh 계열을 쓰면 다섯 장 높이가 한꺼번에
-    // 바뀌면서 스크롤 도중 바닥이 움직여 두 장씩 넘어가 버립니다.
-    const lockHeight = () => {
-      document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
-    };
-    lockHeight();
+    function paint(animate) {
+      if (animate === false) inner.style.transition = 'none';
+      inner.style.transform = 'translate3d(0,' + (-DECK.i * DECK.h) + 'px,0)';
+      if (animate === false) {
+        void inner.offsetHeight;
+        inner.style.transition = '';
+      }
+      const sc = scrs[DECK.i];
+      deck.dataset.tone = sc.classList.contains('scr--red') ? 'red'
+                        : sc.classList.contains('scr--paper') ? 'paper' : 'bg';
+      navBtns.forEach((b, j) => b.setAttribute('aria-current', String(j === DECK.i)));
+    }
 
-    // 세로 길이만 달라진 것(주소창이 숨거나 나타난 것)은 무시하고,
-    // 가로 폭이 달라졌을 때 — 즉 화면을 돌렸을 때만 다시 잽니다.
+    function go(i, animate) {
+      i = Math.max(0, Math.min(DECK.count - 1, i));
+      if (i === DECK.i) return paint(animate);
+      DECK.i = i;
+      DECK.busy = true;
+      paint(animate);
+      setTimeout(() => { DECK.busy = false; }, 560);
+    }
+    window.__deckGo = go;
+
+    navBtns.forEach((b, j) => b.addEventListener('click', () => go(j)));
+
+    // 넘치는 장 안에서 스크롤 중인지
+    function scrolling(sc, dir) {
+      if (!sc.classList.contains('is-tall')) return false;
+      const atTop = sc.scrollTop <= 0;
+      const atEnd = sc.scrollTop >= sc.scrollHeight - sc.clientHeight - 1;
+      return (dir > 0 && !atTop) || (dir < 0 && !atEnd);
+    }
+
+    // ── 손가락 ──
+    let y0 = 0, x0 = 0, dy = 0, dragging = false, base = 0;
+
+    rail.addEventListener('touchstart', (e) => {
+      if (DECK.busy || e.touches.length > 1) return;
+      y0 = e.touches[0].clientY;
+      x0 = e.touches[0].clientX;
+      dy = 0;
+      base = -DECK.i * DECK.h;
+      dragging = true;
+      rail.classList.add('is-dragging');
+    }, { passive: true });
+
+    rail.addEventListener('touchmove', (e) => {
+      if (!dragging) return;
+      const t = e.touches[0];
+      const ay = t.clientY - y0;
+      const ax = t.clientX - x0;
+      if (Math.abs(ax) > Math.abs(ay)) return;
+      if (scrolling(scrs[DECK.i], ay)) { dragging = false; rail.classList.remove('is-dragging'); return; }
+      dy = ay;
+      const edge = (DECK.i === 0 && dy > 0) || (DECK.i === DECK.count - 1 && dy < 0);
+      inner.style.transform = 'translate3d(0,' + (base + (edge ? dy * 0.28 : dy)) + 'px,0)';
+    }, { passive: true });
+
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      rail.classList.remove('is-dragging');
+      const far = Math.abs(dy) > Math.min(70, DECK.h * 0.12);
+      go(far ? DECK.i + (dy < 0 ? 1 : -1) : DECK.i);
+      dy = 0;
+    }
+    rail.addEventListener('touchend', endDrag, { passive: true });
+    rail.addEventListener('touchcancel', endDrag, { passive: true });
+
+    // ── 마우스 휠 ──
+    let wheelLock = 0;
+    rail.addEventListener('wheel', (e) => {
+      if (scrolling(scrs[DECK.i], -e.deltaY)) return;
+      e.preventDefault();
+      const now = Date.now();
+      if (DECK.busy || now < wheelLock || Math.abs(e.deltaY) < 8) return;
+      wheelLock = now + 620;
+      go(DECK.i + (e.deltaY > 0 ? 1 : -1));
+    }, { passive: false });
+
+    // ── 키보드 ──
+    document.addEventListener('keydown', (e) => {
+      if (!$('#rsvpModal').hidden || !$('#lightbox').hidden) return;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName || '')) return;
+      const step = { ArrowDown: 1, PageDown: 1, ArrowUp: -1, PageUp: -1 };
+      if (e.key in step) { e.preventDefault(); go(DECK.i + step[e.key]); }
+      else if (e.key === 'Home') { e.preventDefault(); go(0); }
+      else if (e.key === 'End') { e.preventDefault(); go(DECK.count - 1); }
+    });
+
+    // 세로만 달라진 것(주소창이 숨거나 나타난 것)은 무시하고,
+    // 가로 폭이 달라졌을 때 — 화면을 돌렸을 때만 다시 잽니다.
     let lastWidth = window.innerWidth;
     window.addEventListener('resize', () => {
       if (window.innerWidth === lastWidth) return;
       lastWidth = window.innerWidth;
-      lockHeight();
-      fit();
+      measure();
     }, { passive: true });
+    window.addEventListener('orientationchange', () => setTimeout(measure, 250));
+    window.addEventListener('load', measure);
 
-    window.addEventListener('orientationchange', () => setTimeout(() => {
-      lastWidth = window.innerWidth;
-      lockHeight();
-      fit();
-    }, 250));
-
-    window.addEventListener('load', fit);
-    fit();
-    window.__fitDeck = fit;
+    measure();
+    window.__fitDeck = measure;
   }
 
   /* ── 시작 ───────────────────────────────────────────────── */
@@ -545,5 +618,5 @@
   wireCopy();
   wireLightbox();
   wireDeck();
-  renderGallery().then(() => { if (window.__fitDeck) window.__fitDeck(); });
+  renderShots().then(() => { if (window.__fitDeck) window.__fitDeck(); });
 })();

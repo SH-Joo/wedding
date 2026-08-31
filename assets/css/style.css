@@ -28,28 +28,36 @@ img{display:block; max-width:100%}
 button,input,select,textarea{font:inherit; color:inherit}
 [hidden]{display:none !important}
 
-/* ═══ 한 화면씩 넘어가는 스크롤 ═════════════════════════════ */
-/* 덱은 화면에 붙박아 둡니다. 주소창이 오가면 보이는 영역이 달라지는데,
-   position:fixed + inset:0 이면 브라우저가 알아서 맞춰줍니다. */
+/* ═══ 한 화면씩 넘어가기 ═══════════════════════════════════
+   브라우저 스크롤 스냅에 맡기지 않고 위치를 직접 옮깁니다.
+   기기에 따라 관성 때문에 두 장씩 지나가는 일이 있었습니다. */
 .deck{
   position:fixed; inset:0;
   max-width:var(--page); margin-inline:auto;
-  overflow-y:scroll; overflow-x:hidden;
-  overscroll-behavior-y:contain;
-  scroll-snap-type:y mandatory; scroll-behavior:smooth;
-  -webkit-overflow-scrolling:touch;
+  display:flex; flex-direction:column; overflow:hidden;
   background:var(--bg);
 }
+
+/* 장이 지나가는 통로. 높이는 JS 가 픽셀(--rail)로 못박습니다. */
+.rail{
+  flex:0 0 auto; height:var(--rail, 80svh);
+  position:relative; overflow:hidden;
+  touch-action:pan-y;
+}
+.rail__inner{
+  will-change:transform;
+  transition:transform .52s cubic-bezier(.32,.72,.24,1);
+}
+.rail.is-dragging .rail__inner{transition:none}
+
 .scr{
-  height:var(--vh, 100svh); scroll-snap-align:start; scroll-snap-stop:always;
+  height:var(--rail, 80svh);
   display:flex; flex-direction:column;
   padding:var(--sec-y) var(--gutter);
   position:relative; overflow:hidden;
   container-type:inline-size;
 }
-/* 세로 가운데 맞춤을 auto 여백으로 합니다.
-   justify-content:center 로 하면 자리가 모자랄 때 위아래로 동시에 넘쳐서
-   화면 위쪽이 소리 없이 잘립니다. auto 여백은 아래로만 넘칩니다. */
+/* 세로 가운데 맞춤을 auto 여백으로. 자리가 모자라면 아래로만 넘칩니다. */
 .scr:not(.cover)::before,
 .scr:not(.cover)::after{content:''; display:block; flex:0 0 auto}
 .scr:not(.cover)::before{margin-top:auto}
@@ -58,23 +66,47 @@ button,input,select,textarea{font:inherit; color:inherit}
 .scr--paper{background:var(--paper)}
 .scr--red{background:var(--accent); color:var(--paper)}
 
-/* 내용이 화면보다 길어진 장은 스냅을 풀어 갇히지 않게 합니다.
-   첫 장(커버)에는 절대 붙이지 않습니다 — 스냅 지점이 사라지면
-   브라우저가 커버를 통째로 건너뜁니다. app.js 의 fit() 참고. */
-.scr.is-tall{height:auto; min-height:var(--vh, 100svh); scroll-snap-align:none; overflow:visible}
+/* 드물게 내용이 한 화면을 넘치면 그 장만 안에서 스크롤됩니다 */
+.scr.is-tall{overflow-y:auto; -webkit-overflow-scrolling:touch}
 
-/* 손가락으로 쓰는 기기에서는 좌우 여백만 조금 줄입니다.
-   폭 제한(--page)은 그대로 둡니다. 없애면 화면 폭이 넓게 잡히는 환경
-   (데스크톱 모드·폴더블·태블릿)에서 글씨가 작아 보이고 줄이 옆으로 늘어집니다. */
-@media (hover:none) and (pointer:coarse){
-  :root{--gutter:22px}
+/* ═══ 아래 막대 ═════════════════════════════════════════════
+   주소창이 숨어 화면이 커지면 통로(--rail)는 그대로 두고
+   이 막대가 남는 높이를 흡수합니다. 그래서 빈 공간이 안 생기고,
+   장 높이가 변하지 않으니 스크롤이 어긋나지도 않습니다. */
+.nav{
+  flex:1 1 auto; min-height:46px;
+  display:flex; align-items:center;
+  padding-bottom:env(safe-area-inset-bottom);
+  background:var(--bg); border-top:1px solid var(--line);
+  transition:background .45s var(--ease), border-color .45s var(--ease);
 }
+.nav button{
+  flex:1; appearance:none; border:0; background:transparent; cursor:pointer;
+  padding:12px 2px; font-family:var(--myeongjo); font-size:12.5px;
+  letter-spacing:.02em; color:var(--faint);
+  transition:color .25s var(--ease);
+}
+.nav button span{position:relative; display:inline-block; padding-bottom:4px}
+.nav button[aria-current="true"]{color:var(--accent)}
+.nav button[aria-current="true"] span::after{
+  content:''; position:absolute; left:0; right:0; bottom:0; height:1px; background:var(--accent);
+}
+.nav button:focus-visible{outline:2px solid var(--accent); outline-offset:-4px}
 
-/* 화면을 눕히거나 아주 낮으면 스냅을 끕니다 */
-@media (max-height:520px){
-  html,body{height:auto; overflow:visible}
-  .deck{position:static; scroll-snap-type:none; height:auto; overflow:visible}
+/* 붉은 장에서는 막대도 함께 뒤집힙니다 */
+.deck[data-tone="red"] .nav{background:var(--deep); border-top-color:rgba(244,240,230,.25)}
+.deck[data-tone="red"] .nav button{color:#E7C8CE}
+.deck[data-tone="red"] .nav button[aria-current="true"]{color:#fff}
+.deck[data-tone="red"] .nav button[aria-current="true"] span::after{background:#fff}
+.deck[data-tone="paper"] .nav{background:var(--paper)}
+
+/* 화면을 눕히거나 아주 낮으면 통째로 이어 붙여 보여줍니다 */
+@media (max-height:460px){
+  .deck{position:static; max-width:var(--page); margin:0 auto; display:block; overflow:visible}
+  .rail{height:auto; overflow:visible}
+  .rail__inner{transform:none !important}
   .scr{height:auto; min-height:0}
+  .nav{display:none}
 }
 
 /* ═══ 가장자리를 감싸는 세로 타이포 ═════════════════════════
@@ -107,26 +139,42 @@ button,input,select,textarea{font:inherit; color:inherit}
   pointer-events:none; margin:0; mix-blend-mode:multiply;
 }
 
-/* ═══ 커버 ══════════════════════════════════════════════════
+/* ═══ 커버 · 사진 ═══════════════════════════════════════════
    사진 아래쪽에 '바닥 연장'(사진 끝 색 → 페이지 크림색)이 이미
-   그려져 있습니다. 넘치면 그 띠부터 잘리므로 티가 나지 않습니다. */
-.cover{padding:0}
-.cover__img{
-  width:100%; height:auto; max-height:calc(var(--vh, 100svh) - 108px);
-  object-fit:cover; object-position:center top;
+   그려져 있어, 넘쳐 잘리더라도 티가 나지 않습니다. */
+.cover{padding:0; gap:0}
+.shot{flex:1 1 auto; min-height:0; position:relative; overflow:hidden; background:var(--bg)}
+.shot img{width:100%; height:100%; object-fit:cover; object-position:center top}
+.shot__zoom{
+  position:absolute; right:10px; top:10px;
+  appearance:none; cursor:pointer; width:34px; height:34px;
+  border:1px solid rgba(21,18,15,.18); border-radius:999px;
+  background:rgba(244,240,230,.82); color:var(--ink);
+  font-size:14px; line-height:1; display:grid; place-items:center;
+  backdrop-filter:blur(2px);
 }
-.cover__foot{
-  flex:1; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:14px;
-  padding:0 var(--gutter) calc(12px + env(safe-area-inset-bottom));
-}
+.shot__zoom:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
-.cue{
-  font-family:var(--serif); font-size:9px; letter-spacing:.4em;
-  text-transform:uppercase; color:var(--faint);
-  display:flex; flex-direction:column; align-items:center; gap:6px;
+.thumbs{
+  flex:0 0 auto; display:flex; gap:4px; padding:6px var(--gutter) 0;
+  overflow-x:auto; scrollbar-width:none;
 }
-.cue::after{content:''; width:1px; height:18px; background:var(--line)}
+.thumbs::-webkit-scrollbar{display:none}
+.thumb{
+  appearance:none; cursor:pointer; flex:0 0 auto;
+  width:46px; aspect-ratio:3/4; padding:0; overflow:hidden; border:0;
+  background:var(--sunk); position:relative; opacity:.42;
+  transition:opacity .25s var(--ease);
+}
+.thumb img{width:100%; height:100%; object-fit:cover}
+.thumb[aria-pressed="true"]{opacity:1}
+.thumb[aria-pressed="true"]::after{content:''; position:absolute; inset:0; border:2px solid var(--accent)}
+.thumb:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+.cover__foot{
+  flex:0 0 auto; display:flex; justify-content:center;
+  padding:12px var(--gutter) 14px;
+}
 
 /* ═══ 버튼 — 사진 속 2026.11.28 배지와 같은 얇은 선 타원 ════ */
 .pill{
@@ -251,38 +299,6 @@ button,input,select,textarea{font:inherit; color:inherit}
 .btnrow{display:flex; gap:6px; margin:12px 0 22px; flex:0 0 auto}
 .btnrow .pill{flex:1; padding-inline:0}
 
-/* ═══ 갤러리 ════════════════════════════════════════════════ */
-.stage{
-  margin-inline:calc(var(--gutter) * -1);
-  aspect-ratio:3/4; background:var(--bg);
-  position:relative; overflow:hidden; flex:0 0 auto;
-  border:0; padding:0; width:auto; cursor:zoom-in; display:block;
-}
-.stage img{width:100%; height:100%; object-fit:cover}
-.stage__cap{
-  position:absolute; left:0; right:0; bottom:0; padding:28px 16px 10px;
-  display:flex; justify-content:space-between; align-items:flex-end;
-  font-family:var(--serif); font-size:9px; letter-spacing:.26em;
-  text-transform:uppercase; color:#F7F3EA;
-  background:linear-gradient(to top, rgba(21,18,15,.62), transparent);
-  pointer-events:none;
-}
-.stage:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
-
-.thumbs{display:flex; gap:4px; margin-top:4px; overflow-x:auto; scrollbar-width:none; flex:0 0 auto}
-.thumbs::-webkit-scrollbar{display:none}
-.thumb{
-  appearance:none; cursor:pointer; flex:0 0 auto;
-  width:calc((100% - 20px) / 6); min-width:44px; aspect-ratio:3/4;
-  padding:0; overflow:hidden; border:0; background:var(--sunk);
-  display:grid; place-items:center; position:relative;
-  opacity:.45; transition:.25s var(--ease);
-}
-.thumb img{width:100%; height:100%; object-fit:cover}
-.thumb[aria-pressed="true"]{opacity:1}
-.thumb[aria-pressed="true"]::after{content:''; position:absolute; inset:0; border:2px solid var(--accent)}
-.thumb:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
-
 /* ═══ 크림슨 피날레 ═════════════════════════════════════════ */
 .finale{text-align:center}
 .rsvp__mark{
@@ -341,7 +357,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 .modal__scrim{position:absolute; inset:0; background:rgba(21,18,15,.55); border:0; padding:0; cursor:pointer}
 .modal__panel{
   position:relative; width:100%; max-width:var(--page);
-  max-height:92svh; overflow-y:auto; background:var(--paper); color:var(--ink);
+  max-height:88dvh; overflow-y:auto; background:var(--paper); color:var(--ink);
   padding:26px var(--gutter) calc(26px + env(safe-area-inset-bottom));
   animation:rise .35s var(--ease);
 }

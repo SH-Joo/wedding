@@ -19,7 +19,6 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#E9E4D6">
 
-<!-- 글꼴. tokens.css 에서 다른 글꼴로 바꾸면 이 주소도 함께 바꾸세요. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Gowun+Batang:wght@400;700&display=swap">
@@ -27,7 +26,7 @@
 
 <link rel="preload" as="image" href="assets/img/title/fresh-tall-1080.webp"
       imagesrcset="assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w"
-      imagesizes="(max-width:520px) 100vw, 520px">
+      imagesizes="(max-width:500px) 100vw, 500px">
 
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/generated.css">
@@ -36,108 +35,110 @@
 
 <body>
 
-<p class="folio" id="folio" aria-hidden="true"></p>
+<div class="deck" id="deck">
 
-<main class="deck" id="deck">
+  <!-- 장이 흐르는 통로. 스크롤이 아니라 위치를 직접 옮깁니다. -->
+  <div class="rail" id="rail">
+    <div class="rail__inner" id="railInner">
 
-  <!-- ══ 01 커버 ═══════════════════════════════════════════ -->
-  <section class="scr cover">
-    <picture>
-      <source srcset="assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w"
-              sizes="(max-width:520px) 100vw, 520px">
-      <img class="cover__img" id="coverImg" src="assets/img/title/fresh-tall-1080.webp"
-           alt="" fetchpriority="high">
-    </picture>
-    <div class="cover__foot">
-      <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
-      <span class="cue">Scroll</span>
+      <!-- ══ 01 커버 · 사진 ═════════════════════════════════ -->
+      <section class="scr cover" aria-label="사진">
+        <div class="shot" id="shot">
+          <img id="shotImg" src="assets/img/title/fresh-tall-1080.webp"
+               srcset="assets/img/title/fresh-tall-720.webp 720w, assets/img/title/fresh-tall-1080.webp 1080w"
+               sizes="(max-width:500px) 100vw, 500px"
+               alt="" fetchpriority="high">
+          <button class="shot__zoom" type="button" id="shotZoom" aria-label="사진 크게 보기">⤢</button>
+        </div>
+
+        <div class="thumbs" id="thumbs" aria-label="사진 고르기"></div>
+
+        <div class="cover__foot">
+          <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
+        </div>
+      </section>
+
+      <!-- ══ 02 인사말 + 식순 ═══════════════════════════════ -->
+      <section class="scr" aria-label="인사말과 식순">
+        <span class="edge edge--l" aria-hidden="true">After Love</span>
+        <span class="edge edge--r" aria-hidden="true">Our Wedding</span>
+
+        <div class="masthead">
+          <h1 class="masthead__date" id="mastDate"></h1>
+          <p class="masthead__meta"><i></i><span id="mastMeta"></span><i></i></p>
+        </div>
+
+        <p class="poem" data-c="greeting.poem"></p>
+        <p class="signoff" id="signoff"></p>
+
+        <table class="tab" style="margin-top:34px">
+          <thead><tr><th class="t-when">Time</th><th>Program</th></tr></thead>
+          <tbody id="timeline"></tbody>
+        </table>
+      </section>
+
+      <!-- ══ 03 오시는 길 ═══════════════════════════════════ -->
+      <section class="scr scr--paper" aria-label="오시는 길">
+        <span class="edge edge--r" aria-hidden="true">Location</span>
+        <p class="eyebrow">Location <i></i> 판교</p>
+
+        <div class="venue">
+          <h2><span data-c="wedding.venue"></span></h2>
+          <p><span data-c="wedding.hall"></span> · <span data-c="wedding.address"></span></p>
+        </div>
+
+        <div class="map" id="map"></div>
+
+        <div class="btnrow">
+          <button class="pill pill--sm" type="button" data-copy-target="wedding.address">주소 복사</button>
+          <button class="pill pill--sm" type="button" data-navi="kakao">카카오내비</button>
+          <button class="pill pill--sm" type="button" data-navi="tmap">티맵</button>
+        </div>
+
+        <table class="tab tab--ways"><tbody id="ways"></tbody></table>
+      </section>
+
+      <!-- ══ 04 참석 · 연락처 · 인사 ════════════════════════ -->
+      <section class="scr scr--red finale" aria-label="참석 의사와 연락처">
+        <span class="edge edge--l" aria-hidden="true">Happily</span>
+        <span class="edge edge--r" aria-hidden="true">Ever After</span>
+
+        <p class="rsvp__mark">R.S.V.P.</p>
+        <p class="rsvp__when" data-deadline></p>
+        <div style="display:flex; justify-content:center; margin-top:18px">
+          <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
+        </div>
+        <p class="rsvp__mine" id="rsvpMine" hidden></p>
+
+        <hr>
+
+        <div id="contacts"></div>
+
+        <hr>
+
+        <p class="finale__mark">Thank you</p>
+        <p class="finale__names" id="footNames"></p>
+
+        <div class="btnrow" style="margin:20px 0 0">
+          <button class="pill pill--sm" type="button" id="shareKakao">카카오톡 공유</button>
+          <button class="pill pill--sm" type="button" id="shareLink">링크 복사</button>
+          <button class="pill pill--sm" type="button" id="addCalendar">캘린더</button>
+        </div>
+      </section>
+
     </div>
-  </section>
+  </div>
 
-  <!-- ══ 02 인사말 + 식순 ══════════════════════════════════ -->
-  <section class="scr">
-    <span class="edge edge--l" aria-hidden="true">After Love</span>
-    <span class="edge edge--r" aria-hidden="true">Our Wedding</span>
+  <!-- 주소창이 숨어 화면이 커지면 이 막대가 남는 높이를 흡수합니다.
+       그래서 빈 공간이 생기지 않습니다. -->
+  <nav class="nav" id="nav" aria-label="화면 이동">
+    <button type="button" data-go="0"><span>사진</span></button>
+    <button type="button" data-go="1"><span>인사말</span></button>
+    <button type="button" data-go="2"><span>오시는 길</span></button>
+    <button type="button" data-go="3"><span>참석</span></button>
+  </nav>
 
-    <div class="masthead">
-      <h1 class="masthead__date" id="mastDate"></h1>
-      <p class="masthead__meta"><i></i><span id="mastMeta"></span><i></i></p>
-    </div>
-
-    <p class="poem" data-c="greeting.poem"></p>
-
-    <p class="signoff" id="signoff"></p>
-
-    <table class="tab" style="margin-top:38px">
-      <thead><tr><th class="t-when">Time</th><th>Program</th></tr></thead>
-      <tbody id="timeline"></tbody>
-    </table>
-  </section>
-
-  <!-- ══ 03 오시는 길 ══════════════════════════════════════ -->
-  <section class="scr scr--paper">
-    <span class="edge edge--r" aria-hidden="true">Location</span>
-    <p class="eyebrow">Location <i></i> 판교</p>
-
-    <div class="venue">
-      <h2><span data-c="wedding.venue"></span></h2>
-      <p><span data-c="wedding.hall"></span> · <span data-c="wedding.address"></span></p>
-    </div>
-
-    <div class="map" id="map"></div>
-
-    <div class="btnrow">
-      <button class="pill pill--sm" type="button" data-copy-target="wedding.address">주소 복사</button>
-      <button class="pill pill--sm" type="button" data-navi="kakao">카카오내비</button>
-      <button class="pill pill--sm" type="button" data-navi="tmap">티맵</button>
-    </div>
-
-    <table class="tab tab--ways"><tbody id="ways"></tbody></table>
-  </section>
-
-  <!-- ══ 04 갤러리 ═════════════════════════════════════════ -->
-  <section class="scr" id="gallerySection">
-    <p class="eyebrow" style="--eb-gap:16px">Gallery <i></i> <span id="stageCount">01 / 01</span></p>
-
-    <button class="stage" id="stage" type="button" aria-label="사진 크게 보기">
-      <img id="stageImg" src="assets/img/title/mag-1080.webp" alt="" loading="lazy">
-      <span class="stage__cap"><span id="stageLabel"></span><span>Siheon &amp; Yuna</span></span>
-    </button>
-
-    <div class="thumbs" id="thumbs" role="tablist" aria-label="사진 고르기"></div>
-  </section>
-
-  <!-- ══ 05 연락처 · RSVP · 인사 ═══════════════════════════ -->
-  <section class="scr scr--red finale">
-    <span class="edge edge--l" aria-hidden="true">Happily</span>
-    <span class="edge edge--r" aria-hidden="true">Ever After</span>
-
-    <p class="rsvp__mark">R.S.V.P.</p>
-    <p class="rsvp__when" data-deadline></p>
-    <p class="copy" style="text-align:center; margin-top:10px; font-size:13.5px">
-      귀하게 모실 수 있도록 잠시만 시간을 내어 주세요.</p>
-    <div style="display:flex; justify-content:center; margin-top:20px">
-      <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
-    </div>
-    <p class="rsvp__mine" id="rsvpMine" hidden></p>
-
-    <hr>
-
-    <div id="contacts"></div>
-
-    <hr>
-
-    <p class="finale__mark">Thank you</p>
-    <p class="finale__names" id="footNames"></p>
-
-    <div class="btnrow" style="margin:24px 0 0">
-      <button class="pill pill--sm" type="button" id="shareKakao">카카오톡 공유</button>
-      <button class="pill pill--sm" type="button" id="shareLink">링크 복사</button>
-      <button class="pill pill--sm" type="button" id="addCalendar">캘린더</button>
-    </div>
-  </section>
-
-</main>
+</div>
 
 
 <!-- ══ 사진 크게 보기 ══════════════════════════════════════ -->
