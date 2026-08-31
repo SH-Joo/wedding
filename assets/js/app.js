@@ -153,7 +153,7 @@
   function renderWays() {
     const box = $('#ways');
     (CONTENT.wedding.ways || []).forEach((w, i) => {
-      const b = el('button', null, w.label);
+      const b = el('button', 'pill pill--sm', w.label);
       b.type = 'button';
       b.setAttribute('aria-haspopup', 'dialog');
       b.addEventListener('click', () => openWay(i));
