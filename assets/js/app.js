@@ -174,19 +174,18 @@
       box.appendChild(b);
     };
 
-    // 카카오맵이 안 뜨면 키가 필요 없는 OpenStreetMap 으로 대신합니다
+    // 카카오맵이 안 뜨면, 배포할 때 만들어 둔 지도 그림을 씁니다.
+    // iframe 으로 띄우면 저작권 띠가 크게 붙어 지도가 잘 안 보입니다.
     const fallback = () => {
       if (drawn) return;
       drawn = true;
-      const src = 'https://www.openstreetmap.org/export/embed.html'
-                + `?bbox=${lng - 0.004},${lat - 0.002},${lng + 0.004},${lat + 0.002}`
-                + `&layer=mapnik&marker=${lat},${lng}`;
-      const frame = el('iframe');
-      frame.loading = 'lazy';
-      frame.title = venue + ' 위치';
-      frame.src = src;
-      box.appendChild(frame);
-      home(() => { frame.src = src; });
+      const img = el('img', 'map__still');
+      img.src = 'assets/img/map.webp';
+      img.alt = venue + ' 위치';
+      img.loading = 'lazy';
+      img.onerror = () => { box.classList.add('is-empty'); img.remove(); };
+      box.appendChild(img);
+      box.appendChild(el('p', 'map__credit', '지도 © OpenStreetMap 기여자'));
     };
 
     if (!CONTENT.kakaoJsKey) return fallback();

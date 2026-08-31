@@ -307,11 +307,18 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .venue p{margin:var(--s2) 0 0; font-size:var(--t-sm); color:var(--muted)}
 
 .map{
-  width:100%; flex:1 1 auto; min-height:180px;
+  width:100%; flex:1 1 auto; min-height:190px;
   background:var(--sunk); border:1px solid var(--line);
   overflow:hidden; position:relative;
 }
 .map iframe{width:100%; height:100%; border:0; display:block}
+.map__still{width:100%; height:100%; object-fit:cover; display:block}
+.map__credit{
+  position:absolute; right:var(--s2); bottom:var(--s1); margin:0;
+  font-size:9px; color:var(--faint); letter-spacing:0;
+  background:rgba(244,240,230,.72); padding:1px var(--s1);
+}
+.map.is-empty{display:none}
 .map__home{
   position:absolute; left:var(--s2); top:var(--s2); z-index:2;
   appearance:none; cursor:pointer;

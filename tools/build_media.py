@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:
-    from PIL import Image, ImageFilter, ImageOps
+    from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageOps
 except ImportError:
     sys.exit("Pillow 가 필요합니다:  python -m pip install pillow")
 
@@ -40,6 +40,7 @@ OUT_ALBUM = ROOT / "assets" / "img" / "album"
 OUT_DATA = ROOT / "assets" / "data"
 OUT_OG = ROOT / "assets" / "img" / "og.jpg"
 OUT_CSS = ROOT / "assets" / "css" / "generated.css"
+OUT_MAP = ROOT / "assets" / "img" / "map.webp"
 
 PHOTO_EXT = {".jpg", ".jpeg", ".png", ".webp", ".JPG", ".JPEG", ".PNG", ".WEBP"}
 
@@ -290,6 +291,78 @@ def build_og(mag_src: Path):
     log(f"  og.jpg  1200x630  {kb(OUT_OG)}")
 
 
+# ── 지도 ─────────────────────────────────────────────────────────
+
+MAP_ZOOM = 16
+MAP_SIZE = (1000, 560)      # 만들어 둘 크기
+MAP_TILE = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+
+def build_map(lat, lng, venue):
+    """
+    예식장 주변을 담은 지도 그림을 만듭니다.
+
+    지도를 iframe 으로 띄우면 아래에 저작권 띠가 크게 붙어 정작 지도가
+    잘 안 보입니다. 타일을 받아 한 장으로 합치고, 톤을 낮춘 뒤 우리
+    표시를 찍습니다. 저작권 표기는 화면에서 우리 서체로 답니다.
+    """
+    import math
+    import urllib.request
+
+    z = MAP_ZOOM
+    n = 2 ** z
+    x = (lng + 180.0) / 360.0 * n
+    y = (1.0 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2.0 * n
+
+    cols = MAP_SIZE[0] // 256 + 2
+    rows = MAP_SIZE[1] // 256 + 2
+    x0, y0 = int(x) - cols // 2, int(y) - rows // 2
+
+    canvas = Image.new("RGB", (cols * 256, rows * 256), (233, 228, 214))
+    got = 0
+    for dx in range(cols):
+        for dy in range(rows):
+            url = MAP_TILE.format(z=z, x=x0 + dx, y=y0 + dy)
+            try:
+                req = urllib.request.Request(url, headers={
+                    "User-Agent": "wedding-invitation/1.0 (static map, one-off build)"
+                })
+                with urllib.request.urlopen(req, timeout=15) as r:
+                    tile = Image.open(io.BytesIO(r.read())).convert("RGB")
+                canvas.paste(tile, (dx * 256, dy * 256))
+                got += 1
+            except Exception as e:
+                log(f"  ! 타일 {x0+dx},{y0+dy} 실패 ({e})")
+
+    if got == 0:
+        log("  ! 지도 타일을 하나도 못 받아 건너뜁니다")
+        return
+
+    # 예식장이 한가운데 오도록 잘라냅니다
+    cx = (x - x0) * 256
+    cy = (y - y0) * 256
+    left = round(cx - MAP_SIZE[0] / 2)
+    top = round(cy - MAP_SIZE[1] / 2)
+    left = max(0, min(left, canvas.width - MAP_SIZE[0]))
+    top = max(0, min(top, canvas.height - MAP_SIZE[1]))
+    view = canvas.crop((left, top, left + MAP_SIZE[0], top + MAP_SIZE[1]))
+
+    # 청첩장 톤에 맞춰 채도를 낮춥니다
+    view = ImageEnhance.Color(view).enhance(0.45)
+    view = ImageEnhance.Brightness(view).enhance(1.04)
+
+    # 크림슨 표시
+    d = ImageDraw.Draw(view, "RGBA")
+    mx, my = MAP_SIZE[0] // 2, MAP_SIZE[1] // 2
+    d.ellipse([mx - 34, my - 34, mx + 34, my + 34], fill=(176, 17, 51, 40))
+    d.ellipse([mx - 11, my - 11, mx + 11, my + 11],
+              fill=(176, 17, 51, 255), outline=(255, 255, 255, 255), width=3)
+
+    OUT_MAP.parent.mkdir(parents=True, exist_ok=True)
+    view.save(OUT_MAP, "WEBP", quality=80, method=6)
+    log(f"  map.webp  {MAP_SIZE[0]}x{MAP_SIZE[1]}  {kb(OUT_MAP)}  (타일 {got}장)")
+
+
 # ── 앨범 ─────────────────────────────────────────────────────────
 
 def build_album():
@@ -360,6 +433,12 @@ def main():
         build_og(titles["mag"])
     else:
         log("  ! 잡지 표지가 없어 og.jpg 를 건너뜁니다")
+
+    log("\n[지도]")
+    try:
+        build_map(37.38082, 127.10399, "더블트리 바이 힐튼 서울 판교")
+    except Exception as err:
+        log(f"  ! 지도를 건너뜁니다 ({err})")
 
     log("\n[갤러리]")
     foot = titles.get("_footColor", "#EFECE3")
