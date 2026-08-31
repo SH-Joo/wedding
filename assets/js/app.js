@@ -56,21 +56,16 @@
     $('#coverDday').textContent = dday() === 'D-DAY' ? '오늘입니다' :
       dday().startsWith('D-') ? '예식까지 ' + dday().slice(2) + '일' : '';
 
-    // 매스트헤드 — 2026.11.28 / SATURDAY 6 PM · D-89
-    const date = $('#mastDate');
-    date.innerHTML = '';
-    [D.getFullYear(), pad(D.getMonth() + 1), pad(D.getDate())].forEach((part, i) => {
-      if (i) date.appendChild(el('i', null, '.'));
-      date.appendChild(document.createTextNode(String(part)));
-    });
-    date.setAttribute('aria-label',
-      `${D.getFullYear()}년 ${D.getMonth() + 1}월 ${D.getDate()}일 ${WEEK[D.getDay()]}요일 ${timeText()}`);
-
+    // 날짜 한 줄 — 2026. 11. 28 · SAT 6 PM
     const h = D.getHours();
     const ampm = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 === 0 ? 12 : h % 12;
     const clock = h12 + (D.getMinutes() ? ':' + pad(D.getMinutes()) : '') + ' ' + ampm;
-    $('#mastMeta').textContent = `${WEEK_EN[D.getDay()]} ${clock} · ${dday()}`;
+    const line = $('#mastMeta');
+    line.textContent = `${D.getFullYear()}. ${pad(D.getMonth() + 1)}. ${pad(D.getDate())}`
+                     + ` · ${WEEK_EN[D.getDay()].slice(0, 3).toUpperCase()} ${clock}`;
+    line.setAttribute('aria-label',
+      `${D.getFullYear()}년 ${D.getMonth() + 1}월 ${D.getDate()}일 ${WEEK[D.getDay()]}요일 ${timeText()}`);
 
     // 혼주
     const lines = [['groom'], ['bride']].map(([side]) => {
@@ -320,14 +315,28 @@
 
     G.items = items;
 
-    // 사진이 몇 장인지 알리고, 누르면 전체화면으로 넘깁니다
-    $('#shotCount').textContent = items.length > 1 ? items.length + '장' : '크게';
+    // 사진이 여러 장이라는 걸 한눈에 보이도록 썸네일을 깔아 둡니다
+    const box = $('#thumbs');
+    items.forEach((it, i) => {
+      const b = el('button', 'thumb');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(i === 0));
+      b.setAttribute('aria-label', (i + 1) + '번째 사진 보기');
+      const img = el('img');
+      img.src = it.thumb;
+      img.alt = '';
+      img.loading = i < 8 ? 'eager' : 'lazy';
+      img.decoding = 'async';
+      b.appendChild(img);
+      b.addEventListener('click', () => showShot(i));
+      box.appendChild(b);
+    });
+
     showShot(0);
 
-    $('#shot').addEventListener('click', (e) => {
-      if (e.target.closest('[data-rsvp-open]')) return;   // 버튼은 그대로 둡니다
-      openLightbox(G.i);
-    });
+    // 큰 사진을 누르면 전체화면. 썸네일과 버튼은 각자 동작합니다.
+    $('#shotImg').addEventListener('click', () => openLightbox(G.i));
+    $('#shotZoom').addEventListener('click', () => openLightbox(G.i));
   }
 
   function showShot(i) {
@@ -337,6 +346,7 @@
     img.src = it.src;
     img.srcset = it.srcset;
     img.alt = it.alt;
+    $$('#thumbs .thumb').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
   }
 
   /* ── 사진 크게 보기 ─────────────────────────────────────── */

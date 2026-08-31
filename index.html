@@ -53,8 +53,8 @@
                sizes="(max-width:500px) 100vw, 500px"
                alt="" fetchpriority="high">
 
-          <button class="shot__more" type="button" id="shotZoom">
-            <span aria-hidden="true">⤢</span><span id="shotCount"></span>
+          <button class="shot__more" type="button" id="shotZoom" aria-label="사진 크게 보기">
+            <span aria-hidden="true">⤢</span>
           </button>
 
           <!-- 사진 아래쪽 크림색으로 자연스럽게 이어집니다 -->
@@ -64,6 +64,7 @@
               <span data-c="wedding.venue"></span>
               <small><span data-c="wedding.hall"></span> · <span id="coverDday"></span></small>
             </p>
+            <div class="thumbs" id="thumbs" aria-label="사진 고르기"></div>
             <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
           </div>
         </div>
@@ -74,15 +75,14 @@
         <span class="edge edge--l" aria-hidden="true">After Love</span>
         <span class="edge edge--r" aria-hidden="true">Our Wedding</span>
 
-        <div class="masthead">
-          <h1 class="masthead__date" id="mastDate"></h1>
-          <p class="masthead__meta"><i></i><span id="mastMeta"></span><i></i></p>
-        </div>
+        <p class="eyebrow"><b>01</b> Invitation <i></i></p>
 
-        <p class="poem" data-c="greeting.poem"></p>
+        <h1 class="poem" data-c="greeting.poem"></h1>
         <p class="signoff" id="signoff"></p>
 
-        <table class="tab" style="margin-top:34px">
+        <p class="dateline"><i></i><span id="mastMeta"></span><i></i></p>
+
+        <table class="tab">
           <thead><tr><th class="t-when">Time</th><th>Program</th></tr></thead>
           <tbody id="timeline"></tbody>
         </table>
@@ -114,7 +114,8 @@
         <span class="edge edge--l" aria-hidden="true">Happily</span>
         <span class="edge edge--r" aria-hidden="true">Ever After</span>
 
-        <p class="rsvp__mark">R.S.V.P.</p>
+        <p class="eyebrow" style="justify-content:center">R.S.V.P.</p>
+        <p class="rsvp__mark">참석 여부를<br>알려주세요</p>
         <p class="rsvp__when" data-deadline></p>
         <div style="display:flex; justify-content:center; margin-top:18px">
           <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
