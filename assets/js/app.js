@@ -415,6 +415,8 @@
           buttons: [{ title: '청첩장 열기', link: { mobileWebUrl: location.href, webUrl: location.href } }],
         });
       } catch (e) {
+        // 대부분 developers.kakao.com 플랫폼에 도메인이 등록되지 않은 경우입니다.
+        console.error('[카카오 공유 실패]', e, '현재 주소:', location.origin);
         copy(location.href, '공유에 실패해 링크를 복사했습니다');
       }
     });
@@ -426,7 +428,10 @@
       const s = el('script');
       s.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
       s.crossOrigin = 'anonymous';
-      s.onload = () => { window.Kakao.init(CONTENT.kakaoJsKey); res(); };
+      s.onload = () => {
+        try { window.Kakao.init(CONTENT.kakaoJsKey); res(); }
+        catch (err) { console.error('[카카오 init 실패]', err); rej(err); }
+      };
       s.onerror = rej;
       document.head.appendChild(s);
     });

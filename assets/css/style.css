@@ -47,11 +47,13 @@ button,input,select,textarea{font:inherit; color:inherit}
    브라우저가 커버를 통째로 건너뜁니다. app.js 의 fit() 참고. */
 .scr.is-tall{height:auto; min-height:100svh; scroll-snap-align:none; overflow:visible}
 
-/* 창이 낮을수록 폭을 줄입니다. 커버가 세로로 길어서(1:1.82)
-   폭이 넓으면 화면 높이를 넘겨 날짜 배지가 잘립니다. */
-@media (min-width:520px) and (max-height:900px){ .deck{--page:430px} }
-@media (min-width:520px) and (max-height:780px){ .deck{--page:370px} }
-@media (min-width:520px) and (max-height:700px){ .deck{--page:330px} }
+/* 손가락으로 쓰는 기기(휴대폰·태블릿·폴더블)에서는 폭을 제한하지 않습니다.
+   max-width 만 두면 화면 폭이 520px 넘게 잡히는 큰 폰에서 양옆에 여백이 생깁니다.
+   520px 칼럼은 마우스로 보는 데스크톱에서만 씁니다. */
+@media (hover:none) and (pointer:coarse){
+  .deck{max-width:none}
+  :root{--gutter:22px}
+}
 
 /* 화면을 눕히거나 아주 낮으면 스냅을 끕니다 */
 @media (max-height:520px){
@@ -94,7 +96,7 @@ button,input,select,textarea{font:inherit; color:inherit}
    그려져 있습니다. 넘치면 그 띠부터 잘리므로 티가 나지 않습니다. */
 .cover{padding:0}
 .cover__img{
-  width:100%; height:calc(100svh - 108px); min-height:300px;
+  width:100%; height:auto; max-height:calc(100svh - 108px);
   object-fit:cover; object-position:center top;
 }
 .cover__foot{
