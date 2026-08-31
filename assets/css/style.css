@@ -280,9 +280,12 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .venue h2{
   margin:0; font-family:var(--myeongjo); font-weight:400;
   font-size:var(--t-xl); line-height:var(--lh-tight); letter-spacing:var(--ls-ko-lg);
+  text-wrap:balance;
 }
+/* 홀 이름과 주소는 한 줄에. 예식장 이름과 붙이면 스무 자가 넘어
+   두 줄로 접힙니다. */
 .venue p{
-  display:flex; align-items:center; gap:var(--s2);
+  display:flex; align-items:center; flex-wrap:wrap; gap:var(--s2);
   margin:var(--s2) 0 0; font-size:var(--t-sm); color:var(--muted);
 }
 /* 주소를 옮겨 적는 일은 길 안내 실행과 성격이 달라 띠에서 뺐습니다 */
