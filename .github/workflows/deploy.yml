@@ -54,6 +54,11 @@ jobs:
           };
           EOF
 
+      # 브라우저가 옛 파일을 캐시에서 꺼내 쓰면 CSS 와 JS 버전이 어긋나
+      # 화면이 밀립니다. 주소 뒤에 커밋 번호를 붙여 항상 새로 받게 합니다.
+      - name: 캐시 무력화
+        run: python tools/stamp_version.py "${{ github.sha }}"
+
       # 올릴 필요 없는 것들을 덜어냅니다.
       # 특히 images/ 원본은 한 장에 2MB 라 그대로 두면 낭비입니다.
       - name: 배포에 필요 없는 파일 정리

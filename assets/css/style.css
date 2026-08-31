@@ -42,7 +42,11 @@ button,input,select,textarea{font:inherit; color:inherit}
    장을 옮기는 것도 브라우저 스크롤 스냅에 맡기지 않습니다.
    기기에 따라 관성을 못 잡아 두 장씩 지나갔습니다.            */
 
-:root{ --nav-h:64px; }
+/* 주소창이 차지하는 높이 = 100lvh − 100svh.
+   둘 다 상수라 이 차이도 상수입니다. 기기·브라우저마다 값이 달라도
+   CSS 가 알아서 맞춥니다. 주소창을 숨기지 않는 환경(데스크톱 등)에서는
+   차이가 0 이므로 최소값 56px 이 쓰이고 막대는 항상 보입니다. */
+:root{ --nav-h: max(56px, calc(100lvh - 100svh)); }
 
 .deck{
   position:fixed; left:0; right:0; top:0;
