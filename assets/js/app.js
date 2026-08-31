@@ -170,6 +170,23 @@
 
     if (w.text)  body.appendChild(el('p', 'sheet__text', w.text));
     if (w.chips) body.appendChild(chipRow(w.chips));
+
+    // 덧붙일 안내가 있으면 이어서 보여주고,
+    // 다른 항목을 가리키면 바로 건너갈 수 있게 합니다.
+    if (w.note) {
+      const note = el('p', 'sheet__note', w.note);
+      if (w.seeAlso) {
+        const to = CONTENT.wedding.ways.findIndex(x => x.label === w.seeAlso);
+        if (to >= 0) {
+          const go = el('button', 'linkbtn', w.seeAlso + ' 안내 보기');
+          go.type = 'button';
+          go.addEventListener('click', () => openWay(to));
+          note.appendChild(document.createTextNode(' '));
+          note.appendChild(go);
+        }
+      }
+      body.appendChild(note);
+    }
     (w.legs || []).forEach(leg => {
       body.appendChild(el('p', 'sheet__leg', leg.text));
       if (leg.chips) body.appendChild(chipRow(leg.chips));

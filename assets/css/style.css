@@ -358,6 +358,12 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .sheet__text{margin:0; font-size:var(--t-md); line-height:var(--lh-body)}
 .sheet__leg{margin:var(--s4) 0 0; font-size:var(--t-sm); color:var(--muted)}
 .sheet__leg:first-child{margin-top:0}
+/* 본 안내에 덧붙이는 줄 */
+.sheet__note{
+  margin:var(--s4) 0 0; padding:var(--s3) var(--s4);
+  background:var(--sunk); border-left:2px solid var(--accent);
+  font-size:var(--t-sm); line-height:var(--lh-body); color:var(--muted);
+}
 .chips{
   display:flex; flex-wrap:wrap; gap:var(--s1); margin:var(--s2) 0 0;
   font-family:var(--sans); font-size:var(--t-md);
