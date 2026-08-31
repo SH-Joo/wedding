@@ -12,20 +12,27 @@ body{
   font-family:var(--sans); font-size:16px; line-height:1.8;
   -webkit-font-smoothing:antialiased;
 }
+/* 화면이 청첩장 폭보다 넓으면(데스크톱·태블릿) 바탕을 한 톤 눕혀
+   청첩장이 종이 카드처럼 얹힌 것으로 보이게 합니다. 폰에서는 덱이
+   화면을 덮으므로 이 색은 보이지 않습니다. */
+@media (min-width:540px){
+  body{background:#DCD5C3}
+  .deck{box-shadow:0 0 0 1px rgba(21,18,15,.06), 0 18px 50px rgba(21,18,15,.09)}
+}
 img{display:block; max-width:100%}
 button,input,select,textarea{font:inherit; color:inherit}
 [hidden]{display:none !important}
 
 /* ═══ 한 화면씩 넘어가는 스크롤 ═════════════════════════════ */
 .deck{
-  height:100svh; overflow-y:scroll; overflow-x:hidden;
+  height:100dvh; overflow-y:scroll; overflow-x:hidden;
   scroll-snap-type:y mandatory; scroll-behavior:smooth;
   -webkit-overflow-scrolling:touch;
   max-width:var(--page); margin:0 auto;
   position:relative; background:var(--bg);
 }
 .scr{
-  height:100svh; scroll-snap-align:start; scroll-snap-stop:always;
+  height:100dvh; scroll-snap-align:start; scroll-snap-stop:always;
   display:flex; flex-direction:column;
   padding:var(--sec-y) var(--gutter);
   position:relative; overflow:hidden;
@@ -45,13 +52,12 @@ button,input,select,textarea{font:inherit; color:inherit}
 /* 내용이 화면보다 길어진 장은 스냅을 풀어 갇히지 않게 합니다.
    첫 장(커버)에는 절대 붙이지 않습니다 — 스냅 지점이 사라지면
    브라우저가 커버를 통째로 건너뜁니다. app.js 의 fit() 참고. */
-.scr.is-tall{height:auto; min-height:100svh; scroll-snap-align:none; overflow:visible}
+.scr.is-tall{height:auto; min-height:100dvh; scroll-snap-align:none; overflow:visible}
 
-/* 손가락으로 쓰는 기기(휴대폰·태블릿·폴더블)에서는 폭을 제한하지 않습니다.
-   max-width 만 두면 화면 폭이 520px 넘게 잡히는 큰 폰에서 양옆에 여백이 생깁니다.
-   520px 칼럼은 마우스로 보는 데스크톱에서만 씁니다. */
+/* 손가락으로 쓰는 기기에서는 좌우 여백만 조금 줄입니다.
+   폭 제한(--page)은 그대로 둡니다. 없애면 화면 폭이 넓게 잡히는 환경
+   (데스크톱 모드·폴더블·태블릿)에서 글씨가 작아 보이고 줄이 옆으로 늘어집니다. */
 @media (hover:none) and (pointer:coarse){
-  .deck{max-width:none}
   :root{--gutter:22px}
 }
 
@@ -96,7 +102,7 @@ button,input,select,textarea{font:inherit; color:inherit}
    그려져 있습니다. 넘치면 그 띠부터 잘리므로 티가 나지 않습니다. */
 .cover{padding:0}
 .cover__img{
-  width:100%; height:auto; max-height:calc(100svh - 108px);
+  width:100%; height:auto; max-height:calc(100dvh - 108px);
   object-fit:cover; object-position:center top;
 }
 .cover__foot{
@@ -287,7 +293,7 @@ button,input,select,textarea{font:inherit; color:inherit}
   position:fixed; inset:0; z-index:50; background:rgba(15,13,11,.96);
   display:flex; align-items:center; justify-content:center;
 }
-.lightbox img{max-width:100%; max-height:100svh; object-fit:contain}
+.lightbox img{max-width:100%; max-height:100dvh; object-fit:contain}
 .lightbox__x, .lightbox__nav{
   position:absolute; appearance:none; border:0; background:transparent;
   color:#F4F0E6; cursor:pointer; font-size:26px; line-height:1;
