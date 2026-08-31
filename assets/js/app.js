@@ -58,7 +58,6 @@
     const ampm = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 === 0 ? 12 : h % 12;
     const clock = h12 + (D.getMinutes() ? ':' + pad(D.getMinutes()) : '') + ' ' + ampm;
-    $('#ceremonyTime').textContent = timeText();
     const line = $('#mastMeta');
     line.textContent = `${D.getFullYear()}. ${pad(D.getMonth() + 1)}. ${pad(D.getDate())}`
                      + ` · ${WEEK_EN[D.getDay()].slice(0, 3).toUpperCase()} ${clock}`;

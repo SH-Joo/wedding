@@ -59,8 +59,8 @@
         </div>
       </section>
 
-      <!-- ══ 인사말 ═════════════════════════════════════════ -->
-      <section class="scr" aria-label="인사말">
+      <!-- ══ 인사말 · 식순 ═════════════════════════════════ -->
+      <section class="scr" aria-label="인사말과 식순">
         <span class="edge edge--l" aria-hidden="true">After Love</span>
         <span class="edge edge--r" aria-hidden="true">Our Wedding</span>
 
@@ -69,18 +69,14 @@
         <h1 class="poem" data-c="greeting.poem"></h1>
         <p class="signoff" id="signoff"></p>
 
+        <p class="sub">Program <i></i></p>
+        <table class="tab"><tbody id="timeline"></tbody></table>
+
         <div class="cta">
           <button class="pill" type="button" data-rsvp-open>참석 의사 전하기</button>
           <p class="cta__note" data-deadline-short></p>
           <p class="cta__note" id="rsvpMine" hidden></p>
         </div>
-      </section>
-
-      <!-- ══ 식순 ═══════════════════════════════════════════ -->
-      <section class="scr scr--paper" aria-label="식순">
-        <span class="edge edge--r" aria-hidden="true">Program</span>
-        <p class="eyebrow">Program <i></i> <span id="ceremonyTime"></span></p>
-        <table class="tab"><tbody id="timeline"></tbody></table>
       </section>
 
       <!-- ══ 오시는 길 ══════════════════════════════════════ -->
@@ -138,10 +134,9 @@
   <nav class="nav" id="nav" aria-label="화면 이동">
     <button type="button" data-go="0"><span>표지</span></button>
     <button type="button" data-go="1"><span>인사말</span></button>
-    <button type="button" data-go="2"><span>식순</span></button>
-    <button type="button" data-go="3"><span>오시는길</span></button>
-    <button type="button" data-go="4" data-album><span>앨범</span></button>
-    <button type="button" data-go="5"><span>연락처</span></button>
+    <button type="button" data-go="2"><span>오시는길</span></button>
+    <button type="button" data-go="3" data-album><span>앨범</span></button>
+    <button type="button" data-go="4"><span>연락처</span></button>
   </nav>
 
 </div>

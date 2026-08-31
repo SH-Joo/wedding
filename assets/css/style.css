@@ -134,7 +134,7 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   color:var(--accent); flex:0 0 auto;
 }
 .eyebrow{margin:0 0 var(--s5)}
-.sub{margin:0 0 var(--s3)}
+.sub{margin:var(--s5) 0 var(--s3)}
 .eyebrow i, .sub i{
   flex:1; height:1px; background:currentColor;
   opacity:.4; transform:translateY(-3px);
