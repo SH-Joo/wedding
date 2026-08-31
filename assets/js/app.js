@@ -578,7 +578,23 @@
     // 주소창이 오가도 lvh 는 변하지 않으므로 이 값도 변하지 않습니다.
     function measure() {
       DECK.h = rail.clientHeight;
-      scrs.forEach((sc) => sc.classList.toggle('is-tall', sc.scrollHeight > DECK.h + 4));
+
+      // 계산으로 여백을 맞추면 글자가 몇 줄로 접히는지에 따라 어긋납니다.
+      // 실제로 재 보고, 넘치면 그 장의 위아래 여백부터 줄여 맞춥니다.
+      scrs.forEach((sc) => {
+        if (sc.classList.contains('cover')) return;
+        sc.style.paddingTop = sc.style.paddingBottom = '';
+        sc.classList.remove('is-tall');
+        if (sc.scrollHeight <= DECK.h + 2) return;
+
+        for (const pad of [28, 22, 16, 10]) {
+          sc.style.paddingTop = sc.style.paddingBottom = pad + 'px';
+          if (sc.scrollHeight <= DECK.h + 2) return;
+        }
+        // 여백을 다 줄여도 넘치면 그 장만 안에서 스크롤합니다
+        sc.classList.add('is-tall');
+      });
+
       paint(false);
     }
 

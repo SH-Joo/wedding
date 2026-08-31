@@ -148,7 +148,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 
 /* ═══ 섹션 레이블 · 쪽번호 ══════════════════════════════════ */
 .eyebrow{
-  display:flex; align-items:baseline; gap:11px; margin:0 0 var(--eb-gap,30px);
+  display:flex; align-items:baseline; gap:11px; margin:0 0 var(--eb-gap,22px);
   font-family:var(--serif); font-size:10px;
   letter-spacing:.32em; text-transform:uppercase; color:var(--accent);
   flex:0 0 auto;
@@ -283,7 +283,7 @@ button,input,select,textarea{font:inherit; color:inherit}
    섞여 어수선했습니다. 얇은 선 사이에 놓인 한 줄로 낮춥니다. */
 .dateline{
   display:flex; align-items:center; gap:13px; flex:0 0 auto;
-  margin:24px 0 20px;
+  margin:20px 0 16px;
   font-family:var(--serif); font-size:13px; letter-spacing:.16em;
   color:var(--ink); font-variant-numeric:tabular-nums; white-space:nowrap;
 }
@@ -297,7 +297,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 /* 혼주도 시와 같은 왼쪽 정렬로 맞춥니다.
    가운데·왼쪽·오른쪽이 한 화면에서 섞이면 어수선해집니다. */
 .signoff{
-  margin:20px 0 0; text-align:left; flex:0 0 auto;
+  margin:16px 0 0; text-align:left; flex:0 0 auto;
   font-family:var(--myeongjo); font-size:13.5px; line-height:1.95; color:var(--muted);
 }
 .signoff b{font-weight:400; color:var(--ink); font-size:14.5px}
@@ -313,7 +313,7 @@ button,input,select,textarea{font:inherit; color:inherit}
   letter-spacing:.26em; text-transform:uppercase; color:var(--accent);
   text-align:left; padding:0 0 8px; border-bottom:1px solid var(--accent);
 }
-.tab td{padding:9px 0; border-bottom:1px solid var(--line); vertical-align:top}
+.tab td{padding:8px 0; border-bottom:1px solid var(--line); vertical-align:top}
 .tab tr:last-child td{border-bottom:0}
 .tab .t-when{
   width:54px; padding-top:12px; padding-right:16px;
