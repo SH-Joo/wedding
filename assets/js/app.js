@@ -160,27 +160,64 @@
   }
 
   function renderMap() {
+    const box = $('#map');
     const { lat, lng, venue } = CONTENT.wedding;
-    // 키가 필요 없는 OpenStreetMap 을 씁니다.
-    const src = 'https://www.openstreetmap.org/export/embed.html'
-              + `?bbox=${lng - 0.0045},${lat - 0.0022},${lng + 0.0045},${lat + 0.0022}`
-              + `&layer=mapnik&marker=${lat},${lng}`;
+    let drawn = false;
 
-    const box = el('iframe');
-    box.loading = 'lazy';
-    box.title = venue + ' 위치';
-    box.src = src;
+    // 예식장으로 되돌리는 단추
+    const home = (recenter) => {
+      const b = el('button', 'map__home', '예식장 위치');
+      b.type = 'button';
+      b.setAttribute('aria-label', venue + ' 위치로 지도 되돌리기');
+      b.addEventListener('click', () => { recenter(); toast('예식장 위치로 되돌렸습니다'); });
+      box.appendChild(b);
+    };
 
-    // 지도를 옮겨 놓고 예식장을 못 찾는 일이 없도록 되돌리는 버튼을 둡니다.
-    const home = el('button', 'map__home', '예식장 위치');
-    home.type = 'button';
-    home.setAttribute('aria-label', venue + ' 위치로 지도 되돌리기');
-    home.addEventListener('click', () => {
-      box.src = src;                 // 주소를 다시 넣으면 처음 위치로 돌아옵니다
-      toast('예식장 위치로 되돌렸습니다');
-    });
+    // 카카오맵이 안 뜨면 키가 필요 없는 OpenStreetMap 으로 대신합니다
+    const fallback = () => {
+      if (drawn) return;
+      drawn = true;
+      const src = 'https://www.openstreetmap.org/export/embed.html'
+                + `?bbox=${lng - 0.004},${lat - 0.002},${lng + 0.004},${lat + 0.002}`
+                + `&layer=mapnik&marker=${lat},${lng}`;
+      const frame = el('iframe');
+      frame.loading = 'lazy';
+      frame.title = venue + ' 위치';
+      frame.src = src;
+      box.appendChild(frame);
+      home(() => { frame.src = src; });
+    };
 
-    $('#map').append(box, home);
+    if (!CONTENT.kakaoJsKey) return fallback();
+
+    const sdk = el('script');
+    sdk.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONTENT.kakaoJsKey}&autoload=false`;
+    sdk.onerror = fallback;
+    sdk.onload = () => {
+      try {
+        window.kakao.maps.load(() => {
+          if (drawn) return;
+          drawn = true;
+          const K = window.kakao.maps;
+          const at = new K.LatLng(lat, lng);
+          const map = new K.Map(box, { center: at, level: 4 });
+          map.addControl(new K.ZoomControl(), K.ControlPosition.RIGHT);
+          new K.Marker({ map: map, position: at });
+
+          const pin = el('div', 'map__pin', venue);
+          new K.CustomOverlay({ map: map, position: at, content: pin, yAnchor: 2.1 });
+
+          home(() => { map.setLevel(4); map.setCenter(at); });
+        });
+      } catch (e) {
+        console.error('[카카오맵]', e);
+        fallback();
+      }
+    };
+    document.head.appendChild(sdk);
+
+    // 4초 안에 안 그려지면 대신 그립니다
+    setTimeout(fallback, 4000);
   }
 
   function wireNavi() {

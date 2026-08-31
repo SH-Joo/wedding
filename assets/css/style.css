@@ -1,66 +1,43 @@
 /* ═══════════════════════════════════════════════════════════════
-   레이아웃과 부품. 색·글꼴·여백은 tokens.css 에서 조절하세요.
+   레이아웃과 부품.
 
-   구조: 화면(.scr) 하나가 항상 뷰포트를 꽉 채우고,
-        조금만 밀어도 다음 장으로 딱 붙습니다.
+   크기·자간·여백은 전부 tokens.css 의 토큰에서 가져옵니다.
+   여기에 새 숫자를 직접 적지 마세요. 필요하면 토큰을 늘리세요.
    ═══════════════════════════════════════════════════════════════ */
 
 *{box-sizing:border-box}
-/* 문서 자체는 스크롤하지 않고 .deck 안에서만 스크롤합니다.
-   이렇게 잠가두면 브라우저가 주소창을 숨기지 않아 화면 높이가 변하지 않습니다.
-   dvh 로 두면 스크롤 도중 주소창이 숨으며 모든 섹션 높이가 한꺼번에 바뀌어
-   한 장이 아니라 두 장씩 넘어가 버립니다. */
-html,body{height:100%; overflow:hidden; overscroll-behavior:none}
 html{-webkit-text-size-adjust:100%}
 body{
   margin:0; background:var(--bg); color:var(--ink);
-  font-family:var(--sans); font-size:16px; line-height:1.8;
+  font-family:var(--sans); font-size:var(--t-md);
+  line-height:var(--lh-body); letter-spacing:var(--ls-ko);
   -webkit-font-smoothing:antialiased;
 }
-/* 화면이 청첩장 폭보다 넓으면(데스크톱·태블릿) 바탕을 한 톤 눕혀
-   청첩장이 종이 카드처럼 얹힌 것으로 보이게 합니다. 폰에서는 덱이
-   화면을 덮으므로 이 색은 보이지 않습니다. */
+img{display:block; max-width:100%}
+button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit}
+[hidden]{display:none !important}
+
+/* 화면이 청첩장보다 넓으면 종이 카드처럼 보이게 합니다 */
 @media (min-width:540px){
   body{background:#DCD5C3}
   .deck{box-shadow:0 0 0 1px rgba(21,18,15,.06), 0 18px 50px rgba(21,18,15,.09)}
 }
-img{display:block; max-width:100%}
-button,input,select,textarea{font:inherit; color:inherit}
-[hidden]{display:none !important}
 
 /* ═══ 한 화면씩 넘어가기 ═══════════════════════════════════
+   브라우저 스크롤 스냅에 맡기면 기기에 따라 관성 때문에 두 장씩
+   지나갑니다. 위치를 직접 옮깁니다. (app.js 의 wireDeck)
 
-   크롬 안드로이드의 주소창은 내용을 덮지 않고 화면을 밀어냅니다.
-   그래서 보이는 높이가 두 값 사이를 오갑니다. 여기에 높이를 묶으면
-   스크롤 도중 바닥이 움직여 장이 어긋납니다.
-
-   그래서 100lvh — 주소창이 숨은 상태의 높이 — 에만 묶습니다.
-   이 값은 정의상 변하지 않습니다. 맨 아래 --nav-h 는 네비게이션
-   막대에 내주고, 주소창이 있을 때는 그 자리가 화면 밖으로 밀려
-   막대가 보이지 않습니다. 장 높이는 어느 쪽이든 그대로입니다.
-
-   장을 옮기는 것도 브라우저 스크롤 스냅에 맡기지 않습니다.
-   기기에 따라 관성을 못 잡아 두 장씩 지나갔습니다.            */
-
-/* 막대가 실제로 보이는 높이 */
-:root{ --nav-h: 56px; }
-
+   높이는 100svh(주소창이 있을 때의 높이)에 묶습니다. 상수라
+   주소창이 오가도 변하지 않고, 남는 높이는 아래 막대가 흡수합니다. */
 .deck{
-  position:fixed; left:0; right:0; top:0;
-  height:100lvh;
+  position:fixed; left:0; right:0; top:0; height:100lvh;
   max-width:var(--page); margin-inline:auto;
   display:flex; flex-direction:column; overflow:hidden;
   background:var(--bg);
 }
-
-/* 장이 지나가는 통로.
-   100svh(주소창이 있을 때의 높이)에서 막대 높이를 뺍니다. svh 도 lvh 도
-   상수라 이 값은 절대 변하지 않고, 주소창이 있든 없든 통로 전체와
-   막대가 화면 안에 들어옵니다. */
 .rail{
   flex:0 0 auto; height:calc(100svh - var(--nav-h));
-  position:relative; overflow:hidden;
-  touch-action:pan-y;
+  position:relative; overflow:hidden; touch-action:pan-y;
 }
 .rail__inner{
   will-change:transform;
@@ -75,54 +52,23 @@ button,input,select,textarea{font:inherit; color:inherit}
   position:relative; overflow:hidden;
   container-type:inline-size;
 }
-/* 세로 가운데 맞춤을 auto 여백으로. 자리가 모자라면 아래로만 넘칩니다. */
+/* 세로 가운데 맞춤. 자리가 모자라면 아래로만 넘칩니다. */
 .scr:not(.cover)::before,
 .scr:not(.cover)::after{content:''; display:block; flex:0 0 auto}
 .scr:not(.cover)::before{margin-top:auto}
 .scr:not(.cover)::after{margin-bottom:auto}
 
 .scr--paper{background:var(--paper)}
+.scr--album{background:var(--paper)}
 .scr--red{background:var(--accent); color:var(--paper)}
 
-/* 드물게 내용이 한 화면을 넘치면 그 장만 안에서 스크롤됩니다 */
+/* 여백을 다 줄여도 넘치는 장만 안에서 스크롤합니다 */
 .scr.is-tall{overflow-y:auto; -webkit-overflow-scrolling:touch}
 
-/* svh·lvh 를 모르는 오래된 브라우저 */
 @supports not (height: 100svh){
   .deck{height:100vh}
   .rail, .scr{height:calc(100vh - var(--nav-h))}
 }
-
-/* ═══ 아래 막대 ═════════════════════════════════════════════
-   덱은 100lvh, 통로는 100svh − 56px 이므로 남는 높이(주소창이
-   숨었을 때 늘어나는 만큼)를 이 막대가 흡수합니다. 버튼은 위쪽
-   56px 안에 있어 주소창이 있든 없든 항상 보입니다. */
-.nav{
-  flex:1 1 auto; min-height:var(--nav-h);
-  display:flex; align-items:flex-start;
-  background:var(--bg); border-top:1px solid var(--line);
-  transition:background .45s var(--ease), border-color .45s var(--ease);
-}
-.nav button{
-  flex:1; height:var(--nav-h); appearance:none; border:0;
-  background:transparent; cursor:pointer;
-  padding:0 2px; font-family:var(--myeongjo); font-size:12.5px;
-  letter-spacing:.02em; color:var(--faint);
-  transition:color .25s var(--ease);
-}
-.nav button span{position:relative; display:inline-block; padding-bottom:4px}
-.nav button[aria-current="true"]{color:var(--accent)}
-.nav button[aria-current="true"] span::after{
-  content:''; position:absolute; left:0; right:0; bottom:0; height:1px; background:var(--accent);
-}
-.nav button:focus-visible{outline:2px solid var(--accent); outline-offset:-4px}
-
-/* 붉은 장에서는 막대도 함께 뒤집힙니다 */
-.deck[data-tone="red"] .nav{background:var(--deep); border-top-color:rgba(244,240,230,.25)}
-.deck[data-tone="red"] .nav button{color:#E7C8CE}
-.deck[data-tone="red"] .nav button[aria-current="true"]{color:#fff}
-.deck[data-tone="red"] .nav button[aria-current="true"] span::after{background:#fff}
-.deck[data-tone="paper"] .nav{background:var(--paper)}
 
 /* 화면을 눕히거나 아주 낮으면 통째로 이어 붙여 보여줍니다 */
 @media (max-height:460px){
@@ -133,8 +79,39 @@ button,input,select,textarea{font:inherit; color:inherit}
   .nav{display:none}
 }
 
-/* ═══ 가장자리를 감싸는 세로 타이포 ═════════════════════════
-   포스터 테두리 글자를 그대로 가져왔습니다. */
+/* ═══ 아래 막대 ═════════════════════════════════════════════
+   덱은 100lvh, 통로는 100svh − 56px. 주소창이 숨어 화면이 커지면
+   남는 높이를 이 막대가 흡수하고, 버튼은 늘 위쪽 56px 안에 있습니다. */
+.nav{
+  flex:1 1 auto; min-height:var(--nav-h);
+  display:flex; align-items:flex-start;
+  background:var(--bg); border-top:1px solid var(--line);
+  transition:background .45s var(--ease), border-color .45s var(--ease);
+}
+.nav button{
+  flex:1; height:var(--nav-h); appearance:none; border:0;
+  background:transparent; cursor:pointer; padding:0 var(--s1);
+  font-family:var(--myeongjo); font-size:var(--t-sm);
+  letter-spacing:var(--ls-ko); color:var(--faint);
+  transition:color .25s var(--ease);
+}
+.nav button span{position:relative; display:inline-block; padding-bottom:var(--s1)}
+.nav button[aria-current="true"]{color:var(--accent)}
+.nav button[aria-current="true"] span::after{
+  content:''; position:absolute; left:0; right:0; bottom:0;
+  height:1px; background:var(--accent);
+}
+.nav button:focus-visible{outline:2px solid var(--accent); outline-offset:-4px}
+
+.deck[data-tone="red"] .nav{background:var(--deep); border-top-color:rgba(244,240,230,.25)}
+.deck[data-tone="red"] .nav button{color:#E7C8CE}
+.deck[data-tone="red"] .nav button[aria-current="true"]{color:#fff}
+.deck[data-tone="red"] .nav button[aria-current="true"] span::after{background:#fff}
+.deck[data-tone="paper"] .nav{background:var(--paper)}
+
+/* ═══ 공통 조판 ═════════════════════════════════════════════ */
+
+/* 가장자리 세로 타이포 — 포스터 테두리 글자 */
 .edge{
   position:absolute; top:0; bottom:0; display:flex; align-items:center;
   writing-mode:vertical-rl; pointer-events:none; user-select:none;
@@ -146,65 +123,80 @@ button,input,select,textarea{font:inherit; color:inherit}
 .edge--r{right:-.16em}
 .scr--red .edge{color:var(--paper); opacity:.12}
 
-/* ═══ 섹션 레이블 · 쪽번호 ══════════════════════════════════ */
-.eyebrow{
-  display:flex; align-items:baseline; gap:11px; margin:0 0 var(--eb-gap,22px);
-  font-family:var(--serif); font-size:10px;
-  letter-spacing:.32em; text-transform:uppercase; color:var(--accent);
-  flex:0 0 auto;
+/* 영문 레이블 — 화면 제목과 소제목에만 씁니다.
+   내용 안에서는 한글을 쓰세요. 한 화면에 영문 레이블이 여럿이면
+   무엇이 상위인지 알 수 없게 됩니다. */
+.eyebrow, .sub{
+  display:flex; align-items:baseline; gap:var(--s3);
+  font-family:var(--serif); font-size:var(--t-xs);
+  letter-spacing:var(--ls-label); text-transform:uppercase;
+  color:var(--accent); flex:0 0 auto;
 }
-.eyebrow i{flex:1; height:1px; background:currentColor; opacity:.4; transform:translateY(-3px)}
+.eyebrow{margin:0 0 var(--s5)}
+.sub{margin:0 0 var(--s3)}
+.eyebrow i, .sub i{
+  flex:1; height:1px; background:currentColor;
+  opacity:.4; transform:translateY(-3px);
+}
 .scr--red .eyebrow{color:#EFD6C6}
 
-.folio{
-  position:fixed; right:12px; bottom:11px; z-index:5;
-  font-family:var(--serif); font-size:10px; letter-spacing:.16em;
-  color:var(--faint); font-variant-numeric:tabular-nums;
-  pointer-events:none; margin:0; mix-blend-mode:multiply;
+/* 본문 */
+.copy{
+  margin:0; font-size:var(--t-sm); line-height:var(--lh-body);
+  color:var(--muted); white-space:pre-line;
 }
+.scr--red .copy{color:#F3E6DB}
 
-/* ═══ 커버 ══════════════════════════════════════════════════
-   사진이 화면을 통째로 채웁니다. 사진 아래쪽에는 만들 때 이미
-   크림색 띠가 그려져 있어서, 아래 안내가 얹혀도 이음매가 없습니다.
-   썸네일 줄과 버튼을 사진 밖에 두면 사진 높이가 그만큼 줄어들어
-   날짜 배지가 경계에 걸려 잘렸습니다. 이제 겹쳐 놓습니다. */
+/* ═══ 버튼 ══════════════════════════════════════════════════ */
+.pill{
+  appearance:none; cursor:pointer; display:inline-block; text-align:center;
+  border:1px solid currentColor; border-radius:999px;
+  background:transparent; color:var(--ink); text-decoration:none;
+  font-family:var(--myeongjo); font-size:var(--t-md);
+  letter-spacing:.08em; padding:var(--s3) var(--s6);
+  transition:.3s var(--ease);
+}
+.pill:hover{background:var(--ink); color:var(--paper)}
+.pill:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.pill[disabled]{opacity:.5; cursor:default}
+.pill--lg{padding:var(--s3) var(--s7)}
+.pill--sm{font-size:var(--t-sm); padding:var(--s2) var(--s4); letter-spacing:.04em}
+.pill--solid{background:var(--accent); border-color:var(--accent); color:#fff}
+.pill--solid:hover{background:var(--deep); border-color:var(--deep); color:#fff}
+.scr--red .pill{color:var(--paper)}
+.scr--red .pill:hover{background:var(--paper); color:var(--accent)}
+
+/* ═══ 01 표지 ═══════════════════════════════════════════════ */
 .cover{padding:0}
 .shot{flex:1 1 auto; min-height:0; position:relative; overflow:hidden; background:var(--bg)}
 .shot > img{
   width:100%; height:100%; object-fit:cover; object-position:center top;
   animation:shotIn 1.1s var(--ease) both;
 }
-/* 잡지 표지는 배경이 원래 크림색이라, 남는 자리를 크림으로 채워도
-   이음매가 보이지 않습니다. 잘라내지 않고 통째로 보여줍니다. */
+/* 잡지 표지는 배경이 크림색이라 통째로 보여줘도 이음매가 없습니다 */
 .shot.is-fit > img{object-fit:contain; object-position:center}
 @keyframes shotIn{from{opacity:0; transform:scale(1.05)}}
-/* 사진을 넘길 때 짧게 나타납니다 */
 @keyframes swap{from{opacity:0}}
+@keyframes riseIn{from{opacity:0; transform:translateY(10px)}}
 
-/* 사진이 몇 장 더 있는지 알리고, 누르면 전체화면으로 엽니다 */
 .shot__more{
-  position:absolute; right:12px; top:12px; z-index:2;
+  position:absolute; right:var(--s3); top:var(--s3); z-index:2;
   appearance:none; cursor:pointer;
-  display:flex; align-items:center; gap:6px;
-  border:1px solid rgba(21,18,15,.16); border-radius:999px;
+  display:flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:999px;
+  border:1px solid rgba(21,18,15,.16);
   background:rgba(244,240,230,.86); color:var(--ink);
-  font-family:var(--serif); font-size:11px; letter-spacing:.1em;
-  padding:6px 13px; backdrop-filter:blur(3px);
-  animation:veilIn .8s var(--ease) .5s both;
+  font-size:var(--t-sm); backdrop-filter:blur(3px);
+  animation:riseIn .8s var(--ease) .5s both;
 }
 .shot__more:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
-/* 사진 아래에 겹치는 안내 */
-/* 표지 아래 — 점 표시와 버튼만 둡니다 */
 .cover__foot{
-  flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:13px;
-  padding:16px var(--gutter) calc(14px + env(safe-area-inset-bottom));
-  background:var(--bg);
+  flex:0 0 auto; display:flex; flex-direction:column; align-items:center;
+  gap:var(--s3); background:var(--bg);
+  padding:var(--s4) var(--gutter) calc(var(--s4) + env(safe-area-inset-bottom));
 }
-.dots{
-  display:flex; gap:7px;
-  animation:veilIn .8s var(--ease) .45s both;
-}
+.dots{display:flex; gap:var(--s2); animation:riseIn .8s var(--ease) .45s both}
 .dots button{
   appearance:none; border:0; cursor:pointer; padding:0;
   width:7px; height:7px; border-radius:50%;
@@ -212,20 +204,144 @@ button,input,select,textarea{font:inherit; color:inherit}
 }
 .dots button[aria-pressed="true"]{background:var(--accent); transform:scale(1.25)}
 .dots button:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
-/* 사진 속 날짜 배지가 아주 얇은 선인데 버튼이 먹색 굵은 테두리라
-   따로 놀았습니다. 같은 무게의 크림슨 얇은 선으로 맞춥니다. */
-.veil .pill{
-  border-color:var(--accent); color:var(--accent);
-  font-size:14.5px; letter-spacing:.2em; padding:12px 30px;
-  animation:veilIn .8s var(--ease) .62s both;
-}
-.veil .pill:hover{background:var(--accent); color:#fff}
 
-/* ═══ 앨범 ══════════════════════════════════════════════════ */
-.scr--album{background:var(--paper)}
+.veil__rule{width:26px; height:1px; background:var(--accent); border:0; margin:0}
+.cover__foot .pill{animation:riseIn .8s var(--ease) .62s both}
+
+/* ═══ 02 인사말 · 식순 ══════════════════════════════════════ */
+.poem{
+  margin:0; flex:0 0 auto; white-space:pre-line;
+  font-family:var(--myeongjo); font-weight:400;
+  font-size:var(--t-lg); line-height:var(--lh-poem); letter-spacing:var(--ls-ko-lg);
+}
+.signoff{
+  margin:var(--s5) 0 0; flex:0 0 auto; text-align:left;
+  font-family:var(--myeongjo); font-size:var(--t-sm);
+  line-height:var(--lh-body); color:var(--muted);
+}
+.signoff b{font-weight:400; color:var(--ink); font-size:var(--t-md)}
+.signoff em{font-style:normal; color:var(--accent); padding:0 var(--s1)}
+
+/* 날짜 한 줄 — 표시용 숫자라 Prata 를 씁니다 */
+.dateline{
+  display:flex; align-items:center; gap:var(--s3); flex:0 0 auto;
+  margin:var(--s6) 0 var(--s6);
+  font-family:var(--serif); font-size:var(--t-md);
+  letter-spacing:var(--ls-num); color:var(--ink);
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.dateline i{flex:1; height:1px; background:var(--accent); opacity:.45}
+
+/* ═══ 표 — 식순과 교통 안내 ═════════════════════════════════ */
+.tab{width:100%; border-collapse:collapse; margin:0; flex:0 0 auto}
+.tab td{
+  padding:var(--s3) 0; border-bottom:1px solid var(--line);
+  vertical-align:top;
+}
+.tab tr:first-child td{border-top:1px solid var(--accent)}
+.tab tr:last-child td{border-bottom:0}
+
+/* 왼쪽 칸 — 시각 또는 분류. 표 안의 숫자는 본문 글꼴로 통일합니다. */
+.tab .t-when{
+  width:74px; padding-right:var(--s4); white-space:nowrap;
+  font-family:var(--sans); font-size:var(--t-md);
+  letter-spacing:var(--ls-num); font-variant-numeric:tabular-nums;
+  color:var(--faint);
+}
+.tab .t-what{
+  font-family:var(--myeongjo); font-size:var(--t-md);
+  line-height:var(--lh-tight); letter-spacing:var(--ls-ko);
+}
+.tab .t-what small{
+  display:block; margin-top:var(--s1);
+  font-family:var(--sans); font-size:var(--t-sm);
+  line-height:var(--lh-tight); color:var(--muted); letter-spacing:var(--ls-ko);
+}
+.tab tr.is-key .t-when{color:var(--accent)}
+.tab tr.is-key .t-what{font-weight:700}
+
+/* 교통 안내 — 분류는 한글, 값은 본문과 같은 크기 */
+.tab--ways .t-when{
+  width:62px; font-family:var(--sans); font-size:var(--t-sm);
+  letter-spacing:var(--ls-ko); color:var(--accent);
+  padding-top:2px;
+}
+.tab--ways .t-what{
+  font-family:var(--sans); font-size:var(--t-md);
+  line-height:var(--lh-tight); color:var(--ink);
+}
+
+/* 버스 번호 · 셔틀 시각 — 표 안의 숫자 */
+.chips{
+  display:flex; flex-wrap:wrap; gap:var(--s1); margin:var(--s2) 0 0;
+  font-family:var(--sans); font-size:var(--t-sm);
+  letter-spacing:var(--ls-num); font-variant-numeric:tabular-nums;
+  color:var(--ink);
+}
+.chips span{
+  border:1px solid var(--line); background:var(--bg);
+  padding:2px var(--s2);
+}
+.chips:first-child{margin-top:0}
+.leg{
+  display:block; margin-top:var(--s3); font-style:normal;
+  font-size:var(--t-sm); color:var(--muted);
+}
+.leg:first-child{margin-top:0}
+
+/* ═══ 03 오시는 길 ══════════════════════════════════════════ */
+.venue{margin:0 0 var(--s4); flex:0 0 auto}
+.venue h2{
+  margin:0; font-family:var(--myeongjo); font-weight:400;
+  font-size:var(--t-xl); line-height:var(--lh-tight); letter-spacing:var(--ls-ko-lg);
+}
+.venue p{margin:var(--s2) 0 0; font-size:var(--t-sm); color:var(--muted)}
+
+.map{
+  width:100%; flex:1 1 auto; min-height:180px;
+  background:var(--sunk); border:1px solid var(--line);
+  overflow:hidden; position:relative;
+}
+.map iframe{width:100%; height:100%; border:0; display:block}
+.map__home{
+  position:absolute; left:var(--s2); top:var(--s2); z-index:2;
+  appearance:none; cursor:pointer;
+  background:var(--paper); color:var(--ink);
+  border:1px solid var(--line);
+  font-family:var(--myeongjo); font-size:var(--t-xs);
+  letter-spacing:var(--ls-ko); padding:var(--s1) var(--s3);
+  box-shadow:0 1px 5px rgba(21,18,15,.16);
+}
+.map__home:hover{background:var(--accent); border-color:var(--accent); color:#fff}
+.map__home:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.map__pin{
+  background:var(--accent); color:#fff; white-space:nowrap;
+  font-family:var(--myeongjo); font-size:var(--t-xs);
+  padding:var(--s1) var(--s2); transform:translate(-50%,-100%);
+  box-shadow:0 2px 8px rgba(21,18,15,.25);
+}
+
+/* 지도 아래 실행 단추 — 알약 대신 한 덩어리 띠로 두어
+   지도와 표 사이에서 자기 자리를 분명히 합니다. */
+.acts{
+  display:flex; flex:0 0 auto; margin:var(--s3) 0 var(--s5);
+  border:1px solid var(--line); background:var(--bg);
+}
+.acts button{
+  flex:1; appearance:none; cursor:pointer; border:0;
+  border-left:1px solid var(--line); background:transparent;
+  padding:var(--s3) var(--s1); color:var(--accent);
+  font-family:var(--myeongjo); font-size:var(--t-sm); letter-spacing:var(--ls-ko);
+  transition:.2s var(--ease);
+}
+.acts button:first-child{border-left:0}
+.acts button:hover{background:var(--accent); color:#fff}
+.acts button:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+
+/* ═══ 04 앨범 ═══════════════════════════════════════════════ */
 .album{
   flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
-  display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; align-content:start;
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--s1); align-content:start;
 }
 .album button{
   appearance:none; border:0; padding:0; cursor:pointer;
@@ -234,190 +350,50 @@ button,input,select,textarea{font:inherit; color:inherit}
 .album img{width:100%; height:100%; object-fit:cover; display:block}
 .album button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
-/* 안내 위에 놓이는 짧은 크림슨 선 — 잡지 조판의 표시 */
-.veil__rule{
-  width:26px; height:1px; background:var(--accent); border:0; margin:0;
-  animation:veilIn .8s var(--ease) .34s both;
-}
-@keyframes veilIn{from{opacity:0; transform:translateY(10px)}}
-
-@media (prefers-reduced-motion:reduce){
-  .shot > img, .shot__more, .veil__where, .veil .pill, .thumbs{animation:none !important}
-}
-
-/* ═══ 버튼 — 사진 속 2026.11.28 배지와 같은 얇은 선 타원 ════ */
-.pill{
-  appearance:none; cursor:pointer;
-  border:1px solid currentColor; border-radius:999px;
-  background:transparent; color:var(--ink); text-decoration:none;
-  font-family:var(--myeongjo); font-size:15px; letter-spacing:.14em;
-  padding:12px 30px; transition:.3s var(--ease); text-align:center;
-  display:inline-block;
-}
-.pill:hover{background:var(--ink); color:var(--paper)}
-.pill:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
-.pill[disabled]{opacity:.5; cursor:default}
-.scr--red .pill{color:var(--paper)}
-.scr--red .pill:hover{background:var(--paper); color:var(--accent)}
-.pill--lg{font-size:16px; padding:14px 38px}
-.pill--sm{font-size:12.5px; padding:7px 15px; letter-spacing:.03em}
-.pill--solid{background:var(--accent); border-color:var(--accent); color:#fff}
-.pill--solid:hover{background:var(--deep); border-color:var(--deep); color:#fff}
-
-/* ═══ 날짜 한 줄 ════════════════════════════════════════════
-   거대한 숫자는 식순 표와 서로 밀어내고, 가운데 정렬이 좌우 정렬과
-   섞여 어수선했습니다. 얇은 선 사이에 놓인 한 줄로 낮춥니다. */
-.dateline{
-  display:flex; align-items:center; gap:13px; flex:0 0 auto;
-  margin:20px 0 16px;
-  font-family:var(--serif); font-size:13px; letter-spacing:.16em;
-  color:var(--ink); font-variant-numeric:tabular-nums; white-space:nowrap;
-}
-.dateline i{flex:1; height:1px; background:var(--accent); opacity:.45}
-
-/* ═══ 인사말 ════════════════════════════════════════════════ */
-.poem{
-  font-family:var(--myeongjo); font-size:17.5px; font-weight:400; line-height:2.05;
-  letter-spacing:-.012em; margin:0; white-space:pre-line; flex:0 0 auto;
-}
-/* 혼주도 시와 같은 왼쪽 정렬로 맞춥니다.
-   가운데·왼쪽·오른쪽이 한 화면에서 섞이면 어수선해집니다. */
-.signoff{
-  margin:16px 0 0; text-align:left; flex:0 0 auto;
-  font-family:var(--myeongjo); font-size:13.5px; line-height:1.95; color:var(--muted);
-}
-.signoff b{font-weight:400; color:var(--ink); font-size:14.5px}
-.signoff em{font-style:normal; color:var(--accent); padding:0 4px}
-
-.copy{color:var(--muted); font-size:14px; line-height:1.9; white-space:pre-line; margin:0}
-.scr--red .copy{color:#F3E6DB}
-
-/* ═══ 표 조판 — 식순과 교통 안내에 함께 씁니다 ══════════════ */
-.tab{width:100%; border-collapse:collapse; margin:0; flex:0 0 auto}
-/* 표 위 소제목. th 로 두면 .t-when 의 폭·글자 크기까지 물려받아
-   글자가 칸과 어긋납니다. 표 밖에 따로 놓습니다. */
-.sub{
-  display:flex; align-items:center; gap:11px; margin:0 0 10px;
-  font-family:var(--serif); font-size:10px;
-  letter-spacing:.3em; text-transform:uppercase; color:var(--accent);
-  flex:0 0 auto;
-}
-.sub i{flex:1; height:1px; background:var(--accent); opacity:.4}
-.tab td{padding:8px 0; border-bottom:1px solid var(--line); vertical-align:top}
-.tab tr:first-child td{border-top:1px solid var(--accent)}
-.tab tr:last-child td{border-bottom:0}
-.tab .t-when{
-  width:54px; padding-top:12px; padding-right:16px;
-  font-family:var(--serif); font-size:13.5px;
-  font-variant-numeric:tabular-nums; white-space:nowrap;
-}
-.tab .t-what{font-family:var(--myeongjo); font-size:15px; line-height:1.5; padding-top:9px}
-.tab .t-what small{
-  display:block; font-family:var(--sans); font-size:12px; line-height:1.5;
-  color:var(--muted); margin-top:2px; letter-spacing:0;
-}
-.tab tr.is-key .t-when{color:var(--accent)}
-.tab tr.is-key .t-what{font-weight:700}
-
-.tab--ways .t-when{
-  width:74px; padding-top:16px; font-size:10.5px; letter-spacing:.18em;
-  text-transform:uppercase; color:var(--accent);
-}
-/* 어르신 하객이 읽어야 할 정보라 본문만큼 키웁니다 */
-.tab--ways .t-what{
-  font-family:var(--sans); font-size:16px; line-height:1.55;
-  color:var(--ink); padding-top:13px;
-}
-
-/* 셔틀 시각과 버스 번호에 함께 쓰는 알약 */
-.chips{
-  display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 0;
-  font-family:var(--serif); font-size:13.5px; color:var(--ink);
-  font-variant-numeric:tabular-nums;
-}
-.chips span{border:1px solid var(--faint); border-radius:999px; padding:3px 11px}
-.chips:first-child{margin-top:0}
-.leg{display:block; font-size:13px; color:var(--muted); margin-top:12px; font-style:normal}
-.leg:first-child{margin-top:0}
-
-/* ═══ 오시는 길 ═════════════════════════════════════════════ */
-.venue{margin:0 0 18px; flex:0 0 auto}
-.venue h2{margin:0; font-family:var(--myeongjo); font-size:22px; font-weight:400; line-height:1.45}
-.venue p{margin:6px 0 0; font-size:14.5px; color:var(--ink)}
-.map{
-  width:100%; flex:1 1 auto; min-height:110px; max-height:180px;
-  background:var(--sunk); border:1px solid var(--line); overflow:hidden;
-  position:relative;
-}
-/* 지도 색이 튀지 않게 톤을 맞춥니다. 버튼까지 흐려지지 않도록
-   .map 이 아니라 iframe 에만 겁니다. */
-.map iframe{width:100%; height:100%; border:0; display:block;
-  filter:saturate(.55) contrast(.95)}
-
-/* 지도를 이리저리 옮긴 뒤 예식장으로 되돌아오는 버튼 */
-.map__home{
-  position:absolute; left:8px; top:8px; z-index:2;
-  appearance:none; cursor:pointer;
-  background:var(--paper); color:var(--ink);
-  border:1px solid var(--line); border-radius:999px;
-  font-family:var(--myeongjo); font-size:11.5px; letter-spacing:.03em;
-  padding:6px 13px; box-shadow:0 1px 5px rgba(21,18,15,.16);
-  transition:.2s var(--ease);
-}
-.map__home:hover{background:var(--accent); border-color:var(--accent); color:#fff}
-.map__home:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
-.btnrow{display:flex; gap:6px; margin:12px 0 22px; flex:0 0 auto}
-.btnrow .pill{flex:1; padding-inline:0}
-
-/* ═══ 크림슨 피날레 ═════════════════════════════════════════ */
+/* ═══ 05 참석 · 연락처 · 인사 ═══════════════════════════════ */
 .finale{text-align:center}
-/* R.S.V.P. 만 크게 두면 무슨 뜻인지 모르는 하객이 많습니다.
-   영문은 작은 레이블로 내리고 한글을 제목으로 올립니다. */
 .rsvp__mark{
-  font-family:var(--myeongjo); margin:0; line-height:1.45;
-  font-size:clamp(22px,6.6vw,30px); letter-spacing:.02em; color:var(--paper);
+  margin:0; font-family:var(--myeongjo); font-weight:400;
+  font-size:var(--t-xl); line-height:var(--lh-tight);
+  letter-spacing:var(--ls-ko-lg); color:var(--paper);
 }
-@supports (font-size:1cqw){ .rsvp__mark{font-size:7.2cqw} }
-.rsvp__when{margin:12px 0 0; font-family:var(--sans); font-size:14px; color:#F6E7DC}
-.rsvp__when b{font-weight:400; border-bottom:1px solid rgba(255,255,255,.5); padding-bottom:2px}
-.rsvp__mine{margin:12px 0 0; font-size:12.5px; color:#EBCFD5}
+.rsvp__when{
+  margin:var(--s2) 0 0; font-size:var(--t-sm); color:#F6E7DC;
+}
+.rsvp__mine{margin:var(--s3) 0 0; font-size:var(--t-sm); color:#EBCFD5}
 
 .finale__mark{
-  font-family:var(--serif); margin:0; line-height:.96;
-  font-size:clamp(24px,8vw,38px); color:var(--paper);
+  margin:0; font-family:var(--serif); font-size:var(--t-2xl);
+  line-height:1; color:var(--paper);
 }
-@supports (font-size:1cqw){ .finale__mark{font-size:7.6cqw} }
 .finale__names{
-  margin:12px 0 0; font-family:var(--myeongjo); font-size:16px;
-  letter-spacing:.06em; color:var(--paper);
+  margin:var(--s3) 0 0; font-family:var(--myeongjo);
+  font-size:var(--t-md); letter-spacing:var(--ls-ko); color:var(--paper);
 }
-.finale hr{border:0; height:1px; background:rgba(244,240,230,.3); margin:11px 0}
+.finale hr{border:0; height:1px; background:rgba(244,240,230,.3); margin:var(--s5) 0}
 
-/* 신랑측 · 신부측만 가로선으로 나눕니다.
-   사람마다 선을 그으면 여섯 줄이 표처럼 보여 답답해집니다. */
 .side{text-align:left}
 .side + .side{
-  margin-top:16px; padding-top:16px;
+  margin-top:var(--s4); padding-top:var(--s4);
   border-top:1px solid rgba(244,240,230,.3);
 }
 .side > h3{
-  margin:0 0 6px; font-family:var(--myeongjo); font-size:15.5px;
-  font-weight:400; letter-spacing:.06em; color:#F7E9DC;
+  margin:0 0 var(--s1); font-family:var(--myeongjo); font-weight:400;
+  font-size:var(--t-md); letter-spacing:var(--ls-ko); color:#F7E9DC;
 }
-.who{
-  display:flex; align-items:center; gap:10px;
-  padding:4px 0; text-align:left;
-}
+.who{display:flex; align-items:center; gap:var(--s3); padding:var(--s1) 0}
 .who__role{
-  flex:0 0 58px; font-family:var(--sans); font-size:12px;
-  color:#E3C3CA; letter-spacing:.02em;
+  flex:0 0 58px; font-size:var(--t-xs); color:#E3C3CA;
 }
 .who__name{
-  flex:1; margin:0; font-family:var(--myeongjo); font-size:15.5px;
-  line-height:1.35; color:var(--paper);
+  flex:1; margin:0; font-family:var(--myeongjo); font-size:var(--t-md);
+  line-height:var(--lh-tight); letter-spacing:var(--ls-ko); color:var(--paper);
 }
-.who__act{display:flex; gap:5px; flex:0 0 auto}
-.who__act .pill{font-size:11.5px; padding:5px 12px; letter-spacing:.02em}
+.who__act{display:flex; gap:var(--s1); flex:0 0 auto}
+.who__act .pill{font-size:var(--t-xs); padding:var(--s1) var(--s3); letter-spacing:0}
+
+.btnrow{display:flex; gap:var(--s2); flex:0 0 auto}
+.btnrow .pill{flex:1; padding-inline:0}
 
 /* ═══ 사진 크게 보기 ════════════════════════════════════════ */
 .lightbox{
@@ -427,17 +403,18 @@ button,input,select,textarea{font:inherit; color:inherit}
 .lightbox img{max-width:100%; max-height:100dvh; object-fit:contain}
 .lightbox__x, .lightbox__nav{
   position:absolute; appearance:none; border:0; background:transparent;
-  color:#F4F0E6; cursor:pointer; font-size:26px; line-height:1;
+  color:var(--paper); cursor:pointer; line-height:1;
   width:56px; height:56px; display:grid; place-items:center;
 }
-.lightbox__x{top:calc(6px + env(safe-area-inset-top)); right:6px; font-size:22px}
-.lightbox__nav--prev{left:2px; top:50%; transform:translateY(-50%)}
-.lightbox__nav--next{right:2px; top:50%; transform:translateY(-50%)}
+.lightbox__x{top:calc(var(--s2) + env(safe-area-inset-top)); right:var(--s2); font-size:var(--t-xl)}
+.lightbox__nav{font-size:var(--t-3xl); top:50%; transform:translateY(-50%)}
+.lightbox__nav--prev{left:0}
+.lightbox__nav--next{right:0}
 .lightbox__count{
-  position:absolute; bottom:calc(14px + env(safe-area-inset-bottom)); left:0; right:0;
-  text-align:center; margin:0; color:#C6BCA9;
-  font-family:var(--serif); font-size:11px; letter-spacing:.24em;
-  font-variant-numeric:tabular-nums;
+  position:absolute; bottom:calc(var(--s4) + env(safe-area-inset-bottom));
+  left:0; right:0; text-align:center; margin:0; color:#C6BCA9;
+  font-family:var(--sans); font-size:var(--t-sm);
+  letter-spacing:var(--ls-num); font-variant-numeric:tabular-nums;
 }
 .lightbox__x:focus-visible, .lightbox__nav:focus-visible{outline:2px solid var(--accent)}
 
@@ -447,106 +424,116 @@ button,input,select,textarea{font:inherit; color:inherit}
 .modal__panel{
   position:relative; width:100%; max-width:var(--page);
   max-height:88dvh; overflow-y:auto; background:var(--paper); color:var(--ink);
-  padding:26px var(--gutter) calc(26px + env(safe-area-inset-bottom));
-  animation:rise .35s var(--ease);
+  padding:var(--s5) var(--gutter) calc(var(--s5) + env(safe-area-inset-bottom));
+  animation:riseIn .35s var(--ease);
 }
-@keyframes rise{from{transform:translateY(24px); opacity:0}}
-.modal__head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px}
-.modal__title{margin:0; font-family:var(--serif); font-size:26px; letter-spacing:.05em; line-height:1}
-.modal__head p{margin:8px 0 0; font-size:13px; color:var(--muted)}
+.modal__head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--s4)}
+.modal__title{
+  margin:0; font-family:var(--serif); font-size:var(--t-xl);
+  letter-spacing:var(--ls-label); line-height:1;
+}
+.modal__head p{margin:var(--s2) 0 0; font-size:var(--t-sm); color:var(--muted)}
 .modal__x{
   appearance:none; border:0; background:transparent; cursor:pointer;
-  font-size:20px; line-height:1; color:var(--muted); padding:2px 0 0 12px;
+  font-size:var(--t-lg); line-height:1; color:var(--muted); padding:0 0 0 var(--s3);
 }
 .modal__x:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .modal__editing{
-  margin:0 0 4px; padding:11px 13px; background:var(--sunk);
-  font-size:12.5px; line-height:1.6; color:var(--muted); border-left:2px solid var(--accent);
+  margin:0 0 var(--s1); padding:var(--s3); background:var(--sunk);
+  font-size:var(--t-sm); line-height:var(--lh-tight);
+  color:var(--muted); border-left:2px solid var(--accent);
 }
-.modal__foot{margin:16px 0 0; text-align:center; font-size:12.5px; color:var(--muted)}
+.modal__foot{margin:var(--s4) 0 0; text-align:center; font-size:var(--t-sm); color:var(--muted)}
 
-.field{margin-top:18px}
+.field{margin-top:var(--s5)}
 .field > span, .field > label{
-  display:block; font-size:12.5px; color:var(--faint); margin-bottom:7px;
-  font-weight:600; letter-spacing:.01em;
+  display:block; margin-bottom:var(--s2);
+  font-size:var(--t-sm); color:var(--faint); font-weight:600;
 }
 .field em{font-style:normal; color:var(--accent); font-weight:400}
-.field__hint{margin:7px 0 0; font-size:11.5px; color:var(--faint); line-height:1.6}
-/* 묻는 대신 알려주는 문구 */
-.field__note{
-  margin:18px 0 0; padding:13px 15px; background:var(--sunk);
-  border-left:2px solid var(--accent);
-  font-size:13.5px; line-height:1.7; color:var(--muted);
-}
-.field__note b{
-  color:var(--accent); font-weight:400; letter-spacing:.02em; margin-right:6px;
-}
-.field__err{margin:6px 0 0; font-size:12px; color:var(--accent); display:none}
+.field__hint{margin:var(--s2) 0 0; font-size:var(--t-xs); color:var(--faint); line-height:var(--lh-tight)}
+.field__err{margin:var(--s2) 0 0; font-size:var(--t-sm); color:var(--accent); display:none}
 .field.is-invalid .field__err{display:block}
 .field.is-invalid .input,
 .field.is-invalid .choice span{border-color:var(--accent)}
 
+/* 묻는 대신 알려주는 문구 */
+.field__note{
+  margin:var(--s5) 0 0; padding:var(--s3) var(--s4);
+  background:var(--sunk); border-left:2px solid var(--accent);
+  font-size:var(--t-sm); line-height:var(--lh-body); color:var(--muted);
+}
+.field__note b{color:var(--accent); font-weight:400; margin-right:var(--s2)}
+
 .input{
-  width:100%; padding:12px 14px; background:#fff;
-  border:1px solid var(--line); border-radius:0; font-size:16px;
+  width:100%; padding:var(--s3) var(--s4); background:#fff;
+  border:1px solid var(--line); border-radius:0;
+  font-size:16px;   /* 이보다 작으면 아이폰이 입력할 때 화면을 확대합니다 */
 }
 .input:focus{outline:2px solid var(--accent); outline-offset:-1px; border-color:var(--accent)}
-textarea.input{resize:vertical; min-height:64px; line-height:1.7}
+textarea.input{resize:vertical; min-height:64px; line-height:var(--lh-body)}
 
-.choices{display:flex; gap:6px}
+.choices{display:flex; gap:var(--s2)}
 .choice{flex:1}
 .choice input{position:absolute; opacity:0; pointer-events:none}
 .choice span{
-  display:block; text-align:center; padding:11px 4px; cursor:pointer;
-  border:1px solid var(--line); background:#fff; font-size:14px; transition:.2s var(--ease);
+  display:block; text-align:center; padding:var(--s3) var(--s1); cursor:pointer;
+  border:1px solid var(--line); background:#fff;
+  font-size:var(--t-md); transition:.2s var(--ease);
 }
 .choice input:checked + span{background:var(--accent); border-color:var(--accent); color:#fff}
 .choice input:focus-visible + span{outline:2px solid var(--accent); outline-offset:2px}
 
-.counts{display:flex; gap:18px; flex-wrap:wrap}
-.count{display:flex; align-items:center; gap:10px}
-.count__label{font-size:13px; color:var(--muted)}
+.counts{display:flex; gap:var(--s5); flex-wrap:wrap}
+.count{display:flex; align-items:center; gap:var(--s3)}
+.count__label{font-size:var(--t-sm); color:var(--muted)}
 .count__ctrl{display:flex; align-items:center; border:1px solid var(--line); background:#fff}
 .count__ctrl button{
   appearance:none; border:0; background:transparent; cursor:pointer;
-  width:40px; height:40px; font-size:18px; color:var(--accent);
+  width:40px; height:40px; font-size:var(--t-lg); color:var(--accent);
 }
 .count__ctrl button:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
-.count__ctrl output{width:40px; text-align:center; font-family:var(--serif); font-size:16px}
+.count__ctrl output{
+  width:40px; text-align:center; font-size:var(--t-md);
+  font-variant-numeric:tabular-nums;
+}
 
-.consent{display:flex; align-items:flex-start; gap:9px}
+.consent{display:flex; align-items:flex-start; gap:var(--s2)}
 .consent input{width:18px; height:18px; margin-top:3px; accent-color:var(--accent); flex:0 0 auto}
-.consent label{font-size:13.5px; color:var(--ink); font-weight:400; margin:0; line-height:1.6}
+.consent label{
+  margin:0; font-size:var(--t-sm); color:var(--ink);
+  font-weight:400; line-height:var(--lh-body);
+}
 
-.modal__submit{width:100%; margin-top:24px; padding:15px; font-size:15px}
+.modal__submit{width:100%; margin-top:var(--s5); padding:var(--s4)}
 .linkbtn{
   appearance:none; border:0; background:transparent; cursor:pointer; padding:0;
-  color:var(--accent); text-decoration:underline; text-underline-offset:3px; font-size:12.5px;
+  color:var(--accent); text-decoration:underline; text-underline-offset:3px;
+  font-size:var(--t-sm);
 }
 .linkbtn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
 /* 봇 잡는 함정 — 사람에게는 보이지 않습니다 */
 .trap{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
 
-.done{text-align:center; padding:20px 0 8px}
+.done{text-align:center; padding:var(--s5) 0 var(--s2)}
 .done__mark{
-  font-family:var(--serif); font-size:30px; margin:0 0 10px;
-  color:var(--accent); letter-spacing:.04em;
+  margin:0 0 var(--s3); font-family:var(--serif); font-size:var(--t-2xl);
+  letter-spacing:var(--ls-label); color:var(--accent);
 }
 
 /* ═══ 안내 문구 ═════════════════════════════════════════════ */
 .toast{
-  position:fixed; left:50%; bottom:calc(26px + env(safe-area-inset-bottom));
+  position:fixed; left:50%; bottom:calc(var(--s7) + env(safe-area-inset-bottom));
   transform:translate(-50%, 12px); z-index:60;
-  background:var(--ink); color:var(--paper); padding:11px 20px;
-  font-size:13.5px; border-radius:999px; white-space:nowrap;
+  background:var(--ink); color:var(--paper);
+  padding:var(--s3) var(--s5); font-size:var(--t-sm);
+  border-radius:999px; white-space:nowrap;
   opacity:0; pointer-events:none; transition:.3s var(--ease);
-  max-width:calc(100vw - 40px); overflow:hidden; text-overflow:ellipsis;
+  max-width:calc(100vw - var(--s7)); overflow:hidden; text-overflow:ellipsis;
 }
 .toast.is-on{opacity:1; transform:translate(-50%, 0)}
 
 @media (prefers-reduced-motion:reduce){
-  .deck{scroll-behavior:auto}
-  .modal__panel{animation:none}
-  *{transition:none !important}
+  *{transition:none !important; animation:none !important}
 }

@@ -64,13 +64,13 @@ TITLE_ROLES = [
 # 사진이 페이지에 그대로 이어져 이음매가 보이지 않습니다.
 FRESH_TALL_TOP = 0.080      # 위쪽 아치를 더 덜어 아래 여백을 늡니다
 FRESH_TALL_BOTTOM = 0.895   # 날짜 배지 타원 바로 아래 (타원은 0.856~0.886)
-FRESH_TALL_FOOT = 0.20      # 완성 높이 중 바닥 연장이 차지하는 비율
-FRESH_TALL_RATIO = 0.680     # 완성본 가로/세로
+FRESH_TALL_FOOT = 0.0      # 완성 높이 중 바닥 연장이 차지하는 비율
+FRESH_TALL_RATIO = 0.0     # 완성본 가로/세로
 # 바닥 연장을 넉넉히 두는 이유:
 #   화면에서 사진 아래에 장소·버튼 안내가 겹칩니다. 연장이 짧으면
 #   그 안내가 날짜 배지를 덮거나, object-fit:cover 가 배지를 잘라냅니다.
-#   표지 아래에 점 표시와 버튼만 두므로 사진칸이 커졌습니다.
-#   비율 0.68 은 그 칸에 맞춘 값이라 거의 잘리지 않습니다.
+#   FOOT 0 = 크림색 이어붙임 없음. 표지 아래에 글씨를 얹지 않으므로
+#   더는 필요 없습니다. RATIO 0 = 원본 폭을 그대로 씁니다.
 PAGE_BG = (0xE9, 0xE4, 0xD6)   # tokens.css 의 --bg 와 같아야 합니다
 
 # OG 카드 — 잡지 포스터에서 잘라낼 세로 구간 (제목 + 이름 + 날짜 + 커플 상단)
@@ -180,7 +180,10 @@ def build_title():
             photo_h = bot - top
             full_h = round(photo_h / (1 - FRESH_TALL_FOOT))
             foot_h = full_h - photo_h
-            crop_w = min(im.width, round(full_h * FRESH_TALL_RATIO))
+            if FRESH_TALL_RATIO <= 0:
+                crop_w = im.width          # 원본 폭 그대로
+            else:
+                crop_w = min(im.width, round(full_h * FRESH_TALL_RATIO))
             left = (im.width - crop_w) // 2
 
             photo = im.crop((left, top, left + crop_w, bot))
@@ -188,6 +191,16 @@ def build_title():
             # 바닥 연장 — 사진 맨 아랫줄에서 이어받아 페이지 배경색으로.
             # 단색으로 채우면 사진 아래 좌우의 어두운 벽과 층이 져서
             # 가로 이음매가 보입니다. 열마다 제 색에서 출발시킵니다.
+            if foot_h <= 0:
+                base = bottom_color(photo)   # generated.css 용
+                for w in (720, 1080):
+                    size = save_webp(photo, OUT_TITLE / f"fresh-tall-{w}.webp", w)
+                    log(f"      fresh-tall-{w}.webp  {size[0]}x{size[1]}  "
+                        f"{kb(OUT_TITLE / f'fresh-tall-{w}.webp')}")
+                found["_footColor"] = base
+                log("      바닥 연장 없음 — 원본 크롭 그대로")
+                continue
+
             overlap = max(8, photo.height // 40)
             blend_h = foot_h + overlap
 
