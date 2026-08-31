@@ -135,28 +135,75 @@
 
   /* ── 오시는 길 ──────────────────────────────────────────── */
 
+  // 버스 번호처럼 '이름'은 상자에 넣고, 시각은 한 줄로 늘어놓습니다.
+  // 시각까지 상자에 넣으면 여덟 개가 화면에서 가장 세게 보이는데
+  // 정작 중요도는 가장 낮습니다.
   function chipRow(list) {
-    const box = el('span', 'chips');
+    const box = el('p', 'chips');
     list.forEach(c => box.appendChild(el('span', null, c)));
     return box;
   }
 
+  function timeRow(list) {
+    return el('p', 'times', list.join('  ·  '));
+  }
+
+  /* 오시는 방법을 한 화면에 다 펼치면 셔틀만 여섯 줄이라 표가 무너집니다.
+     버튼으로 고르고, 고른 것만 팝업으로 보여줍니다. */
   function renderWays() {
-    const body = $('#ways');
-    (CONTENT.wedding.ways || []).forEach(w => {
-      const tr = el('tr');
-      tr.appendChild(el('td', 't-when', w.label));
-      const td = el('td', 't-what');
+    const box = $('#ways');
+    (CONTENT.wedding.ways || []).forEach((w, i) => {
+      const b = el('button', null, w.label);
+      b.type = 'button';
+      b.setAttribute('aria-haspopup', 'dialog');
+      b.addEventListener('click', () => openWay(i));
+      box.appendChild(b);
+    });
+  }
 
-      if (w.text)  td.appendChild(document.createTextNode(w.text));
-      if (w.chips) td.appendChild(chipRow(w.chips));
-      (w.legs || []).forEach(leg => {
-        td.appendChild(el('em', 'leg', leg.text));
-        if (leg.chips) td.appendChild(chipRow(leg.chips));
-      });
+  let wayReturn = null;
+  let wayPushed = false;
 
-      tr.appendChild(td);
-      body.appendChild(tr);
+  function openWay(i) {
+    const w = CONTENT.wedding.ways[i];
+    const body = $('#waySheetBody');
+    body.textContent = '';
+
+    if (w.text)  body.appendChild(el('p', 'sheet__text', w.text));
+    if (w.chips) body.appendChild(chipRow(w.chips));
+    (w.legs || []).forEach(leg => {
+      body.appendChild(el('p', 'sheet__leg', leg.text));
+      if (leg.chips) body.appendChild(chipRow(leg.chips));
+      if (leg.times) body.appendChild(timeRow(leg.times));
+    });
+
+    $('#waySheetTitle').textContent = w.label;
+    wayReturn = document.activeElement;
+    $('#waySheet').hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('[data-way-close]').focus({ preventScroll: true });
+    try { history.pushState({ overlay: 'way' }, ''); wayPushed = true; } catch (e) {}
+  }
+
+  function closeWay(fromHistory) {
+    $('#waySheet').hidden = true;
+    document.body.style.overflow = '';
+    if (wayReturn) wayReturn.focus({ preventScroll: true });
+    const was = wayPushed;
+    wayPushed = false;
+    if (!fromHistory && was) history.back();
+  }
+
+  function wireWaySheet() {
+    const sheet = $('#waySheet');
+    sheet.addEventListener('click', e => {
+      if (e.target.closest('[data-way-close]')) closeWay();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !sheet.hidden) closeWay();
+    });
+    window.addEventListener('popstate', () => {
+      if (!sheet.hidden) closeWay(true);
     });
   }
 
@@ -779,6 +826,7 @@
   primeKakao();
   wireCopy();
   wireLightbox();
+  wireWaySheet();
   wireDeck();
   renderCover();
   renderAlbum().then(() => { if (window.__fitDeck) window.__fitDeck(); });

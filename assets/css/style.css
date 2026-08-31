@@ -269,17 +269,6 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .tab tr.is-key .t-when{color:var(--accent)}
 .tab tr.is-key .t-what{font-weight:700}
 
-/* 교통 안내 — 분류는 한글, 값은 본문과 같은 크기 */
-.tab--ways .t-when{
-  width:62px; font-family:var(--sans); font-size:var(--t-sm);
-  letter-spacing:var(--ls-ko); color:var(--accent);
-  padding-top:2px;
-}
-.tab--ways .t-what{
-  font-family:var(--sans); font-size:var(--t-md);
-  line-height:var(--lh-tight); color:var(--ink);
-}
-
 /* 버스 번호 · 셔틀 시각 — 표 안의 숫자 */
 .chips{
   display:flex; flex-wrap:wrap; gap:var(--s1); margin:var(--s2) 0 0;
