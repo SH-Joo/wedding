@@ -168,13 +168,13 @@ button,input,select,textarea{font:inherit; color:inherit}
    날짜 배지가 경계에 걸려 잘렸습니다. 이제 겹쳐 놓습니다. */
 .cover{padding:0}
 .shot{flex:1 1 auto; min-height:0; position:relative; overflow:hidden; background:var(--bg)}
-.shot img{
+.shot > img{
   width:100%; height:100%; object-fit:cover; object-position:center top;
   animation:shotIn 1.1s var(--ease) both;
 }
 /* 커버가 아닌 사진은 안내 높이(--veil-h)만큼 위에서 끝냅니다.
    그러지 않으면 사진이 장소·버튼 아래까지 파고들어 글씨를 가립니다. */
-.shot.is-plain img{
+.shot.is-plain > img{
   height:calc(100% - var(--veil-h, 200px));
   object-position:center;
   -webkit-mask-image:linear-gradient(to bottom, #000 calc(100% - 18px), transparent);
