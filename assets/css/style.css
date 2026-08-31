@@ -42,11 +42,8 @@ button,input,select,textarea{font:inherit; color:inherit}
    장을 옮기는 것도 브라우저 스크롤 스냅에 맡기지 않습니다.
    기기에 따라 관성을 못 잡아 두 장씩 지나갔습니다.            */
 
-/* 주소창이 차지하는 높이 = 100lvh − 100svh.
-   둘 다 상수라 이 차이도 상수입니다. 기기·브라우저마다 값이 달라도
-   CSS 가 알아서 맞춥니다. 주소창을 숨기지 않는 환경(데스크톱 등)에서는
-   차이가 0 이므로 최소값 56px 이 쓰이고 막대는 항상 보입니다. */
-:root{ --nav-h: max(56px, calc(100lvh - 100svh)); }
+/* 막대가 실제로 보이는 높이 */
+:root{ --nav-h: 56px; }
 
 .deck{
   position:fixed; left:0; right:0; top:0;
@@ -56,9 +53,12 @@ button,input,select,textarea{font:inherit; color:inherit}
   background:var(--bg);
 }
 
-/* 장이 지나가는 통로 */
+/* 장이 지나가는 통로.
+   100svh(주소창이 있을 때의 높이)에서 막대 높이를 뺍니다. svh 도 lvh 도
+   상수라 이 값은 절대 변하지 않고, 주소창이 있든 없든 통로 전체와
+   막대가 화면 안에 들어옵니다. */
 .rail{
-  flex:0 0 auto; height:calc(100lvh - var(--nav-h));
+  flex:0 0 auto; height:calc(100svh - var(--nav-h));
   position:relative; overflow:hidden;
   touch-action:pan-y;
 }
@@ -69,7 +69,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 .rail.is-dragging .rail__inner{transition:none}
 
 .scr{
-  height:calc(100lvh - var(--nav-h));
+  height:calc(100svh - var(--nav-h));
   display:flex; flex-direction:column;
   padding:var(--sec-y) var(--gutter);
   position:relative; overflow:hidden;
@@ -87,24 +87,26 @@ button,input,select,textarea{font:inherit; color:inherit}
 /* 드물게 내용이 한 화면을 넘치면 그 장만 안에서 스크롤됩니다 */
 .scr.is-tall{overflow-y:auto; -webkit-overflow-scrolling:touch}
 
-/* lvh 를 모르는 오래된 브라우저 — JS 가 잰 값을 씁니다 */
-@supports not (height: 100lvh){
-  .deck{height:var(--lvh, 100vh)}
-  .rail, .scr{height:calc(var(--lvh, 100vh) - var(--nav-h))}
+/* svh·lvh 를 모르는 오래된 브라우저 */
+@supports not (height: 100svh){
+  .deck{height:100vh}
+  .rail, .scr{height:calc(100vh - var(--nav-h))}
 }
 
 /* ═══ 아래 막대 ═════════════════════════════════════════════
-   주소창이 있으면 이 자리가 화면 밖으로 밀려 보이지 않고,
-   주소창이 숨으면 나타납니다. 장 높이는 그대로입니다. */
+   덱은 100lvh, 통로는 100svh − 56px 이므로 남는 높이(주소창이
+   숨었을 때 늘어나는 만큼)를 이 막대가 흡수합니다. 버튼은 위쪽
+   56px 안에 있어 주소창이 있든 없든 항상 보입니다. */
 .nav{
-  flex:0 0 auto; height:var(--nav-h);
-  display:flex; align-items:center;
+  flex:1 1 auto; min-height:var(--nav-h);
+  display:flex; align-items:flex-start;
   background:var(--bg); border-top:1px solid var(--line);
   transition:background .45s var(--ease), border-color .45s var(--ease);
 }
 .nav button{
-  flex:1; appearance:none; border:0; background:transparent; cursor:pointer;
-  padding:10px 2px; font-family:var(--myeongjo); font-size:12.5px;
+  flex:1; height:var(--nav-h); appearance:none; border:0;
+  background:transparent; cursor:pointer;
+  padding:0 2px; font-family:var(--myeongjo); font-size:12.5px;
   letter-spacing:.02em; color:var(--faint);
   transition:color .25s var(--ease);
 }
@@ -181,6 +183,8 @@ button,input,select,textarea{font:inherit; color:inherit}
           mask-image:linear-gradient(to bottom, #000 calc(100% - 18px), transparent);
 }
 @keyframes shotIn{from{opacity:0; transform:scale(1.05)}}
+/* 사진을 넘길 때 짧게 나타납니다 */
+@keyframes swap{from{opacity:0}}
 
 /* 사진이 몇 장 더 있는지 알리고, 누르면 전체화면으로 엽니다 */
 .shot__more{
@@ -252,7 +256,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 @keyframes veilIn{from{opacity:0; transform:translateY(10px)}}
 
 @media (prefers-reduced-motion:reduce){
-  .shot img, .shot__more, .veil__where, .veil .pill{animation:none}
+  .shot > img, .shot__more, .veil__where, .veil .pill, .thumbs{animation:none !important}
 }
 
 /* ═══ 버튼 — 사진 속 2026.11.28 배지와 같은 얇은 선 타원 ════ */
@@ -391,12 +395,12 @@ button,input,select,textarea{font:inherit; color:inherit}
   font-family:var(--serif); margin:0; line-height:.96;
   font-size:clamp(24px,8vw,38px); color:var(--paper);
 }
-@supports (font-size:1cqw){ .finale__mark{font-size:8.6cqw} }
+@supports (font-size:1cqw){ .finale__mark{font-size:7.6cqw} }
 .finale__names{
   margin:12px 0 0; font-family:var(--myeongjo); font-size:16px;
   letter-spacing:.06em; color:var(--paper);
 }
-.finale hr{border:0; height:1px; background:rgba(244,240,230,.3); margin:14px 0}
+.finale hr{border:0; height:1px; background:rgba(244,240,230,.3); margin:11px 0}
 
 /* 신랑측 · 신부측만 가로선으로 나눕니다.
    사람마다 선을 그으면 여섯 줄이 표처럼 보여 답답해집니다. */
@@ -411,7 +415,7 @@ button,input,select,textarea{font:inherit; color:inherit}
 }
 .who{
   display:flex; align-items:center; gap:10px;
-  padding:5px 0; text-align:left;
+  padding:4px 0; text-align:left;
 }
 .who__role{
   flex:0 0 58px; font-family:var(--sans); font-size:12px;

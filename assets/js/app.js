@@ -341,8 +341,41 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureVeil);
 
     // 큰 사진을 누르면 전체화면. 썸네일과 버튼은 각자 동작합니다.
-    $('#shotImg').addEventListener('click', () => openLightbox(G.i));
+    $('#shotImg').addEventListener('click', () => { if (!swiped) openLightbox(G.i); });
     $('#shotZoom').addEventListener('click', () => openLightbox(G.i));
+
+    wireShotSwipe();
+  }
+
+  // 큰 사진을 좌우로 밀어 넘깁니다. 위아래 스와이프는 화면 넘김이
+  // 가져가야 하므로, 가로가 더 큰 움직임일 때만 사진을 바꿉니다.
+  let swiped = false;
+
+  function wireShotSwipe() {
+    const shot = $('#shot');
+    let x0 = 0, y0 = 0, tracking = false;
+
+    shot.addEventListener('touchstart', (e) => {
+      if (e.touches.length > 1 || G.items.length < 2) return;
+      x0 = e.touches[0].clientX;
+      y0 = e.touches[0].clientY;
+      tracking = true;
+      swiped = false;
+    }, { passive: true });
+
+    shot.addEventListener('touchend', (e) => {
+      if (!tracking) return;
+      tracking = false;
+      const dx = e.changedTouches[0].clientX - x0;
+      const dy = e.changedTouches[0].clientY - y0;
+      if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      swiped = true;                       // 이 손짓은 탭이 아닙니다
+      step(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  }
+
+  function step(by) {
+    showShot((G.i + by + G.items.length) % G.items.length);
   }
 
   function showShot(i) {
@@ -352,6 +385,11 @@
     img.src = it.src;
     img.srcset = it.srcset || '';
     img.alt = it.alt;
+
+    // 넘어가는 게 바로 보이도록 짧게 나타납니다
+    img.style.animation = 'none';
+    void img.offsetWidth;
+    img.style.animation = 'swap .26s var(--ease)';
 
     // 커버 사진은 아래쪽이 이미 크림색이라 안내가 그 위에 얹힙니다.
     // 나머지 사진은 안내 자리를 비켜 그 위에서 끝나야 글씨를 가리지 않습니다.
