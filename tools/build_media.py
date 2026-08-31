@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:
-    from PIL import Image, ImageOps
+    from PIL import Image, ImageFilter, ImageOps
 except ImportError:
     sys.exit("Pillow 가 필요합니다:  python -m pip install pillow")
 
@@ -62,10 +62,14 @@ TITLE_ROLES = [
 # 아래쪽 영문 문단을 버리고, 사진 끝에 '바닥 연장'을 덧붙입니다.
 # 사진 맨 아랫줄 색에서 시작해 페이지 배경색으로 끝나는 띠라,
 # 사진이 페이지에 그대로 이어져 이음매가 보이지 않습니다.
-FRESH_TALL_TOP = 0.030      # 위쪽을 조금 덜어 가로를 더 확보
-FRESH_TALL_BOTTOM = 0.897   # 날짜 배지 바로 아래에서 자름
-FRESH_TALL_FOOT = 0.10      # 완성 높이 중 바닥 연장이 차지하는 비율
-FRESH_TALL_RATIO = 0.55     # 완성본 가로/세로
+FRESH_TALL_TOP = 0.030      # 위쪽 아치는 조금 덜어냅니다
+FRESH_TALL_BOTTOM = 0.895   # 날짜 배지 타원 바로 아래 (타원은 0.856~0.886)
+FRESH_TALL_FOOT = 0.21      # 완성 높이 중 바닥 연장이 차지하는 비율
+FRESH_TALL_RATIO = 0.62     # 완성본 가로/세로
+# 바닥 연장을 넉넉히 두는 이유:
+#   화면에서 사진 아래에 장소·버튼 안내가 겹칩니다. 연장이 짧으면
+#   그 안내가 날짜 배지를 덮거나, object-fit:cover 가 배지를 잘라냅니다.
+#   연장이 전체의 21% 면 배지가 항상 안내 위쪽에 놓입니다.
 PAGE_BG = (0xE9, 0xE4, 0xD6)   # tokens.css 의 --bg 와 같아야 합니다
 
 # OG 카드 — 잡지 포스터에서 잘라낼 세로 구간 (제목 + 이름 + 날짜 + 커플 상단)
@@ -179,22 +183,43 @@ def build_title():
             left = (im.width - crop_w) // 2
 
             photo = im.crop((left, top, left + crop_w, bot))
-            base = bottom_color(photo)
+
+            # 바닥 연장 — 사진 맨 아랫줄에서 이어받아 페이지 배경색으로.
+            # 단색으로 채우면 사진 아래 좌우의 어두운 벽과 층이 져서
+            # 가로 이음매가 보입니다. 열마다 제 색에서 출발시킵니다.
+            overlap = max(8, photo.height // 40)
+            blend_h = foot_h + overlap
+
+            row = photo.crop((0, photo.height - max(2, photo.height // 300),
+                              photo.width, photo.height))
+            row = row.resize((crop_w, 1), Image.LANCZOS)
+            # 크게 흐려 구두·벽 색이 세로로 번져 보이지 않게 합니다
+            row = row.filter(ImageFilter.GaussianBlur(radius=crop_w / 9))
+            stretched = row.resize((crop_w, blend_h), Image.NEAREST)
+
+            solid = Image.new("RGB", (crop_w, blend_h), PAGE_BG)
+
+            def _ramp(fn):
+                g = Image.new("L", (1, blend_h))
+                g.putdata([fn(y) for y in range(blend_h)])
+                return g.resize((crop_w, blend_h), Image.NEAREST)
+
+            # 위쪽 60% 안에 크림색으로 완전히 가라앉습니다
+            def _to_cream(y):
+                t = min(1.0, (y / max(1, blend_h - 1)) / 0.6)
+                return round(255 * t * t * (3 - 2 * t))
+            foot = Image.composite(solid, stretched, _ramp(_to_cream))
+
+            # 사진 위로 조금 겹쳐 시작해 이음매 선을 없앱니다
+            def _fade_in(y):
+                t = min(1.0, y / overlap)
+                return round(255 * t * t * (3 - 2 * t))
+
             tall = Image.new("RGB", (crop_w, full_h), PAGE_BG)
             tall.paste(photo, (0, 0))
+            tall.paste(foot, (0, photo.height - overlap), _ramp(_fade_in))
 
-            # 바닥 연장 — 사진 끝 색에서 페이지 배경색으로
-            r0, g0, b0 = tuple(int(base[i:i + 2], 16) for i in (1, 3, 5))
-            r1, g1, b1 = PAGE_BG
-            px = tall.load()
-            for y in range(foot_h):
-                t = y / max(1, foot_h - 1)
-                t = t * t * (3 - 2 * t)          # 부드럽게 (smoothstep)
-                c = (round(r0 + (r1 - r0) * t),
-                     round(g0 + (g1 - g0) * t),
-                     round(b0 + (b1 - b0) * t))
-                for x in range(crop_w):
-                    px[x, photo_h + y] = c
+            base = bottom_color(photo)
 
             for w in (720, 1080):
                 size = save_webp(tall, OUT_TITLE / f"fresh-tall-{w}.webp", w)
@@ -208,16 +233,21 @@ def build_title():
 
 def bottom_color(im: Image.Image) -> str:
     """
-    커버 사진 맨 아래 '바닥면' 색을 뽑습니다.
-    가운데는 인물의 구두가 걸리므로 좌우 가장자리만 평균냅니다.
-    참석 버튼이 놓이는 여백을 이 색으로 칠하면 사진과 이어져 보입니다.
+    커버 사진 맨 아래 '밝은 바닥면' 색을 뽑습니다.
+
+    단순 평균을 내면 어두운 아치 벽이나 인물의 구두가 섞여 실제
+    바닥보다 어둡게 나옵니다. 밝은 쪽 절반만 골라 평균을 냅니다.
     """
-    band = max(2, im.height // 300)
-    edge = max(2, im.width // 6)
-    top = im.height - band
-    a = im.crop((0, top, edge, im.height)).resize((1, 1), Image.LANCZOS).getpixel((0, 0))[:3]
-    b = im.crop((im.width - edge, top, im.width, im.height)).resize((1, 1), Image.LANCZOS).getpixel((0, 0))[:3]
-    return "#%02X%02X%02X" % tuple(round((x + y) / 2) for x, y in zip(a, b))
+    band = max(4, im.height // 200)
+    strip = im.crop((0, im.height - band, im.width, im.height))
+    strip = strip.resize((80, 4), Image.LANCZOS)
+
+    px = list(strip.getdata())
+    px.sort(key=lambda c: 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2])
+    bright = px[len(px) // 2:]          # 밝은 쪽 절반
+    n = len(bright)
+    rgb = tuple(round(sum(c[i] for c in bright) / n) for i in range(3))
+    return "#%02X%02X%02X" % rgb
 
 
 # ── OG 카드 ──────────────────────────────────────────────────────

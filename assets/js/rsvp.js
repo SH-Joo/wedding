@@ -309,7 +309,7 @@
     if (!mine || !mine.name) { note.hidden = true; return; }
     note.hidden = false;
     note.textContent = `${mine.name}님의 응답이 접수되어 있습니다.`;
-    $$('[data-rsvp-open]').forEach(b => { b.textContent = '응답 확인 · 수정하기'; });
+    $$('[data-rsvp-open]').forEach(b => { b.textContent = '응답 수정하기'; });
   }
 
   /* ── 열기 버튼 ──────────────────────────────────────────── */
