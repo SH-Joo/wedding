@@ -16,6 +16,7 @@
 
   const KEY_MINE = 'wedding.rsvp.mine';   // 내가 보낸 응답 (id, 이름, 연락처)
   const KEY_DEMO = 'wedding.rsvp.demo';   // 연습 모드에서 쌓이는 응답들
+  const KEY_ASKED = 'wedding.rsvp.asked'; // 한 번 물어봤는지
 
   const store = {
     get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } },
@@ -344,6 +345,14 @@
   }
 
   /* ── 시작 ───────────────────────────────────────────────── */
+
+  // 인사말 화면에 닿았을 때, 아직 응답하지 않은 분께 한 번만 물어봅니다.
+  // 표지에서 바로 띄우면 공들인 첫 화면을 가립니다.
+  window.__rsvpPrompt = function () {
+    if (store.get(KEY_MINE, null) || store.get(KEY_ASKED, false)) return;
+    store.set(KEY_ASKED, true);
+    setTimeout(() => { if (modal.hidden) openModal('form'); }, 650);
+  };
 
   showDeadline();
   wireInputs();

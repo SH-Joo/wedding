@@ -58,6 +58,7 @@
     const ampm = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 === 0 ? 12 : h % 12;
     const clock = h12 + (D.getMinutes() ? ':' + pad(D.getMinutes()) : '') + ' ' + ampm;
+    $('#ceremonyTime').textContent = timeText();
     const line = $('#mastMeta');
     line.textContent = `${D.getFullYear()}. ${pad(D.getMonth() + 1)}. ${pad(D.getDate())}`
                      + ` · ${WEEK_EN[D.getDay()].slice(0, 3).toUpperCase()} ${clock}`;
@@ -415,6 +416,7 @@
       const btn = $('#nav [data-album]');
       if (btn) btn.remove();
       $$('#nav button').forEach((b, i) => { b.dataset.go = String(i); });
+      if (window.__deckRefresh) window.__deckRefresh();
       return;
     }
 
@@ -658,6 +660,9 @@
       deck.dataset.tone = sc.classList.contains('scr--red') ? 'red'
                         : sc.classList.contains('scr--paper') ? 'paper' : 'bg';
       navBtns.forEach((b, j) => b.setAttribute('aria-current', String(j === DECK.i)));
+
+      // 인사말 화면(두 번째)에 닿으면 아직 응답하지 않은 분께 한 번 물어봅니다
+      if (DECK.i === 1 && window.__rsvpPrompt) window.__rsvpPrompt();
     }
 
     function go(i, animate) {
@@ -670,7 +675,18 @@
     }
     window.__deckGo = go;
 
-    navBtns.forEach((b, j) => b.addEventListener('click', () => go(j)));
+    navBtns.forEach((b) => b.addEventListener('click', () => go(+b.dataset.go)));
+
+    // 앨범이 빠지면 화면 수가 달라집니다. 다시 세어 둡니다.
+    window.__deckRefresh = () => {
+      scrs.length = 0;
+      $$('.scr', inner).forEach((sc) => scrs.push(sc));
+      navBtns.length = 0;
+      $$('#nav button').forEach((b) => navBtns.push(b));
+      DECK.count = scrs.length;
+      DECK.i = Math.min(DECK.i, DECK.count - 1);
+      measure();
+    };
 
     // 넘치는 장 안에서 스크롤 중인지
     function scrolling(sc, dir) {

@@ -7,9 +7,9 @@
 <!-- 검색에 잡히지 않게 합니다. 지우지 마세요. -->
 <meta name="robots" content="noindex, nofollow">
 
+<!-- 아래 제목과 og 태그는 배포할 때 tools/build_page.py 가 content.js 값으로 채웁니다.
+     카카오톡 크롤러는 JavaScript 를 실행하지 않아 HTML 에 있어야 합니다. -->
 <title>결혼합니다</title>
-
-<!-- 카카오톡·메신저에 링크를 붙였을 때 뜨는 카드. 내용은 content.js 에서 채웁니다. -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="">
 <meta property="og:description" content="">
@@ -41,11 +41,10 @@
 
 <div class="deck" id="deck">
 
-  <!-- 장이 흐르는 통로. 스크롤이 아니라 위치를 직접 옮깁니다. -->
   <div class="rail" id="rail">
     <div class="rail__inner" id="railInner">
 
-      <!-- ══ 01 표지 ═════════════════════════════════════════ -->
+      <!-- ══ 표지 ═══════════════════════════════════════════ -->
       <section class="scr cover" aria-label="표지">
         <div class="shot" id="shot">
           <img id="shotImg" src="assets/img/title/fresh-tall-1080.webp"
@@ -56,34 +55,36 @@
             <span aria-hidden="true">⤢</span>
           </button>
         </div>
-
         <div class="cover__foot">
           <div class="dots" id="dots" aria-label="표지 고르기"></div>
-          <hr class="veil__rule">
-          <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
         </div>
       </section>
 
-      <!-- ══ 02 인사말 + 식순 ═══════════════════════════════ -->
-      <section class="scr" aria-label="인사말과 식순">
+      <!-- ══ 인사말 ═════════════════════════════════════════ -->
+      <section class="scr" aria-label="인사말">
         <span class="edge edge--l" aria-hidden="true">After Love</span>
         <span class="edge edge--r" aria-hidden="true">Our Wedding</span>
 
-        <p class="eyebrow"><b>01</b> Invitation <i></i></p>
+        <p class="dateline"><i></i><span id="mastMeta"></span><i></i></p>
 
         <h1 class="poem" data-c="greeting.poem"></h1>
         <p class="signoff" id="signoff"></p>
 
-        <p class="dateline"><i></i><span id="mastMeta"></span><i></i></p>
-
-        <p class="sub">Program <i></i></p>
-        <table class="tab">
-          <tbody id="timeline"></tbody>
-        </table>
+        <div class="cta">
+          <button class="pill" type="button" data-rsvp-open>참석 의사 전하기</button>
+          <p class="cta__note" data-deadline-short></p>
+        </div>
       </section>
 
-      <!-- ══ 03 오시는 길 ═══════════════════════════════════ -->
-      <section class="scr scr--paper" aria-label="오시는 길">
+      <!-- ══ 식순 ═══════════════════════════════════════════ -->
+      <section class="scr scr--paper" aria-label="식순">
+        <span class="edge edge--r" aria-hidden="true">Program</span>
+        <p class="eyebrow">Program <i></i> <span id="ceremonyTime"></span></p>
+        <table class="tab"><tbody id="timeline"></tbody></table>
+      </section>
+
+      <!-- ══ 오시는 길 ══════════════════════════════════════ -->
+      <section class="scr" aria-label="오시는 길">
         <span class="edge edge--r" aria-hidden="true">Location</span>
         <p class="eyebrow">Location <i></i> 판교</p>
 
@@ -103,35 +104,34 @@
         <table class="tab tab--ways"><tbody id="ways"></tbody></table>
       </section>
 
-      <!-- ══ 04 앨범 ═════════════════════════════════════════ -->
+      <!-- ══ 앨범 ═══════════════════════════════════════════ -->
       <section class="scr scr--album" id="albumScr" aria-label="앨범" hidden>
-        <p class="eyebrow"><b>03</b> Album <i></i> <span id="albumCount"></span></p>
+        <span class="edge edge--r" aria-hidden="true">Album</span>
+        <p class="eyebrow">Album <i></i> <span id="albumCount"></span></p>
         <div class="album" id="album"></div>
       </section>
 
-      <!-- ══ 05 참석 · 연락처 · 인사 ════════════════════════════ -->
-      <section class="scr scr--red finale" aria-label="참석 의사와 연락처">
+      <!-- ══ 연락처 · 인사 ══════════════════════════════════ -->
+      <section class="scr scr--red finale" aria-label="연락처">
         <span class="edge edge--l" aria-hidden="true">Happily</span>
         <span class="edge edge--r" aria-hidden="true">Ever After</span>
 
         <p class="eyebrow" style="justify-content:center">R.S.V.P.</p>
         <p class="rsvp__mark">참석 여부를 알려주세요</p>
         <p class="rsvp__when" data-deadline></p>
-        <div style="display:flex; justify-content:center; margin-top:18px">
+        <div style="display:flex; justify-content:center; margin-top:var(--s4)">
           <button class="pill pill--lg" type="button" data-rsvp-open>참석 의사 전하기</button>
         </div>
         <p class="rsvp__mine" id="rsvpMine" hidden></p>
 
         <hr>
-
         <div id="contacts"></div>
-
         <hr>
 
         <p class="finale__mark">Thank you</p>
         <p class="finale__names" id="footNames"></p>
 
-        <div class="btnrow" style="margin:20px 0 0">
+        <div class="btnrow" style="margin-top:var(--s5)">
           <button class="pill pill--sm" type="button" id="shareKakao">카카오톡 공유</button>
           <button class="pill pill--sm" type="button" id="shareLink">링크 복사</button>
           <button class="pill pill--sm" type="button" id="addCalendar">캘린더</button>
@@ -141,14 +141,13 @@
     </div>
   </div>
 
-  <!-- 주소창이 숨어 화면이 커지면 이 막대가 남는 높이를 흡수합니다.
-       그래서 빈 공간이 생기지 않습니다. -->
   <nav class="nav" id="nav" aria-label="화면 이동">
     <button type="button" data-go="0"><span>표지</span></button>
     <button type="button" data-go="1"><span>인사말</span></button>
-    <button type="button" data-go="2"><span>오시는 길</span></button>
-    <button type="button" data-go="3" data-album><span>앨범</span></button>
-    <button type="button" data-go="4"><span>연락하기</span></button>
+    <button type="button" data-go="2"><span>식순</span></button>
+    <button type="button" data-go="3"><span>오시는길</span></button>
+    <button type="button" data-go="4" data-album><span>앨범</span></button>
+    <button type="button" data-go="5"><span>연락처</span></button>
   </nav>
 
 </div>
@@ -181,7 +180,6 @@
 
     <form class="form" id="rsvpForm" novalidate>
 
-      <!-- 봇 잡는 함정 -->
       <div class="trap" aria-hidden="true">
         <label for="nickname">닉네임</label>
         <input type="text" id="nickname" name="nickname" tabindex="-1" autocomplete="off">
@@ -221,7 +219,6 @@
         <p class="field__err">선택해 주세요.</p>
       </div>
 
-      <!-- 미참석을 고르면 아래 두 항목은 자동으로 숨겨집니다 -->
       <div id="attendOnly">
         <div class="field">
           <span>몇 분이 오시나요? <em>필수</em></span>
@@ -274,9 +271,8 @@
       <button class="linkbtn" type="button" id="rsvpFindOpen">응답 수정하기</button>
     </p>
 
-    <!-- 응답 찾기 -->
     <form class="form" id="rsvpFindForm" novalidate hidden>
-      <p class="copy" style="font-size:13px">응답하실 때 적으신 성함과 연락처를 그대로 입력해 주세요.</p>
+      <p class="copy">응답하실 때 적으신 성함과 연락처를 그대로 입력해 주세요.</p>
       <div class="field" data-field="findName">
         <label for="findName">성함</label>
         <input class="input" type="text" id="findName" name="findName" maxlength="20" autocomplete="name">
@@ -297,7 +293,7 @@
     <div class="done" id="rsvpDone" hidden>
       <p class="done__mark">Thank you</p>
       <p class="copy" style="text-align:center" id="rsvpDoneMsg"></p>
-      <button class="pill pill--sm" type="button" id="rsvpEdit" style="margin-top:18px">응답 수정하기</button>
+      <button class="pill pill--sm" type="button" id="rsvpEdit" style="margin-top:var(--s4)">응답 수정하기</button>
     </div>
   </div>
 </div>
