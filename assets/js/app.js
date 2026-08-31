@@ -169,13 +169,25 @@
   function renderMap() {
     const { lat, lng, venue } = CONTENT.wedding;
     // 키가 필요 없는 OpenStreetMap 을 씁니다.
+    const src = 'https://www.openstreetmap.org/export/embed.html'
+              + `?bbox=${lng - 0.0045},${lat - 0.0022},${lng + 0.0045},${lat + 0.0022}`
+              + `&layer=mapnik&marker=${lat},${lng}`;
+
     const box = el('iframe');
     box.loading = 'lazy';
     box.title = venue + ' 위치';
-    box.src = 'https://www.openstreetmap.org/export/embed.html'
-            + `?bbox=${lng - 0.0045},${lat - 0.0022},${lng + 0.0045},${lat + 0.0022}`
-            + `&layer=mapnik&marker=${lat},${lng}`;
-    $('#map').appendChild(box);
+    box.src = src;
+
+    // 지도를 옮겨 놓고 예식장을 못 찾는 일이 없도록 되돌리는 버튼을 둡니다.
+    const home = el('button', 'map__home', '예식장 위치');
+    home.type = 'button';
+    home.setAttribute('aria-label', venue + ' 위치로 지도 되돌리기');
+    home.addEventListener('click', () => {
+      box.src = src;                 // 주소를 다시 넣으면 처음 위치로 돌아옵니다
+      toast('예식장 위치로 되돌렸습니다');
+    });
+
+    $('#map').append(box, home);
   }
 
   function wireNavi() {

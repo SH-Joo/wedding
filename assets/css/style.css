@@ -226,9 +226,25 @@ button,input,select,textarea{font:inherit; color:inherit}
 .map{
   width:100%; flex:1 1 auto; min-height:110px; max-height:180px;
   background:var(--sunk); border:1px solid var(--line); overflow:hidden;
-  filter:saturate(.55) contrast(.95);   /* 지도 색이 튀지 않게 톤을 맞춥니다 */
+  position:relative;
 }
-.map iframe{width:100%; height:100%; border:0; display:block}
+/* 지도 색이 튀지 않게 톤을 맞춥니다. 버튼까지 흐려지지 않도록
+   .map 이 아니라 iframe 에만 겁니다. */
+.map iframe{width:100%; height:100%; border:0; display:block;
+  filter:saturate(.55) contrast(.95)}
+
+/* 지도를 이리저리 옮긴 뒤 예식장으로 되돌아오는 버튼 */
+.map__home{
+  position:absolute; left:8px; top:8px; z-index:2;
+  appearance:none; cursor:pointer;
+  background:var(--paper); color:var(--ink);
+  border:1px solid var(--line); border-radius:999px;
+  font-family:var(--myeongjo); font-size:11.5px; letter-spacing:.03em;
+  padding:6px 13px; box-shadow:0 1px 5px rgba(21,18,15,.16);
+  transition:.2s var(--ease);
+}
+.map__home:hover{background:var(--accent); border-color:var(--accent); color:#fff}
+.map__home:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .btnrow{display:flex; gap:6px; margin:12px 0 22px; flex:0 0 auto}
 .btnrow .pill{flex:1; padding-inline:0}
 
