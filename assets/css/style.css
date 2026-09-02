@@ -58,6 +58,16 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .scr:not(.cover)::before{margin-top:auto}
 .scr:not(.cover)::after{margin-bottom:auto}
 
+/* 장 안의 세로 간격은 이 세 값이 정합니다. 화면이 짧아 장이
+   넘치면 measure() 가 d1 → d2 → d3 순으로 간격을 조입니다.
+   글자 크기는 맨 마지막에만 건드립니다 — 읽기 어려워지는 것보다
+   여백이 좁아지는 편이 낫습니다. */
+.scr{--gap-block:var(--s5); --gap-cta:var(--s6); --row-y:var(--s3)}
+.scr.d1{--gap-block:var(--s4); --gap-cta:var(--s5); --row-y:10px}
+.scr.d2{--gap-block:var(--s3); --gap-cta:var(--s4); --row-y:var(--s2)}
+.scr.d3{--gap-block:var(--s2); --gap-cta:var(--s3); --row-y:var(--s2)}
+.scr.d3 .poem{font-size:var(--t-md); line-height:var(--lh-body)}
+
 .scr--paper{background:var(--paper)}
 .scr--album{background:var(--paper)}
 .scr--red{background:var(--accent); color:var(--paper)}
@@ -133,8 +143,8 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   letter-spacing:var(--ls-label); text-transform:uppercase;
   color:var(--accent); flex:0 0 auto;
 }
-.eyebrow{margin:0 0 var(--s5)}
-.sub{margin:var(--s5) 0 var(--s3)}
+.eyebrow{margin:0 0 var(--gap-block, var(--s5))}
+.sub{margin:var(--gap-block, var(--s5)) 0 var(--s3)}
 .eyebrow i, .sub i{
   flex:1; height:1px; background:currentColor;
   opacity:.4; transform:translateY(-3px);
@@ -218,7 +228,7 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   font-size:var(--t-lg); line-height:var(--lh-poem); letter-spacing:var(--ls-ko-lg);
 }
 .signoff{
-  margin:var(--s5) 0 0; flex:0 0 auto; text-align:left;
+  margin:var(--gap-block, var(--s5)) 0 0; flex:0 0 auto; text-align:left;
   font-family:var(--myeongjo); font-size:var(--t-sm);
   line-height:var(--lh-body); color:var(--muted);
 }
@@ -228,9 +238,9 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 /* 날짜 한 줄 — 표시용 숫자라 Prata 를 씁니다 */
 .dateline{
   display:flex; align-items:center; gap:var(--s3); flex:0 0 auto;
-  /* 아래 여백은 혼주 위 여백(--s5)과 같게 둡니다. 다르면 시가
-     위아래로 치우쳐 보입니다. 위 여백은 가운데 맞춤이 알아서 냅니다. */
-  margin:0 0 var(--s5);
+  /* 아래 여백은 혼주 위 여백과 같게 둡니다. 다르면 시가 위아래로
+     치우쳐 보입니다. 위 여백은 가운데 맞춤이 알아서 냅니다. */
+  margin:0 0 var(--gap-block, var(--s5));
   font-family:var(--serif); font-size:var(--t-md);
   letter-spacing:var(--ls-num); color:var(--ink);
   font-variant-numeric:tabular-nums; white-space:nowrap;
@@ -238,7 +248,7 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .dateline i{flex:1; height:1px; background:var(--accent); opacity:.45}
 
 /* 인사말 아래 참석 버튼 */
-.cta{margin:var(--s6) 0 0; flex:0 0 auto; text-align:center}
+.cta{margin:var(--gap-cta, var(--s6)) 0 0; flex:0 0 auto; text-align:center}
 .cta .pill{border-color:var(--accent); color:var(--accent)}
 .cta .pill:hover{background:var(--accent); color:#fff}
 .cta__note{margin:var(--s3) 0 0; font-size:var(--t-sm); color:var(--faint)}
@@ -246,14 +256,14 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 /* ═══ 표 — 식순과 교통 안내 ═════════════════════════════════ */
 .tab{width:100%; border-collapse:collapse; margin:0; flex:0 0 auto}
 .tab td{
-  padding:var(--s3) 0; border-bottom:1px solid var(--line);
+  padding:var(--row-y, var(--s3)) 0; border-bottom:1px solid var(--line);
   vertical-align:top;
 }
 .tab tr:last-child td{border-bottom:0}
 
 /* 왼쪽 칸 — 시각 또는 분류. 표 안의 숫자는 본문 글꼴로 통일합니다. */
 .tab .t-when{
-  width:74px; padding-right:var(--s4); white-space:nowrap;
+  width:62px; padding-right:var(--s3); white-space:nowrap;
   font-family:var(--sans); font-size:var(--t-md);
   letter-spacing:var(--ls-num); font-variant-numeric:tabular-nums;
   color:var(--faint);
@@ -262,11 +272,14 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   font-family:var(--myeongjo); font-size:var(--t-md);
   line-height:var(--lh-tight); letter-spacing:var(--ls-ko);
 }
+/* 설명은 제목 옆에 이어 붙입니다 — '1부 · 본식이 진행됩니다'.
+   줄을 따로 두면 세 줄짜리 표가 여섯 줄이 되어, 세로로 짧은
+   화면(카카오톡 인앱)에서 장이 넘칩니다. */
 .tab .t-what small{
-  display:block; margin-top:var(--s1);
   font-family:var(--sans); font-size:var(--t-sm);
   line-height:var(--lh-tight); color:var(--muted); letter-spacing:var(--ls-ko);
 }
+.tab .t-what small::before{content:' · '; color:var(--faint)}
 .tab tr.is-key .t-when{color:var(--accent)}
 .tab tr.is-key .t-what{font-weight:700}
 

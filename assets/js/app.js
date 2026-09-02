@@ -731,6 +731,15 @@
     const navBtns = $$('#nav button');
     DECK.count = scrs.length;
 
+    // 넉넉한 쪽에서 조인 쪽으로. cls 는 style.css 의 간격 단계입니다.
+    const FIT_STEPS = [
+      { cls: '',   pad: ''     },
+      { cls: 'd1', pad: ''     },
+      { cls: 'd1', pad: '16px' },
+      { cls: 'd2', pad: '12px' },
+      { cls: 'd3', pad: '10px' },
+    ];
+
     // 높이는 CSS 가 100lvh 로 정합니다. JS 는 그 결과를 읽기만 합니다.
     // 주소창이 오가도 lvh 는 변하지 않으므로 이 값도 변하지 않습니다.
     function measure() {
@@ -738,18 +747,25 @@
       if (window.__fitAlbum) window.__fitAlbum();
 
       // 계산으로 여백을 맞추면 글자가 몇 줄로 접히는지에 따라 어긋납니다.
-      // 실제로 재 보고, 넘치면 그 장의 위아래 여백부터 줄여 맞춥니다.
+      // 실제로 재 보고, 넘치면 아래 순서로 조여 맞춥니다.
+      //
+      // 장 여백만 줄이면 14px 밖에 못 벌어서, 카카오톡 인앱처럼
+      // 세로가 짧은 화면에서는 금세 안쪽 스크롤로 떨어집니다.
+      // 그러면 장을 넘기려는 손짓을 그 장이 먹어 갇힌 느낌이 듭니다.
+      // 그래서 장 안의 세로 간격까지 함께 조입니다. 글자 크기는
+      // 마지막 단계에서만 건드립니다.
       scrs.forEach((sc) => {
         if (sc.classList.contains('cover')) return;
+        sc.classList.remove('is-tall', 'd1', 'd2', 'd3');
         sc.style.paddingTop = sc.style.paddingBottom = '';
-        sc.classList.remove('is-tall');
-        if (sc.scrollHeight <= DECK.h + 2) return;
 
-        for (const pad of [28, 22, 16, 10]) {
-          sc.style.paddingTop = sc.style.paddingBottom = pad + 'px';
+        for (const step of FIT_STEPS) {
+          sc.classList.remove('d1', 'd2', 'd3');
+          if (step.cls) sc.classList.add(step.cls);
+          sc.style.paddingTop = sc.style.paddingBottom = step.pad;
           if (sc.scrollHeight <= DECK.h + 2) return;
         }
-        // 여백을 다 줄여도 넘치면 그 장만 안에서 스크롤합니다
+        // 다 조여도 넘치면 그 장만 안에서 스크롤합니다 (마지막 수단)
         sc.classList.add('is-tall');
       });
 
