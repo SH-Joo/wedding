@@ -506,16 +506,6 @@
     $('#albumCount').textContent = items.length + '장';
 
     const box = $('#album');
-    const wrap = $('#albumWrap');
-
-    // 끝까지 내리면 아래 그늘을 지웁니다
-    const marker = () => {
-      const end = box.scrollTop >= box.scrollHeight - box.clientHeight - 2;
-      wrap.classList.toggle('is-end', end || box.scrollHeight <= box.clientHeight + 2);
-    };
-    box.addEventListener('scroll', marker, { passive: true });
-    window.addEventListener('resize', marker, { passive: true });
-    setTimeout(marker, 300);
 
     items.forEach((it, i) => {
       const b = el('button');
@@ -530,6 +520,44 @@
       b.addEventListener('click', () => openLightbox(items, i));
       box.appendChild(b);
     });
+
+    window.__fitAlbum = fitAlbum;
+    fitAlbum();
+    requestAnimationFrame(fitAlbum);
+    if (window.__fitDeck) window.__fitDeck();
+  }
+
+  /* 화면에 온전히 들어가는 줄까지만 남기고 나머지는 접습니다.
+     반 잘린 줄을 그대로 두면 사진이 잘려 고장처럼 보이므로,
+     칸 크기를 재서 딱 떨어지는 줄 수를 구합니다. */
+  function fitAlbum() {
+    const box = $('#album');
+    if (!box) return;
+    const tiles = $$('button', box);
+    if (!tiles.length) return;
+
+    tiles.forEach((b) => {
+      b.hidden = false;
+      b.classList.remove('more');
+      b.removeAttribute('data-more');
+    });
+
+    const gap = parseFloat(getComputedStyle(box).gap) || 0;
+    const cell = (box.clientWidth - gap * 2) / 3;
+    if (!(cell > 0) || !(box.clientHeight > 0)) return;
+
+    const rows = Math.max(1, Math.floor((box.clientHeight + gap) / (cell + gap)));
+    const cap = Math.min(tiles.length, rows * 3);
+    tiles.forEach((b, i) => { b.hidden = i >= cap; });
+
+    if (cap >= tiles.length) return;
+
+    // 마지막 칸은 사진을 덮고 있으므로 그 한 장까지 세어 알립니다.
+    const rest = tiles.length - cap + 1;
+    const last = tiles[cap - 1];
+    last.classList.add('more');
+    last.dataset.more = '+' + rest;
+    last.setAttribute('aria-label', '나머지 사진 ' + rest + '장 크게 보기');
   }
 
   /* ── 사진 크게 보기 ─────────────────────────────────────── */
@@ -707,6 +735,7 @@
     // 주소창이 오가도 lvh 는 변하지 않으므로 이 값도 변하지 않습니다.
     function measure() {
       DECK.h = rail.clientHeight;
+      if (window.__fitAlbum) window.__fitAlbum();
 
       // 계산으로 여백을 맞추면 글자가 몇 줄로 접히는지에 따라 어긋납니다.
       // 실제로 재 보고, 넘치면 그 장의 위아래 여백부터 줄여 맞춥니다.

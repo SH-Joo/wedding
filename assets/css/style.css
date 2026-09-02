@@ -376,15 +376,20 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 }
 
 /* ═══ 04 앨범 ═══════════════════════════════════════════════ */
-/* 정사각형 3열. 세로로 짧은 화면(카카오톡 인앱)에서는 다 안 들어오므로
-   격자 안에서 스크롤하고, 아래에 옅은 그늘을 두어 더 있다고 알립니다. */
+/* 정사각형 3열. 화면에 온전히 들어가는 줄까지만 깔고 잘라냅니다.
+
+   격자 안에서 따로 스크롤하게 두면, 격자가 화면의 거의 전부를
+   덮고 있어서 다음 장으로 넘어가려는 손짓까지 격자가 먹습니다.
+   끝에 닿으면 넘어가긴 하지만 그걸 알 길이 없으니 갇힌 느낌이
+   듭니다. 한 손짓을 두 개의 스크롤이 다투는 게 원인이라, 안쪽
+   스크롤을 아예 두지 않았습니다. 이제 앨범도 다른 장과 똑같이
+   손짓 한 번에 넘어갑니다.
+
+   못 담은 사진은 마지막 칸의 +N 을 눌러 크게 보기로 이어 봅니다. */
 .album{
-  flex:1 1 auto; min-height:0; position:relative;
-  overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+  flex:1 1 auto; min-height:0; overflow:hidden;
   display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--s1); align-content:start;
-  scrollbar-width:none;
 }
-.album::-webkit-scrollbar{display:none}
 /* 비율은 버튼이 아니라 이미지에 겁니다.
    버튼은 브라우저가 특별하게 다루는 요소라, 버튼의 높이에 대한
    자식의 백분율 높이(height:100%)가 제대로 잡히지 않습니다.
@@ -398,15 +403,21 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   display:block; width:100%; aspect-ratio:1; object-fit:cover;
 }
 .album button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+/* .album button 의 display:block 이 브라우저 기본 [hidden] 을 이기므로
+   접은 칸을 직접 숨겨 줍니다. */
+.album button[hidden]{display:none}
 
-/* 격자 아래 옅은 그늘 — 아래에 사진이 더 있다는 신호 */
-.album__wrap{position:relative; flex:1 1 auto; min-height:0; display:flex}
-.album__wrap::after{
-  content:''; position:absolute; left:0; right:0; bottom:0; height:34px;
-  background:linear-gradient(to top, var(--paper), rgba(244,240,230,0));
-  pointer-events:none; opacity:1; transition:opacity .25s var(--ease);
+.album__wrap{flex:1 1 auto; min-height:0; display:flex}
+
+/* 마지막 칸에 남은 장수를 얹습니다. 눌러 크게 보기로 이어 봅니다. */
+.album .more{position:relative}
+.album .more::after{
+  content:attr(data-more);
+  position:absolute; inset:0; display:grid; place-items:center;
+  background:rgba(21,18,15,.52); color:var(--paper);
+  font-family:var(--serif); font-size:var(--t-xl); line-height:1;
+  letter-spacing:var(--ls-num);
 }
-.album__wrap.is-end::after{opacity:0}
 
 /* ═══ 05 참석 · 연락처 · 인사 ═══════════════════════════════ */
 .finale{text-align:center}
