@@ -506,6 +506,17 @@
     $('#albumCount').textContent = items.length + '장';
 
     const box = $('#album');
+    const wrap = $('#albumWrap');
+
+    // 끝까지 내리면 아래 그늘을 지웁니다
+    const marker = () => {
+      const end = box.scrollTop >= box.scrollHeight - box.clientHeight - 2;
+      wrap.classList.toggle('is-end', end || box.scrollHeight <= box.clientHeight + 2);
+    };
+    box.addEventListener('scroll', marker, { passive: true });
+    window.addEventListener('resize', marker, { passive: true });
+    setTimeout(marker, 300);
+
     items.forEach((it, i) => {
       const b = el('button');
       b.type = 'button';
@@ -770,19 +781,28 @@
       measure();
     };
 
-    // 넘치는 장 안에서 스크롤 중인지
-    function scrolling(sc, dir) {
-      if (!sc.classList.contains('is-tall')) return false;
-      const atTop = sc.scrollTop <= 0;
-      const atEnd = sc.scrollTop >= sc.scrollHeight - sc.clientHeight - 1;
-      return (dir > 0 && !atTop) || (dir < 0 && !atEnd);
+    // 손끝이 놓인 자리에서 위로 훑어 올라가며, 아직 더 스크롤할 수
+    // 있는 영역이 있으면 장을 넘기지 않고 그쪽에 양보합니다.
+    // 앨범 격자처럼 장 '안'에 있는 스크롤 영역도 이렇게 잡힙니다.
+    function scrolling(from, dir) {
+      let n = from;
+      while (n && n !== rail && n.nodeType === 1) {
+        if (n.scrollHeight > n.clientHeight + 1) {
+          const atTop = n.scrollTop <= 0;
+          const atEnd = n.scrollTop >= n.scrollHeight - n.clientHeight - 1;
+          if ((dir > 0 && !atTop) || (dir < 0 && !atEnd)) return true;
+        }
+        n = n.parentElement;
+      }
+      return false;
     }
 
     // ── 손가락 ──
-    let y0 = 0, x0 = 0, dy = 0, dragging = false, base = 0;
+    let y0 = 0, x0 = 0, dy = 0, dragging = false, base = 0, startNode = null;
 
     rail.addEventListener('touchstart', (e) => {
       if (DECK.busy || e.touches.length > 1) return;
+      startNode = e.target;
       y0 = e.touches[0].clientY;
       x0 = e.touches[0].clientX;
       dy = 0;
@@ -797,7 +817,7 @@
       const ay = t.clientY - y0;
       const ax = t.clientX - x0;
       if (Math.abs(ax) > Math.abs(ay)) return;
-      if (scrolling(scrs[DECK.i], ay)) { dragging = false; rail.classList.remove('is-dragging'); return; }
+      if (scrolling(startNode, ay)) { dragging = false; rail.classList.remove('is-dragging'); return; }
       dy = ay;
       const edge = (DECK.i === 0 && dy > 0) || (DECK.i === DECK.count - 1 && dy < 0);
       inner.style.transform = 'translate3d(0,' + (base + (edge ? dy * 0.28 : dy)) + 'px,0)';
@@ -817,7 +837,7 @@
     // ── 마우스 휠 ──
     let wheelLock = 0;
     rail.addEventListener('wheel', (e) => {
-      if (scrolling(scrs[DECK.i], -e.deltaY)) return;
+      if (scrolling(e.target, -e.deltaY)) return;
       e.preventDefault();
       const now = Date.now();
       if (DECK.busy || now < wheelLock || Math.abs(e.deltaY) < 8) return;

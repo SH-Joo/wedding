@@ -376,10 +376,15 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 }
 
 /* ═══ 04 앨범 ═══════════════════════════════════════════════ */
+/* 정사각형 3열. 세로로 짧은 화면(카카오톡 인앱)에서는 다 안 들어오므로
+   격자 안에서 스크롤하고, 아래에 옅은 그늘을 두어 더 있다고 알립니다. */
 .album{
-  flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  flex:1 1 auto; min-height:0; position:relative;
+  overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
   display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--s1); align-content:start;
+  scrollbar-width:none;
 }
+.album::-webkit-scrollbar{display:none}
 /* 비율은 버튼이 아니라 이미지에 겁니다.
    버튼은 브라우저가 특별하게 다루는 요소라, 버튼의 높이에 대한
    자식의 백분율 높이(height:100%)가 제대로 잡히지 않습니다.
@@ -390,9 +395,18 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   overflow:hidden; background:var(--sunk);
 }
 .album img{
-  display:block; width:100%; aspect-ratio:3/4; object-fit:cover;
+  display:block; width:100%; aspect-ratio:1; object-fit:cover;
 }
 .album button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* 격자 아래 옅은 그늘 — 아래에 사진이 더 있다는 신호 */
+.album__wrap{position:relative; flex:1 1 auto; min-height:0; display:flex}
+.album__wrap::after{
+  content:''; position:absolute; left:0; right:0; bottom:0; height:34px;
+  background:linear-gradient(to top, var(--paper), rgba(244,240,230,0));
+  pointer-events:none; opacity:1; transition:opacity .25s var(--ease);
+}
+.album__wrap.is-end::after{opacity:0}
 
 /* ═══ 05 참석 · 연락처 · 인사 ═══════════════════════════════ */
 .finale{text-align:center}
