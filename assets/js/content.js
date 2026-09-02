@@ -49,9 +49,9 @@ const CONTENT = {
     // key: true 로 두면 크림슨으로 강조됩니다.
     // desc 는 꼭 필요한 곳에만 답니다. 여러 줄에 달면 표가 들쭉날쭉해집니다.
     timeline: [
-      { time: '18:00', title: '1부', desc: '', key: true },
+      { time: '18:00', title: '1부', desc: '본식이 진행됩니다', key: true },
       { time: '18:30', title: '만찬', desc: '앉으신 자리에서 그대로 진행됩니다' },
-      { time: '19:00', title: '2부', desc: '', key: true },
+      { time: '19:00', title: '2부', desc: '케이크 커팅과 샴페인 건배가 있습니다', key: true },
     ],
 
     // 오시는 길. chips 에 넣은 값은 알약 모양으로 표시됩니다.

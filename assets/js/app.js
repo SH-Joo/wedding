@@ -223,64 +223,60 @@
     });
   }
 
+  /* 지도.
+     먼저 배포할 때 만들어 둔 그림을 깔아 화면이 비지 않게 하고,
+     카카오맵이 뜨면 그 자리를 대신합니다. 카카오맵은 개발자 콘솔에서
+     지도 서비스를 켜야 동작합니다. 꺼져 있으면 SDK 가 403 을 냅니다. */
   function renderMap() {
     const box = $('#map');
     const { lat, lng, venue } = CONTENT.wedding;
-    let drawn = false;
 
-    // 예식장으로 되돌리는 단추
-    const home = (recenter) => {
-      const b = el('button', 'map__home', '예식장 위치');
-      b.type = 'button';
-      b.setAttribute('aria-label', venue + ' 위치로 지도 되돌리기');
-      b.addEventListener('click', () => { recenter(); toast('예식장 위치로 되돌렸습니다'); });
-      box.appendChild(b);
-    };
+    // ── 그림 지도 (항상 먼저) ──
+    const still = el('img', 'map__still');
+    still.src = 'assets/img/map.webp';
+    still.alt = venue + ' 위치';
+    still.onerror = () => { box.classList.add('is-empty'); still.remove(); };
+    const credit = el('p', 'map__credit', '지도 © OpenStreetMap 기여자');
+    box.append(still, credit);
 
-    // 카카오맵이 안 뜨면, 배포할 때 만들어 둔 지도 그림을 씁니다.
-    // iframe 으로 띄우면 저작권 띠가 크게 붙어 지도가 잘 안 보입니다.
-    const fallback = () => {
-      if (drawn) return;
-      drawn = true;
-      const img = el('img', 'map__still');
-      img.src = 'assets/img/map.webp';
-      img.alt = venue + ' 위치';
-      img.loading = 'lazy';
-      img.onerror = () => { box.classList.add('is-empty'); img.remove(); };
-      box.appendChild(img);
-      box.appendChild(el('p', 'map__credit', '지도 © OpenStreetMap 기여자'));
-    };
+    if (!CONTENT.kakaoJsKey) return;
 
-    if (!CONTENT.kakaoJsKey) return fallback();
-
+    // ── 카카오맵이 되면 갈아끼웁니다 ──
     const sdk = el('script');
     sdk.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONTENT.kakaoJsKey}&autoload=false`;
-    sdk.onerror = fallback;
+    sdk.onerror = () => console.warn('[카카오맵] SDK 를 불러오지 못했습니다 — 그림 지도로 둡니다');
     sdk.onload = () => {
       try {
         window.kakao.maps.load(() => {
-          if (drawn) return;
-          drawn = true;
+          still.remove();
+          credit.remove();
+          box.classList.remove('is-empty');
+
           const K = window.kakao.maps;
           const at = new K.LatLng(lat, lng);
           const map = new K.Map(box, { center: at, level: 4 });
           map.addControl(new K.ZoomControl(), K.ControlPosition.RIGHT);
           new K.Marker({ map: map, position: at });
+          new K.CustomOverlay({
+            map: map, position: at, yAnchor: 2.1,
+            content: el('div', 'map__pin', venue),
+          });
 
-          const pin = el('div', 'map__pin', venue);
-          new K.CustomOverlay({ map: map, position: at, content: pin, yAnchor: 2.1 });
-
-          home(() => { map.setLevel(4); map.setCenter(at); });
+          const home = el('button', 'map__home', '예식장 위치');
+          home.type = 'button';
+          home.setAttribute('aria-label', venue + ' 위치로 지도 되돌리기');
+          home.addEventListener('click', () => {
+            map.setLevel(4);
+            map.setCenter(at);
+            toast('예식장 위치로 되돌렸습니다');
+          });
+          box.appendChild(home);
         });
       } catch (e) {
-        console.error('[카카오맵]', e);
-        fallback();
+        console.warn('[카카오맵]', e, '— 그림 지도로 둡니다');
       }
     };
     document.head.appendChild(sdk);
-
-    // 4초 안에 안 그려지면 대신 그립니다
-    setTimeout(fallback, 4000);
   }
 
   function wireNavi() {
@@ -395,7 +391,7 @@
       b.type = 'button';
       b.setAttribute('aria-pressed', String(i === 0));
       b.setAttribute('aria-label', (i + 1) + '번째 표지 보기');
-      b.addEventListener('click', () => showCover(i));
+      b.addEventListener('click', () => { stopCoverAuto(); showCover(i); });
       dots.appendChild(b);
     });
 
@@ -403,6 +399,29 @@
     $('#shotImg').addEventListener('click', () => { if (!swiped) openLightbox(COVERS, G.cover); });
     $('#shotZoom').addEventListener('click', () => openLightbox(COVERS, G.cover));
     wireShotSwipe();
+    startCoverAuto();
+  }
+
+  /* 표지를 3초마다 저절로 넘깁니다.
+     직접 넘기신 뒤에는 멈춥니다 — 보고 계신 사진을 뺏지 않기 위해서입니다. */
+  const COVER_EVERY = 3000;
+  let coverTimer = null;
+
+  function startCoverAuto() {
+    if (COVERS.length < 2) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    stopCoverAuto();
+    coverTimer = setInterval(() => {
+      if (DECK.i !== 0) return;                       // 표지에 있을 때만
+      if (document.hidden) return;                    // 다른 탭이면 쉽니다
+      if (!$('#lightbox').hidden) return;             // 크게 보는 중이면 쉽니다
+      if (!$('#rsvpModal').hidden) return;
+      showCover((G.cover + 1) % COVERS.length);
+    }, COVER_EVERY);
+  }
+
+  function stopCoverAuto() {
+    if (coverTimer) { clearInterval(coverTimer); coverTimer = null; }
   }
 
   function showCover(i) {
@@ -443,6 +462,7 @@
       const dy = e.changedTouches[0].clientY - y0;
       if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
       swiped = true;
+      stopCoverAuto();
       showCover((G.cover + (dx < 0 ? 1 : -1) + COVERS.length) % COVERS.length);
     }, { passive: true });
   }
