@@ -16,3 +16,6 @@ _smoke.html
 .DS_Store
 Thumbs.db
 assets/img/map.webp
+
+# 파이썬 캐시
+__pycache__/
