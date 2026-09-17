@@ -33,9 +33,10 @@ jobs:
       - name: Pillow 설치
         run: python -m pip install --quiet pillow
 
-      # images/Title 과 images/album 의 사진을 웹 크기로 줄이고
-      # 갤러리 목록(album.json)과 카카오톡 카드(og.jpg)를 만듭니다.
-      # 사진을 추가하려면 images/album/ 에 넣고 push 하면 끝입니다.
+      # images/ 의 사진을 웹 크기로 줄이고 앨범 목록(album.json)과
+      # 카카오톡 카드(og.jpg)를 만듭니다. music/ 의 mp3 도 옮깁니다.
+      # 사진은 images/album/ 에 원본, images/thumbnails/ 에 같은 이름의
+      # 정사각형 썸네일을 넣고 push 하면 끝입니다.
       - name: 사진 준비
         run: python tools/build_media.py
 
@@ -66,7 +67,7 @@ jobs:
       # 올릴 필요 없는 것들을 덜어냅니다.
       # 특히 images/ 원본은 한 장에 2MB 라 그대로 두면 낭비입니다.
       - name: 배포에 필요 없는 파일 정리
-        run: rm -rf images tools apps-script .github *.md design-draft.html
+        run: rm -rf images music tools apps-script .github *.md design-draft.html
 
       - name: Jekyll 처리 끄기
         run: touch .nojekyll

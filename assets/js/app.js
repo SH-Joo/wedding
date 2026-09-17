@@ -481,7 +481,7 @@
         items = (data.items || []).map((it, n) => ({
           label: 'Photo ' + pad(n + 1),
           alt: it.alt || (NAMES + ' 웨딩 사진 ' + (n + 1)),
-          thumb: it.src['480'],
+          thumb: it.thumb,
           src: it.src['960'],
           full: it.src['1600'],
         }));
@@ -497,7 +497,7 @@
       scr.remove();
       const btn = $('#nav [data-album]');
       if (btn) btn.remove();
-      $$('#nav button').forEach((b, i) => { b.dataset.go = String(i); });
+      $$('#nav [data-go]').forEach((b, i) => { b.dataset.go = String(i); });
       if (window.__deckRefresh) window.__deckRefresh();
       return;
     }
@@ -558,6 +558,58 @@
     last.classList.add('more');
     last.dataset.more = '+' + rest;
     last.setAttribute('aria-label', '나머지 사진 ' + rest + '장 크게 보기');
+  }
+
+  /* ── 배경음악 ─────────────────────────────────────────────
+     music/ 에 넣은 mp3 를 배포할 때 build_media.py 가
+     assets/audio/bgm.mp3 로 옮기고 music.json 에 주소를 적어 둡니다.
+
+     처음에는 꺼져 있고, 네비 끝의 버튼을 눌러야 나옵니다.
+     갑자기 소리가 나면 공공장소에서 여신 분이 당황합니다. */
+  async function wireBgm() {
+    let src = '';
+    try {
+      const res = await fetch('assets/data/music.json', { cache: 'no-cache' });
+      if (res.ok) src = (await res.json()).src || '';
+    } catch (e) {}
+    if (!src) return;
+
+    const btn = $('#bgm');
+    const audio = new Audio();
+    audio.src = src;
+    audio.loop = true;
+    audio.preload = 'none';   // 누르기 전에는 받지 않습니다
+    audio.volume = 0.6;
+
+    // 버튼은 '지금 실제로 나오는지'를 보여줍니다
+    const paint = () => {
+      const on = !audio.paused;
+      btn.setAttribute('aria-pressed', String(on));
+      btn.setAttribute('aria-label', on ? '배경음악 끄기' : '배경음악 켜기');
+    };
+    audio.addEventListener('play', paint);
+    audio.addEventListener('pause', paint);
+    btn.hidden = false;
+    paint();
+
+    btn.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play().catch(() => toast('음악을 틀지 못했습니다. 다시 눌러 주세요'));
+      } else {
+        audio.pause();
+      }
+    });
+
+    // 다른 앱으로 가면 멈추고, 돌아오면 이어 틉니다
+    let hiddenPause = false;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (!audio.paused) { hiddenPause = true; audio.pause(); }
+      } else if (hiddenPause) {
+        hiddenPause = false;
+        audio.play().catch(() => {});
+      }
+    });
   }
 
   /* ── 사진 크게 보기 ─────────────────────────────────────── */
@@ -728,7 +780,7 @@
     const rail  = $('#rail');
     const inner = $('#railInner');
     const scrs  = $$('.scr', inner);
-    const navBtns = $$('#nav button');
+    const navBtns = $$('#nav [data-go]');   // 음악 버튼은 빼고
     DECK.count = scrs.length;
 
     // 넉넉한 쪽에서 조인 쪽으로. cls 는 style.css 의 간격 단계입니다.
@@ -820,7 +872,7 @@
       scrs.length = 0;
       $$('.scr', inner).forEach((sc) => scrs.push(sc));
       navBtns.length = 0;
-      $$('#nav button').forEach((b) => navBtns.push(b));
+      $$('#nav [data-go]').forEach((b) => navBtns.push(b));
       DECK.count = scrs.length;
       DECK.i = Math.min(DECK.i, DECK.count - 1);
       measure();
@@ -930,5 +982,6 @@
   wireWaySheet();
   wireDeck();
   renderCover();
+  wireBgm();
   renderAlbum().then(() => { if (window.__fitDeck) window.__fitDeck(); });
 })();

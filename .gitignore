@@ -6,6 +6,8 @@ assets/img/title/
 assets/img/album/
 assets/img/og.jpg
 assets/data/album.json
+assets/data/music.json
+assets/audio/
 
 # 작업 중 파일
 _preview.html

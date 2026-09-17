@@ -6,16 +6,26 @@
 
 하는 일
   images/Title/  →  assets/img/title/   표지 두 장 (여러 크기, 손대지 않음)
-  images/album/  →  assets/img/album/   갤러리 (여러 크기 + 흐린 미리보기)
-                 →  assets/data/album.json
-                 →  assets/img/og.jpg   카카오톡 링크 카드 1200x630
+  images/album/       →  assets/img/album/   크게 볼 때의 사진
+  images/thumbnails/  →  assets/img/album/   앨범 격자의 정사각형 썸네일
+                      →  assets/data/album.json
+  music/*.mp3         →  assets/audio/bgm.mp3, assets/data/music.json
+                      →  assets/img/og.jpg   카카오톡 링크 카드 1200x630
 
 이 스크립트는 로컬과 GitHub Actions 에서 똑같이 돕니다.
-갤러리에 사진을 추가하려면 images/album/ 에 넣고 push 하면 끝입니다.
-파일 이름 순서대로 나오니 01_.jpg, 02_.jpg … 처럼 붙여 주세요.
+
+앨범
+  원본은 images/album/, 썸네일은 images/thumbnails/ 에 '같은 이름'으로
+  넣고 push 하면 끝입니다. 이름의 숫자 오름차순으로 나옵니다
+  (1, 2, 10 순서. 확장자 대소문자는 달라도 됩니다).
+  썸네일이 없는 사진은 원본 가운데를 정사각형으로 잘라 대신 씁니다.
+
+배경음악
+  music/ 에 mp3 를 넣으면 음악 버튼이 생깁니다(처음엔 꺼짐). 여러 개면 이름순 첫 곡.
 """
 
 import base64
+import hashlib
 import io
 import json
 import re
@@ -34,16 +44,20 @@ ROOT = Path(__file__).resolve().parent.parent
 
 SRC_TITLE = ROOT / "images" / "Title"
 SRC_ALBUM = ROOT / "images" / "album"
+SRC_THUMB = ROOT / "images" / "thumbnails"
+SRC_MUSIC = ROOT / "music"
 
 OUT_TITLE = ROOT / "assets" / "img" / "title"
 OUT_ALBUM = ROOT / "assets" / "img" / "album"
 OUT_DATA = ROOT / "assets" / "data"
 OUT_OG = ROOT / "assets" / "img" / "og.jpg"
 OUT_MAP = ROOT / "assets" / "img" / "map.webp"
+OUT_AUDIO = ROOT / "assets" / "audio"
 
 PHOTO_EXT = {".jpg", ".jpeg", ".png", ".webp", ".JPG", ".JPEG", ".PNG", ".WEBP"}
 
-ALBUM_WIDTHS = (480, 960, 1600)
+ALBUM_WIDTHS = (960, 1600)   # 크게 볼 때
+THUMB_W = 480                # 격자 한 칸 — 가장 넓어도 160px x 3배 화면
 TITLE_WIDTHS = (720, 1080, 1600)
 
 WEBP_Q = 82          # 갤러리·커버 화질
@@ -275,49 +289,78 @@ def build_map(lat, lng, venue):
 
 # ── 앨범 ─────────────────────────────────────────────────────────
 
-def build_album():
-    items = []
-    if not SRC_ALBUM.is_dir():
-        SRC_ALBUM.mkdir(parents=True, exist_ok=True)
+def square(im: Image.Image) -> Image.Image:
+    """가운데를 기준으로 정사각형으로 자릅니다."""
+    side = min(im.width, im.height)
+    left = (im.width - side) // 2
+    top = (im.height - side) // 2
+    return im.crop((left, top, left + side, top + side))
 
-    photos = sorted(
-        (f for f in SRC_ALBUM.iterdir() if f.is_file() and f.suffix in PHOTO_EXT),
+
+def photos_in(folder: Path):
+    if not folder.is_dir():
+        return []
+    return sorted(
+        (f for f in folder.iterdir() if f.is_file() and f.suffix in PHOTO_EXT),
         key=natural_key,
     )
 
+
+def build_album():
+    items = []
+    photos = photos_in(SRC_ALBUM)
+
+    # 썸네일은 이름(확장자 뺀)으로 짝을 찾습니다. 대소문자는 가리지 않습니다.
+    thumbs = {f.stem.lower(): f for f in photos_in(SRC_THUMB)}
+
     if not photos:
-        log("  (images/album/ 이 비어 있습니다 — 갤러리 섹션은 화면에서 숨겨집니다)")
-    else:
-        seen = set()
-        for i, src in enumerate(photos, 1):
-            slug = slugify(src.name)
-            if slug in seen:                      # 이름이 겹치면 번호를 붙입니다
-                slug = f"{slug}-{i}"
-            seen.add(slug)
+        log("  (images/album/ 이 비어 있습니다 — 앨범 화면은 숨겨집니다)")
 
-            im = load(src)
-            widest = None
-            srcs = {}
-            for w in ALBUM_WIDTHS:
-                dest = OUT_ALBUM / f"{slug}-{w}.webp"
-                size = save_webp(im, dest, w)
-                srcs[str(w)] = rel(dest)
-                widest = size
+    seen = set()
+    for i, src in enumerate(photos, 1):
+        slug = slugify(src.name)
+        if slug in seen:                      # 이름이 겹치면 번호를 붙입니다
+            slug = f"{slug}-{i}"
+        seen.add(slug)
 
-            items.append({
-                "id": slug,
-                "alt": "",
-                "w": widest[0],
-                "h": widest[1],
-                "blur": lqip(im),
-                "src": srcs,
-            })
-            log(f"  {i:2d}. {src.name}  ->  {slug}  {widest[0]}x{widest[1]}")
+        im = load(src)
+        srcs = {}
+        widest = None
+        for w in ALBUM_WIDTHS:
+            dest = OUT_ALBUM / f"{slug}-{w}.webp"
+            widest = save_webp(im, dest, w)
+            srcs[str(w)] = rel(dest)
+
+        pair = thumbs.pop(src.stem.lower(), None)
+        if pair:
+            t = load(pair)
+            note = ""
+            if t.width != t.height:
+                note = "  (썸네일이 정사각형이 아니라 가운데를 잘랐습니다)"
+        else:
+            t = im
+            note = "  ! 썸네일이 없어 원본 가운데를 잘라 썼습니다"
+        t = square(t)
+        thumb = OUT_ALBUM / f"{slug}-thumb.webp"
+        save_webp(t, thumb, THUMB_W)
+
+        items.append({
+            "id": slug,
+            "alt": "",
+            "w": widest[0],
+            "h": widest[1],
+            "blur": lqip(t),
+            "thumb": rel(thumb),
+            "src": srcs,
+        })
+        log(f"  {i:2d}. {src.name}  ->  {slug}  {widest[0]}x{widest[1]}{note}")
+
+    for f in thumbs.values():
+        log(f"  ! {f.name}: images/album/ 에 같은 이름의 원본이 없어 건너뜁니다")
 
     OUT_DATA.mkdir(parents=True, exist_ok=True)
     manifest = {
         "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "widths": list(ALBUM_WIDTHS),
         "items": items,
     }
     (OUT_DATA / "album.json").write_text(
@@ -326,12 +369,48 @@ def build_album():
     return items
 
 
+# ── 배경음악 ─────────────────────────────────────────────────────
+
+def build_music():
+    """music/ 의 첫 mp3 를 영문 이름으로 옮기고 주소를 적어 둡니다.
+
+    한글 파일명은 주소에서 깨지기 쉬워 bgm.mp3 로 옮깁니다. 곡을
+    바꿔도 이름이 같으면 휴대폰이 옛 곡을 기억하므로, 내용으로 만든
+    꼬리표(?v=)를 붙입니다."""
+    songs = sorted(
+        (f for f in SRC_MUSIC.iterdir() if f.is_file() and f.suffix.lower() == ".mp3"),
+        key=natural_key,
+    ) if SRC_MUSIC.is_dir() else []
+
+    OUT_DATA.mkdir(parents=True, exist_ok=True)
+    src = ""
+    if not songs:
+        log("  (music/ 에 mp3 가 없습니다 — 음악 버튼은 숨겨집니다)")
+    else:
+        song = songs[0]
+        OUT_AUDIO.mkdir(parents=True, exist_ok=True)
+        dest = OUT_AUDIO / "bgm.mp3"
+        shutil.copyfile(song, dest)
+        tag = hashlib.sha1(dest.read_bytes()).hexdigest()[:10]
+        src = f"{rel(dest)}?v={tag}"
+        mb = dest.stat().st_size / 1048576
+        log(f"  {song.name}  ->  {rel(dest)}  {mb:.1f}MB")
+        if mb > 6:
+            log("  ! 파일이 큽니다. 하객이 데이터로 받게 되니 128kbps 로 줄이길 권합니다")
+        if len(songs) > 1:
+            log(f"  ! mp3 가 {len(songs)}개입니다. 이름순 첫 곡만 씁니다")
+
+    (OUT_DATA / "music.json").write_text(
+        json.dumps({"src": src}, ensure_ascii=False), encoding="utf-8"
+    )
+
+
 # ── 실행 ─────────────────────────────────────────────────────────
 
 def main():
     log("사진 준비 중…\n")
 
-    for d in (OUT_TITLE, OUT_ALBUM):
+    for d in (OUT_TITLE, OUT_ALBUM, OUT_AUDIO):
         if d.exists():
             shutil.rmtree(d)
 
@@ -351,10 +430,13 @@ def main():
     except Exception as err:
         log(f"  ! 지도를 건너뜁니다 ({err})")
 
-    log("\n[갤러리]")
+    log("\n[앨범]")
     items = build_album()
 
-    log(f"\n끝났습니다. 갤러리 {len(items)}장.")
+    log("\n[배경음악]")
+    build_music()
+
+    log(f"\n끝났습니다. 앨범 {len(items)}장.")
 
 
 if __name__ == "__main__":
