@@ -15,10 +15,16 @@
 이 스크립트는 로컬과 GitHub Actions 에서 똑같이 돕니다.
 
 앨범
-  원본은 images/album/, 썸네일은 images/thumbnails/ 에 '같은 이름'으로
-  넣고 push 하면 끝입니다. 이름의 숫자 오름차순으로 나옵니다
-  (1, 2, 10 순서. 확장자 대소문자는 달라도 됩니다).
+  원본은 images/album/, 썸네일은 images/thumbnails/ 에 이름 앞에 t 를
+  붙여 넣습니다.   images/album/00029.jpg  ↔  images/thumbnails/t00029.jpg
+  확장자와 대소문자는 달라도 짝을 찾습니다.
   썸네일이 없는 사진은 원본 가운데를 정사각형으로 잘라 대신 씁니다.
+
+  순서는 images/s.txt 에 원본 파일명을 한 줄에 하나씩 적습니다.
+      00579.jpg
+      00029.jpg
+  s.txt 에 없는 사진은 그 뒤에 이름의 숫자 오름차순으로 붙습니다.
+  s.txt 가 없으면 전부 숫자 오름차순입니다.
 
 배경음악
   music/ 에 mp3 를 넣으면 음악 버튼이 생깁니다(처음엔 꺼짐). 여러 개면 이름순 첫 곡.
@@ -45,6 +51,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC_TITLE = ROOT / "images" / "Title"
 SRC_ALBUM = ROOT / "images" / "album"
 SRC_THUMB = ROOT / "images" / "thumbnails"
+SRC_ORDER = ROOT / "images" / "s.txt"
 SRC_MUSIC = ROOT / "music"
 
 OUT_TITLE = ROOT / "assets" / "img" / "title"
@@ -306,12 +313,60 @@ def photos_in(folder: Path):
     )
 
 
+def read_order(photos):
+    """images/s.txt 의 순서대로 사진을 늘어놓습니다.
+
+    메모장이 붙이는 BOM, 윈도우 줄바꿈, 앞뒤 공백, 빈 줄은 무시합니다.
+    파일명은 대소문자를 가리지 않고, 확장자가 달라도 이름이 같으면
+    찾습니다. 썸네일 이름(t00029.jpg)을 적어도 원본으로 알아듣습니다.
+    적히지 않은 사진은 뒤에 숫자 오름차순으로 붙입니다."""
+    if not SRC_ORDER.is_file():
+        return photos
+
+    raw = SRC_ORDER.read_bytes()
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = raw.decode("cp949")          # 메모장 'ANSI' 로 저장한 경우
+
+    by_name = {f.name.lower(): f for f in photos}
+    by_stem = {f.stem.lower(): f for f in photos}
+
+    ordered, used = [], set()
+    for n, line in enumerate(text.splitlines(), 1):
+        name = line.strip()
+        if not name:
+            continue
+        key = name.lower()
+        stem = Path(key).stem
+        f = (by_name.get(key) or by_stem.get(stem)
+             or (by_stem.get(stem[1:]) if stem.startswith("t") else None))
+        if f is None:
+            log(f"  ! s.txt {n}행 '{name}': images/album/ 에 없어 건너뜁니다")
+            continue
+        if f in used:
+            log(f"  ! s.txt {n}행 '{name}': 이미 앞에 적혀 있어 건너뜁니다")
+            continue
+        ordered.append(f)
+        used.add(f)
+
+    rest = [f for f in photos if f not in used]
+    if rest:
+        log(f"  (s.txt 에 없는 {len(rest)}장은 뒤에 숫자 순서로 붙입니다: "
+            + ", ".join(f.name for f in rest) + ")")
+    return ordered + rest
+
+
 def build_album():
     items = []
-    photos = photos_in(SRC_ALBUM)
+    photos = read_order(photos_in(SRC_ALBUM))
 
-    # 썸네일은 이름(확장자 뺀)으로 짝을 찾습니다. 대소문자는 가리지 않습니다.
-    thumbs = {f.stem.lower(): f for f in photos_in(SRC_THUMB)}
+    # 썸네일 짝 — 이름 앞에 t 를 붙인 파일(t00029.jpg)을 먼저 찾고,
+    # 없으면 같은 이름의 파일을 찾습니다. 확장자·대소문자는 가리지 않습니다.
+    thumb_files = photos_in(SRC_THUMB)
+    prefixed = {f.stem[1:].lower(): f for f in thumb_files if f.stem[:1] in ("t", "T")}
+    plain = {f.stem.lower(): f for f in thumb_files}
+    used_thumbs = set()
 
     if not photos:
         log("  (images/album/ 이 비어 있습니다 — 앨범 화면은 숨겨집니다)")
@@ -331,16 +386,17 @@ def build_album():
             widest = save_webp(im, dest, w)
             srcs[str(w)] = rel(dest)
 
-        pair = thumbs.pop(src.stem.lower(), None)
+        key = src.stem.lower()
+        pair = prefixed.get(key) or plain.get(key)
         if pair:
+            # 넣어 주신 썸네일은 이미 1:1 로 잘라 둔 것이라 크기만 줄입니다.
+            # 1px 쯤 어긋나도 화면의 정사각형 칸(object-fit:cover)이 흡수합니다.
+            used_thumbs.add(pair)
             t = load(pair)
             note = ""
-            if t.width != t.height:
-                note = "  (썸네일이 정사각형이 아니라 가운데를 잘랐습니다)"
         else:
-            t = im
+            t = square(im)
             note = "  ! 썸네일이 없어 원본 가운데를 잘라 썼습니다"
-        t = square(t)
         thumb = OUT_ALBUM / f"{slug}-thumb.webp"
         save_webp(t, thumb, THUMB_W)
 
@@ -355,8 +411,9 @@ def build_album():
         })
         log(f"  {i:2d}. {src.name}  ->  {slug}  {widest[0]}x{widest[1]}{note}")
 
-    for f in thumbs.values():
-        log(f"  ! {f.name}: images/album/ 에 같은 이름의 원본이 없어 건너뜁니다")
+    for f in thumb_files:
+        if f not in used_thumbs:
+            log(f"  ! thumbnails/{f.name}: 짝이 되는 원본이 images/album/ 에 없어 건너뜁니다")
 
     OUT_DATA.mkdir(parents=True, exist_ok=True)
     manifest = {

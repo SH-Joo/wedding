@@ -2,7 +2,8 @@
 """
 images/album/ 의 원본을 웹에 필요한 만큼으로 줄입니다.
 
-  python tools/shrink_album.py [가로픽셀]      기본 1600
+  python tools/shrink_album.py [가로픽셀]              images/album/      기본 1600
+  python tools/shrink_album.py thumbnails [가로픽셀]   images/thumbnails/ 기본 960
 
 왜 필요한가
   build_media.py 는 가로 1600px 까지만 씁니다. 그보다 큰 원본은
@@ -32,6 +33,7 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parent.parent
 ALBUM = ROOT / "images" / "album"
+THUMBS = ROOT / "images" / "thumbnails"
 EXT = {".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"}
 QUALITY = 88
 
@@ -41,11 +43,18 @@ def mb(n):
 
 
 def main():
-    target_w = int(sys.argv[1]) if len(sys.argv) > 1 else 1600
-    if not ALBUM.is_dir():
-        sys.exit("images/album/ 이 없습니다.")
+    args = sys.argv[1:]
+    folder, target_w = ALBUM, 1600
+    if args and args[0] == "thumbnails":
+        # 썸네일은 격자 한 칸(최대 480px)에만 쓰므로 960 이면 넉넉합니다
+        folder, target_w = THUMBS, 960
+        args = args[1:]
+    if args:
+        target_w = int(args[0])
+    if not folder.is_dir():
+        sys.exit(f"{folder.relative_to(ROOT)} 이 없습니다.")
 
-    photos = sorted(f for f in ALBUM.iterdir() if f.is_file() and f.suffix in EXT)
+    photos = sorted(f for f in folder.iterdir() if f.is_file() and f.suffix in EXT)
     if not photos:
         sys.exit("줄일 사진이 없습니다.")
 

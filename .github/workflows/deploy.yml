@@ -35,8 +35,8 @@ jobs:
 
       # images/ 의 사진을 웹 크기로 줄이고 앨범 목록(album.json)과
       # 카카오톡 카드(og.jpg)를 만듭니다. music/ 의 mp3 도 옮깁니다.
-      # 사진은 images/album/ 에 원본, images/thumbnails/ 에 같은 이름의
-      # 정사각형 썸네일을 넣고 push 하면 끝입니다.
+      # 사진은 images/album/ 에 원본, images/thumbnails/ 에 이름 앞에 t 를
+      # 붙인 정사각형 썸네일, 순서는 images/s.txt 에 적고 push 하면 끝입니다.
       - name: 사진 준비
         run: python tools/build_media.py
 
