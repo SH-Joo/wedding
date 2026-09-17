@@ -913,12 +913,17 @@
       const t = e.touches[0];
       const ay = t.clientY - y0;
       const ax = t.clientX - x0;
-      if (Math.abs(ax) > Math.abs(ay)) return;
+      if (ay === 0 || Math.abs(ax) > Math.abs(ay)) return;
       if (scrolling(startNode, ay)) { dragging = false; rail.classList.remove('is-dragging'); return; }
+      // 장을 넘기는 손짓이면 브라우저의 기본 동작을 막습니다.
+      // 막지 않으면 같은 손짓을 브라우저도 받아, 맨 위에서 아래로
+      // 당길 때 새로고침이 뜹니다. overscroll-behavior 를 모르는
+      // 브라우저(일부 인앱·삼성 인터넷)를 위한 두 번째 겹입니다.
+      if (e.cancelable) e.preventDefault();
       dy = ay;
       const edge = (DECK.i === 0 && dy > 0) || (DECK.i === DECK.count - 1 && dy < 0);
       inner.style.transform = 'translate3d(0,' + (base + (edge ? dy * 0.28 : dy)) + 'px,0)';
-    }, { passive: true });
+    }, { passive: false });   // preventDefault 를 쓰려면 passive 가 아니어야 합니다
 
     function endDrag() {
       if (!dragging) return;

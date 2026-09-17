@@ -7,6 +7,9 @@
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
+/* 화면 넘김은 JS 가 직접 합니다. 문서는 스크롤할 게 없어서, 맨 위에서
+   아래로 당기면 크롬이 '더 당김'으로 보고 새로고침을 띄웁니다. 끕니다. */
+html, body{overscroll-behavior-y:none}
 body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:var(--sans); font-size:var(--t-md);
