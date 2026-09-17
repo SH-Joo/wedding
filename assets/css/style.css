@@ -114,18 +114,21 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .nav button:focus-visible{outline:2px solid var(--accent); outline-offset:-4px}
 
 /* 배경음악 — 네비 오른쪽 끝. 화면 위쪽 구석에 띄우면 표지의 확대
-   버튼이나 각 장의 제목과 겹칩니다. 켜져 있으면 강조색입니다. */
+   버튼이나 각 장의 제목과 겹칩니다.
+   처음엔 꺼져 있어서, 흐린 아이콘으로 두면 음악이 있는지조차 모릅니다.
+   칸 전체를 강조색으로 채워 눈에 띄게 하고, 켜짐/꺼짐은 아이콘
+   (물결 / ×)으로 구분합니다. */
 .nav .bgm{
-  flex:0 0 44px; display:flex; align-items:center; justify-content:center;
-  color:var(--faint);
+  flex:0 0 48px; display:flex; align-items:center; justify-content:center;
+  background:var(--accent); color:var(--paper);
 }
 .nav .bgm[hidden]{display:none}
+.nav .bgm:focus-visible{outline:2px solid var(--ink); outline-offset:-4px}
 .bgm svg{
-  width:18px; height:18px; fill:none; stroke:currentColor;
-  stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round;
+  width:20px; height:20px; fill:none; stroke:currentColor;
+  stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
 }
 .bgm .bgm__on{display:none}
-.nav .bgm[aria-pressed="true"]{color:var(--accent)}
 .bgm[aria-pressed="true"] .bgm__on{display:inline}
 .bgm[aria-pressed="true"] .bgm__off{display:none}
 
@@ -133,8 +136,7 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .deck[data-tone="red"] .nav button{color:#E7C8CE}
 .deck[data-tone="red"] .nav button[aria-current="true"]{color:#fff}
 .deck[data-tone="red"] .nav button[aria-current="true"] span::after{background:#fff}
-.deck[data-tone="red"] .nav .bgm{color:#E7C8CE}
-.deck[data-tone="red"] .nav .bgm[aria-pressed="true"]{color:#fff}
+.deck[data-tone="red"] .nav .bgm{color:#fff}
 .deck[data-tone="paper"] .nav{background:var(--paper)}
 
 /* ═══ 공통 조판 ═════════════════════════════════════════════ */

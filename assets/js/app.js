@@ -579,7 +579,7 @@
     audio.src = src;
     audio.loop = true;
     audio.preload = 'none';   // 누르기 전에는 받지 않습니다
-    audio.volume = 0.6;
+    audio.volume = 0.39;      // 0.6 에서 65% 로 낮춤. 아이폰은 이 값을 무시합니다
 
     // 버튼은 '지금 실제로 나오는지'를 보여줍니다
     const paint = () => {
