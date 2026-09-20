@@ -25,6 +25,7 @@
       00029.jpg
   s.txt 에 없는 사진은 그 뒤에 이름의 숫자 오름차순으로 붙습니다.
   s.txt 가 없으면 전부 숫자 오름차순입니다.
+  앞에 # 를 붙이면(#01510.jpg) 이번에는 빼 둡니다. 나중에 # 만 지우면 됩니다.
 
 배경음악
   music/ 에 mp3 를 넣으면 음악 버튼이 생깁니다(처음엔 꺼짐). 여러 개면 이름순 첫 곡.
@@ -52,6 +53,7 @@ SRC_TITLE = ROOT / "images" / "Title"
 SRC_ALBUM = ROOT / "images" / "album"
 SRC_THUMB = ROOT / "images" / "thumbnails"
 SRC_ORDER = ROOT / "images" / "s.txt"
+HIDDEN = set()   # s.txt 에서 # 로 가려 둔 사진의 이름
 SRC_MUSIC = ROOT / "music"
 
 OUT_TITLE = ROOT / "assets" / "img" / "title"
@@ -332,11 +334,18 @@ def read_order(photos):
     by_name = {f.name.lower(): f for f in photos}
     by_stem = {f.stem.lower(): f for f in photos}
 
-    ordered, used = [], set()
+    ordered, used, hidden = [], set(), []
+    HIDDEN.clear()
     for n, line in enumerate(text.splitlines(), 1):
         name = line.strip()
         if not name:
             continue
+        # 앞에 # 를 붙이면 이번에는 뺍니다 (나중에 공개할 사진)
+        hide = name.startswith("#")
+        if hide:
+            name = name.lstrip("#").strip()
+            if not name:
+                continue
         key = name.lower()
         stem = Path(key).stem
         f = (by_name.get(key) or by_stem.get(stem)
@@ -347,9 +356,15 @@ def read_order(photos):
         if f in used:
             log(f"  ! s.txt {n}행 '{name}': 이미 앞에 적혀 있어 건너뜁니다")
             continue
-        ordered.append(f)
         used.add(f)
+        if hide:
+            hidden.append(f)
+            HIDDEN.add(f.stem.lower())
+        else:
+            ordered.append(f)
 
+    if hidden:
+        log("  (# 로 가려 둔 사진: " + ", ".join(f.name for f in hidden) + ")")
     rest = [f for f in photos if f not in used]
     if rest:
         log(f"  (s.txt 에 없는 {len(rest)}장은 뒤에 숫자 순서로 붙입니다: "
@@ -412,7 +427,7 @@ def build_album():
         log(f"  {i:2d}. {src.name}  ->  {slug}  {widest[0]}x{widest[1]}{note}")
 
     for f in thumb_files:
-        if f not in used_thumbs:
+        if f not in used_thumbs and f.stem.lower().lstrip("t") not in HIDDEN:
             log(f"  ! thumbnails/{f.name}: 짝이 되는 원본이 images/album/ 에 없어 건너뜁니다")
 
     OUT_DATA.mkdir(parents=True, exist_ok=True)
