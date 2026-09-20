@@ -52,38 +52,30 @@ const CONTENT = {
     timeline: [
       { time: '17:30', title: '하객 입장' },
       { time: '18:00', title: '본식', key: true },
-      { time: '18:30', title: '식사', desc: '앉으신 자리에서 그대로, 와인과 함께하는 코스 요리', menu: true },
+      { time: '18:30', title: '식사', desc: '앉으신 자리에서 그대로 이어집니다', menu: true },
       { time: '19:00', title: '2부', desc: '마치고 꽃다발을 나눠 드립니다' },
     ],
 
-    // 식사 메뉴 — 식순의 [메뉴] 버튼을 누르면 뜹니다.
+    // 식사 메뉴 — 식순의 '메뉴 보기'를 누르면 뜹니다.
+    // 한 코스에 요리가 둘이면 둘 다 적습니다. 함께 나오는 요리입니다.
     // 영문은 호텔이 준 이름 그대로, 한글은 그 아래에.
     menu: {
-      sub: '와인과 함께하는 코스 요리',
       courses: [
-        { en: 'Bread Basket and Butter',
-          ko: '브레드 바스켓과 버터' },
-        { en: 'Ripe Vine Tomato Tartare with Burrata Cheese',
-          enSub: 'Butter Poached Asparagus, Organic Cracker, Black Olive Crumble, Picual Olive Oil',
-          ko: '토마토 타르타르와 부라타 치즈',
-          koSub: '버터에 포칭한 아스파라거스, 올가닉 크래커, 블랙올리브 크럼블, 피쿠알 올리브 오일' },
-        { en: 'Aged Squash and Carrot Soup',
-          enSub: 'Apple Compote, Galangal, Cardamom, Red Sorrel',
-          ko: '늙은 호박과 당근 수프',
-          koSub: '사과 콤포트, 갈랑가, 카다몸, 레드 소렐' },
-        { en: 'Grilled Australian Black Angus MB2 Beef Tenderloin',
-          enSub: 'Potato Gratin, Half Dried Tomato, King Trumpet Mushroom, Asparagus, Red Wine Sauce',
-          ko: '그릴에 구운 호주산 블랙 앵거스 소고기 안심',
-          koSub: '감자 그라탕, 토마토, 새송이버섯, 아스파라거스, 레드와인 소스' },
-        { en: 'Wedding Noodle',
-          ko: '웨딩 국수' },
-        { en: 'Baked Cheese Cake',
-          enSub: 'Vanilla Chantilly Cream, Blueberry Sauce',
-          ko: '구운 치즈 케이크',
-          koSub: '바닐라 샹티 크림, 블루베리 소스' },
-        { en: 'Coffee or Tea',
-          ko: '커피 또는 차' },
+        [ { en: 'Bread Basket and Butter', ko: '브레드 바스켓과 버터' } ],
+        [ { en: 'Ripe Vine Tomato Tartare with Burrata Cheese', ko: '토마토 타르타르와 부라타 치즈' },
+          { en: 'Butter Poached Asparagus, Organic Cracker, Black Olive Crumble, Picual Olive Oil',
+            ko: '버터에 포칭한 아스파라거스, 올가닉 크래커, 블랙올리브 크럼블, 피쿠알 올리브 오일' } ],
+        [ { en: 'Aged Squash and Carrot Soup', ko: '늙은 호박과 당근 수프' },
+          { en: 'Apple Compote, Galangal, Cardamom, Red Sorrel', ko: '사과 콤포트, 갈랑가, 카다몸, 레드 소렐' } ],
+        [ { en: 'Grilled Australian Black Angus MB2 Beef Tenderloin', ko: '그릴에 구운 호주산 블랙 앵거스 소고기 안심' },
+          { en: 'Potato Gratin, Half Dried Tomato, King Trumpet Mushroom, Asparagus, Red Wine Sauce',
+            ko: '감자 그라탕, 토마토, 새송이버섯, 아스파라거스, 레드와인 소스' } ],
+        [ { en: 'Wedding Noodle', ko: '웨딩 국수' } ],
+        [ { en: 'Baked Cheese Cake', ko: '구운 치즈 케이크' },
+          { en: 'Vanilla Chantilly Cream, Blueberry Sauce', ko: '바닐라 샹티 크림, 블루베리 소스' } ],
+        [ { en: 'Coffee or Tea', ko: '커피 또는 차' } ],
       ],
+      note: '와인이 함께 나옵니다',
     },
 
     // 오시는 길. chips 에 넣은 값은 알약 모양으로 표시됩니다.

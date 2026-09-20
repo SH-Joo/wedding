@@ -119,24 +119,27 @@
 
   /* ── 식순 ───────────────────────────────────────────────── */
 
+  /* 식순 — 시각을 왼쪽에 세우고 가는 척추선으로 잇습니다.
+     '본식' 한 곳만 채운 점으로 강조합니다. */
   function renderTimeline() {
-    const body = $('#timeline');
+    const list = $('#timeline');
     (CONTENT.wedding.timeline || []).forEach(t => {
-      const tr = el('tr', t.key ? 'is-key' : null);
-      tr.appendChild(el('td', 't-when', t.time));
-      const what = el('td', 't-what');
-      what.appendChild(document.createTextNode(t.title));
-      if (t.desc) what.appendChild(el('small', null, t.desc));
+      const li = el('li', 'prog__i' + (t.key ? ' is-key' : ''));
+      li.appendChild(el('span', 'prog__time', t.time));
+      li.appendChild(el('span', 'prog__dot'));
+
+      const body = el('div', 'prog__body');
+      body.appendChild(el('p', 'prog__title', t.title));
+      if (t.desc) body.appendChild(el('p', 'prog__desc', t.desc));
       if (t.menu && CONTENT.wedding.menu) {
-        const b = el('button', 'tab__btn', '메뉴');
+        const b = el('button', 'prog__link', '메뉴 보기');
         b.type = 'button';
         b.setAttribute('aria-haspopup', 'dialog');
-        b.setAttribute('aria-label', '식사 메뉴 보기');
         b.addEventListener('click', openMenu);
-        what.appendChild(b);
+        body.appendChild(b);
       }
-      tr.appendChild(what);
-      body.appendChild(tr);
+      li.appendChild(body);
+      list.appendChild(li);
     });
   }
 
@@ -242,22 +245,25 @@
     });
   }
 
-  /* 식사 메뉴 — 코스 순서대로. 영문 이름을 앞세우고 한글을 받칩니다.
-     코스 사이는 가는 선으로만 나눕니다. 번호나 상자는 두지 않습니다. */
+  /* 식사 메뉴 — 코스 차림표. 한 코스에 요리가 둘이면 나란히 같은
+     무게로 적습니다. 코스 사이는 짧은 선 하나뿐입니다. */
   function openMenu() {
     const m = CONTENT.wedding.menu;
     openSheet('menu', 'Menu', body => {
-      if (m.sub) body.appendChild(el('p', 'menu__sub', m.sub));
+      body.appendChild(el('p', 'menu__sub', CONTENT.wedding.venue));
       const list = el('ol', 'menu');
-      m.courses.forEach(c => {
+      m.courses.forEach(course => {
         const li = el('li', 'course');
-        li.appendChild(el('p', 'course__en', c.en));
-        if (c.enSub) li.appendChild(el('p', 'course__enSub', c.enSub));
-        li.appendChild(el('p', 'course__ko', c.ko));
-        if (c.koSub) li.appendChild(el('p', 'course__koSub', c.koSub));
+        course.forEach(d => {
+          const dish = el('div', 'dish');
+          dish.appendChild(el('p', 'dish__en', d.en));
+          dish.appendChild(el('p', 'dish__ko', d.ko));
+          li.appendChild(dish);
+        });
         list.appendChild(li);
       });
       body.appendChild(list);
+      if (m.note) body.appendChild(el('p', 'menu__note', m.note));
     });
   }
 
@@ -348,57 +354,57 @@
 
   /* ── 연락처 · 계좌 ──────────────────────────────────────── */
 
+  /* 마음 전하실 곳 — 신부측·신랑측이 접혀 있다가 누르면 펼쳐집니다.
+     한쪽을 펼치면 다른 쪽은 접힙니다. 화면 높이가 정해져 있어서,
+     둘 다 펼치면 아래 버튼이 잘릴 수 있습니다. */
   function renderContacts() {
     const box = $('#contacts');
+    const folds = [];
 
     // 인사말에서 신랑 혼주가 먼저 나오니, 여기서는 신부측을 앞에 둡니다
-    [['bride', '신부'], ['groom', '신랑']].forEach(([side, ko]) => {
-      const p = CONTENT.couple[side];
-      const accounts = (CONTENT.accounts[side] || []).filter(a => a.number);
+    [['bride', '신부측'], ['groom', '신랑측']].forEach(([side, label]) => {
+      const list = (CONTENT.accounts[side] || []).filter(a => a.number);
 
-      const group = el('div', 'side');
-      group.appendChild(el('h3', null, ko + '측'));
+      const fold = el('div', 'fold');
+      const head = el('button', 'fold__head');
+      head.type = 'button';
+      head.setAttribute('aria-expanded', 'false');
+      head.appendChild(el('span', 'fold__label', label));
+      head.appendChild(el('span', 'fold__x'));
 
-      // 본인 · 아버지 · 어머니 순서로 한 줄씩
-      const people = [
-        { role: ko, name: p.name, accounts: accounts },
-        { role: '아버지', name: p.father.name, dead: p.father.deceased, accounts: [] },
-        { role: '어머니', name: p.mother.name, dead: p.mother.deceased, accounts: [] },
-      ].filter(x => x.name);
-
-      people.forEach(x => {
+      const panel = el('div', 'fold__panel');
+      const inner = el('div', 'fold__inner');
+      if (!list.length) inner.appendChild(el('p', 'fold__empty', '준비 중입니다'));
+      list.forEach(acc => {
         const row = el('div', 'who');
-        row.appendChild(el('span', 'who__role', x.role));
-        row.appendChild(el('p', 'who__name', (x.dead ? '故 ' : '') + x.name));
-        if (x.accounts[0]) fillAccount(row, x.accounts[0], x);
-        group.appendChild(row);
-
-        // 한 분이 계좌를 여럿 두면 아래에 이름 없이 한 줄씩 잇습니다
-        x.accounts.slice(1).forEach(acc => {
-          const more = el('div', 'who');
-          more.appendChild(el('span', 'who__role'));
-          more.appendChild(el('p', 'who__name'));
-          fillAccount(more, acc, x);
-          group.appendChild(more);
-        });
+        row.appendChild(el('span', 'who__role', acc.role));
+        row.appendChild(el('p', 'who__name', acc.name));
+        row.appendChild(el('p', 'who__acc', [acc.bank, acc.number].filter(Boolean).join(' ')));
+        const b = el('button', 'pill pill--sm', '복사');
+        b.type = 'button';
+        b.setAttribute('aria-label', `${acc.role} ${acc.name} 계좌번호 복사`);
+        b.addEventListener('click', () =>
+          copy([acc.bank, acc.number, acc.name].filter(Boolean).join(' '), '계좌번호를 복사했습니다'));
+        row.appendChild(b);
+        inner.appendChild(row);
       });
+      panel.appendChild(inner);
+      fold.append(head, panel);
 
-      box.appendChild(group);
+      head.addEventListener('click', () => {
+        const open = head.getAttribute('aria-expanded') !== 'true';
+        folds.forEach(f => f.set(false));
+        set(open);
+        // 펼쳐진 만큼 장이 길어지므로, 펼침이 끝난 뒤 다시 잽니다
+        setTimeout(() => { if (window.__fitDeck) window.__fitDeck(); }, 400);
+      });
+      const set = (open) => {
+        head.setAttribute('aria-expanded', String(open));
+        fold.classList.toggle('is-open', open);
+      };
+      folds.push({ set });
+      box.appendChild(fold);
     });
-  }
-
-  /* 계좌번호는 숨기지 않고 이름 옆에 그대로 보여 줍니다.
-     오른쪽 끝 버튼은 그 번호를 복사합니다. */
-  function fillAccount(row, acc, who) {
-    row.appendChild(el('p', 'who__acc', [acc.bank, acc.number].filter(Boolean).join(' ')));
-
-    const b = el('button', 'pill pill--sm', '복사');
-    b.type = 'button';
-    b.setAttribute('aria-label', `${who.role} ${who.name} 계좌번호 복사`);
-    b.addEventListener('click', () =>
-      copy([acc.bank, acc.number, acc.name || who.name].filter(Boolean).join(' '),
-           '계좌번호를 복사했습니다'));
-    row.appendChild(b);
   }
 
   /* ── 사진 ───────────────────────────────────────────────

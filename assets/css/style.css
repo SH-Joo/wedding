@@ -276,45 +276,65 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .cta .pill:hover{background:var(--accent); color:#fff}
 .cta__note{margin:var(--s3) 0 0; font-size:var(--t-sm); color:var(--faint)}
 
-/* ═══ 표 — 식순과 교통 안내 ═════════════════════════════════ */
-.tab{width:100%; border-collapse:collapse; margin:0; flex:0 0 auto}
-.tab td{
-  padding:var(--row-y, var(--s3)) 0; border-bottom:1px solid var(--line);
-  vertical-align:top;
+/* ═══ 식순 ═════════════════════════════════════════════════
+   시각은 왼쪽에 Prata 숫자로 세우고, 가는 척추선이 점들을 잇습니다.
+   선은 첫 점에서 시작해 마지막 점에서 끝납니다. '본식' 한 곳만
+   채운 점에 고리를 둘러 강조합니다. */
+.prog{
+  list-style:none; margin:0; padding:0; flex:0 0 auto;
+  --dot-y: calc(var(--row-y, var(--s3)) + 11px);   /* 줄 위 여백 + 글줄 절반 */
 }
-.tab tr:last-child td{border-bottom:0}
+.prog__i{
+  position:relative;
+  display:grid; grid-template-columns:50px 16px 1fr; column-gap:var(--s2);
+  padding:var(--row-y, var(--s3)) 0;
+}
+.prog__i::before{
+  content:''; position:absolute; top:0; bottom:0; width:1px;
+  left:calc(50px + var(--s2) + 7.5px); background:var(--line);
+}
+.prog__i:first-child::before{top:var(--dot-y)}
+.prog__i:last-child::before{bottom:calc(100% - var(--dot-y))}
 
-/* 왼쪽 칸 — 시각 또는 분류. 표 안의 숫자는 본문 글꼴로 통일합니다. */
-.tab .t-when{
-  width:62px; padding-right:var(--s3); white-space:nowrap;
-  font-family:var(--sans); font-size:var(--t-md);
-  letter-spacing:var(--ls-num); font-variant-numeric:tabular-nums;
-  color:var(--faint);
+.prog__time{
+  align-self:start; font-family:var(--serif); font-size:var(--t-md);
+  line-height:var(--lh-tight); letter-spacing:var(--ls-num);
+  font-variant-numeric:tabular-nums; color:var(--faint);
 }
-.tab .t-what{
-  font-family:var(--myeongjo); font-size:var(--t-md);
-  line-height:var(--lh-tight); letter-spacing:var(--ls-ko);
+.prog__dot{
+  align-self:start; height:calc(var(--t-md) * var(--lh-tight));
+  display:flex; align-items:center; justify-content:center;
 }
-/* 설명은 제목 옆에 이어 붙입니다 — '1부 · 본식이 진행됩니다'.
-   줄을 따로 두면 세 줄짜리 표가 여섯 줄이 되어, 세로로 짧은
-   화면(카카오톡 인앱)에서 장이 넘칩니다. */
-.tab .t-what small{
-  font-family:var(--sans); font-size:var(--t-sm);
-  line-height:var(--lh-tight); color:var(--muted); letter-spacing:var(--ls-ko);
+.prog__dot::after{
+  content:''; position:relative; z-index:1; width:6px; height:6px;
+  border-radius:50%; border:1px solid var(--accent); background:var(--bg);
 }
-.tab .t-what small::before{content:' · '; color:var(--faint)}
-/* 식순 줄 끝의 작은 버튼 — 설명에 이어 붙습니다 */
-.tab__btn{
-  appearance:none; cursor:pointer; vertical-align:middle;
-  margin-left:var(--s2); padding:2px var(--s2) 3px;
-  border:1px solid var(--accent); border-radius:999px; background:transparent;
-  font-family:var(--sans); font-size:var(--t-xs); line-height:1;
-  letter-spacing:0; color:var(--accent);
+.prog__i.is-key .prog__time{color:var(--accent)}
+.prog__i.is-key .prog__dot::after{
+  width:7px; height:7px; background:var(--accent);
+  box-shadow:0 0 0 3px var(--bg), 0 0 0 4px var(--accent);
 }
-.tab__btn:hover{background:var(--accent); color:#fff}
-.tab__btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
-.tab tr.is-key .t-when{color:var(--accent)}
-.tab tr.is-key .t-what{font-weight:700}
+.prog__body{min-width:0}
+.prog__title{
+  margin:0; font-family:var(--myeongjo); font-size:var(--t-md);
+  line-height:var(--lh-tight); letter-spacing:var(--ls-ko); color:var(--ink);
+}
+.prog__i.is-key .prog__title{font-weight:700; color:var(--accent)}
+.prog__desc{
+  margin:var(--s1) 0 0; font-size:var(--t-sm); line-height:var(--lh-tight);
+  letter-spacing:var(--ls-ko); color:var(--muted);
+}
+/* 메뉴 보기 — 버튼이 아니라 글줄 속 링크처럼. 밑줄 하나로 충분합니다. */
+.prog__link{
+  appearance:none; cursor:pointer; border:0; background:transparent;
+  display:inline-block; margin-top:var(--s2); padding:0 0 1px;
+  font-family:var(--sans); font-size:var(--t-sm); line-height:1.3;
+  letter-spacing:var(--ls-ko); color:var(--accent);
+  border-bottom:1px solid currentColor;
+}
+.prog__link::after{content:'  →'; white-space:pre}
+.prog__link:hover{color:var(--deep)}
+.prog__link:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
 
 .leg{
   display:block; margin-top:var(--s3); font-style:normal;
@@ -403,42 +423,44 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 }
 .sheet__text{margin:0; font-size:var(--t-md); line-height:var(--lh-body)}
 
-/* 식사 메뉴 — 코스 요리 차림표처럼. 가운데 맞춤, 영문은 Prata,
-   한글은 명조. 곁들임은 작고 옅게. 코스 사이는 가는 선 하나. */
-.modal[data-kind="menu"] .sheet__title{
-  font-family:var(--serif); font-size:var(--t-2xl);
-  letter-spacing:var(--ls-label); text-transform:uppercase;
-}
+/* 식사 메뉴 — 코스 차림표. 가운데 맞춤, 영문은 Prata, 한글은 명조.
+   한 코스에 요리가 둘이면 같은 무게로 나란히. 코스 사이는 짧은
+   크림슨 선 하나뿐입니다. 번호도 상자도 없습니다. */
+.modal[data-kind="menu"] .modal__panel{padding-top:var(--s6)}
 .modal[data-kind="menu"] .modal__head{justify-content:center; position:relative; margin-bottom:0}
-.modal[data-kind="menu"] .modal__x{position:absolute; right:0; top:0}
+.modal[data-kind="menu"] .modal__x{position:absolute; right:0; top:-4px}
+.modal[data-kind="menu"] .sheet__title{
+  font-family:var(--serif); font-size:var(--t-2xl); line-height:1;
+  letter-spacing:var(--ls-label); text-indent:var(--ls-label); text-transform:uppercase;
+}
 .menu__sub{
-  margin:var(--s2) 0 0; text-align:center;
+  margin:var(--s3) 0 0; text-align:center;
   font-family:var(--myeongjo); font-size:var(--t-sm);
   letter-spacing:var(--ls-ko); color:var(--muted);
 }
 .menu{list-style:none; margin:var(--s5) 0 0; padding:0; text-align:center}
 .course{padding:var(--s4) 0}
-.course + .course{border-top:1px solid var(--line)}
-.course p{margin:0}
-.course__en{
+.course + .course{position:relative; padding-top:calc(var(--s4) + var(--s3))}
+.course + .course::before{
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:22px; height:1px; background:var(--accent); opacity:.7;
+}
+.dish + .dish{margin-top:var(--s3)}
+.dish p{margin:0; text-wrap:balance}
+.dish__en{
   font-family:var(--serif); font-size:var(--t-md); line-height:var(--lh-tight);
-  letter-spacing:.02em; color:var(--ink); text-wrap:balance;
+  letter-spacing:.01em; color:var(--ink);
 }
-.course__enSub{
-  margin-top:var(--s1) !important; font-family:var(--serif);
-  font-size:var(--t-xs); line-height:var(--lh-tight); letter-spacing:.02em;
-  color:var(--faint); text-wrap:balance;
-}
-.course__ko{
-  margin-top:var(--s2) !important; font-family:var(--myeongjo);
-  font-size:var(--t-sm); line-height:var(--lh-tight); letter-spacing:var(--ls-ko);
-  color:var(--ink);
-}
-.course__koSub{
-  margin-top:var(--s1) !important; font-size:var(--t-xs);
+.dish__ko{
+  margin-top:2px !important; font-family:var(--myeongjo); font-size:var(--t-sm);
   line-height:var(--lh-tight); letter-spacing:var(--ls-ko); color:var(--muted);
-  text-wrap:balance;
 }
+.menu__note{
+  margin:var(--s5) 0 0; text-align:center;
+  font-size:var(--t-xs); letter-spacing:var(--ls-ko); color:var(--faint);
+}
+
+/* 오시는 길 팝업 안쪽 */
 .sheet__leg{margin:var(--s4) 0 0; font-size:var(--t-sm); color:var(--muted)}
 .sheet__leg:first-child{margin-top:0}
 /* 본 안내에 덧붙이는 줄 */
@@ -516,27 +538,43 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 .finale hr{border:0; height:1px; background:rgba(244,240,230,.3); margin:var(--s5) 0}
 
 /* 계좌를 말없이 늘어놓으면 받으러 온 것처럼 보입니다.
-   무엇인지, 왜 두었는지 먼저 밝힙니다. */
+   무엇인지, 왜 두었는지 먼저 밝힙니다. 제목이 크고 안내는 낮게. */
 .gift{
   margin:0 0 var(--s2); flex:0 0 auto;
-  font-family:var(--myeongjo); font-weight:400; font-size:var(--t-lg);
+  font-family:var(--myeongjo); font-weight:400; font-size:var(--t-xl);
   line-height:var(--lh-tight); letter-spacing:var(--ls-ko-lg); color:var(--paper);
 }
 .gift__note{
   margin:0 0 var(--gap-block, var(--s5)); flex:0 0 auto;
-  font-size:var(--t-sm); line-height:var(--lh-body);
-  letter-spacing:var(--ls-ko); color:#F3E6DB;
+  font-size:var(--t-sm); line-height:var(--lh-tight);
+  letter-spacing:var(--ls-ko); color:#E7C8CE;
 }
 
-.side{text-align:left}
-.side + .side{
-  margin-top:var(--s4); padding-top:var(--s4);
-  border-top:1px solid rgba(244,240,230,.3);
+/* 신부측·신랑측 — 접혀 있다가 누르면 펼쳐집니다.
+   오른쪽의 + 는 펼치면 − 가 됩니다. */
+.folds{flex:0 0 auto; text-align:left}
+.fold{border-top:1px solid rgba(244,240,230,.28)}
+.fold:last-child{border-bottom:1px solid rgba(244,240,230,.28)}
+.fold__head{
+  appearance:none; width:100%; border:0; background:transparent; cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:var(--s3) 0; color:var(--paper);
+  font-family:var(--myeongjo); font-size:var(--t-md); letter-spacing:var(--ls-ko);
 }
-.side > h3{
-  margin:0 0 var(--s1); font-family:var(--myeongjo); font-weight:400;
-  font-size:var(--t-md); letter-spacing:var(--ls-ko); color:#F7E9DC;
+.fold__head:focus-visible{outline:2px solid var(--paper); outline-offset:-4px}
+.fold__x{position:relative; width:12px; height:12px; flex:0 0 auto; margin-right:2px}
+.fold__x::before, .fold__x::after{
+  content:''; position:absolute; left:0; top:50%; width:100%; height:1px;
+  background:currentColor; transition:transform .3s var(--ease);
 }
+.fold__x::after{transform:rotate(90deg)}
+.fold.is-open .fold__x::after{transform:rotate(0)}
+.fold__panel{display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s var(--ease)}
+.fold.is-open .fold__panel{grid-template-rows:1fr}
+.fold__inner{overflow:hidden; min-height:0}
+.fold__inner > :last-child{padding-bottom:var(--s3)}
+.fold__empty{margin:0; font-size:var(--t-sm); color:#E7C8CE}
+
 .who{display:flex; align-items:center; gap:var(--s3); padding:var(--s1) 0}
 .who__role{
   flex:0 0 58px; font-size:var(--t-xs); color:#E3C3CA;
