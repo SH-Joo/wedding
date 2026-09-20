@@ -323,44 +323,44 @@
 
       // 본인 · 아버지 · 어머니 순서로 한 줄씩
       const people = [
-        { role: ko, name: p.name, phone: p.phone, accounts: accounts },
-        { role: '아버지', name: p.father.name, phone: p.father.phone,
-          dead: p.father.deceased, accounts: [] },
-        { role: '어머니', name: p.mother.name, phone: p.mother.phone,
-          dead: p.mother.deceased, accounts: [] },
+        { role: ko, name: p.name, accounts: accounts },
+        { role: '아버지', name: p.father.name, dead: p.father.deceased, accounts: [] },
+        { role: '어머니', name: p.mother.name, dead: p.mother.deceased, accounts: [] },
       ].filter(x => x.name);
 
       people.forEach(x => {
         const row = el('div', 'who');
         row.appendChild(el('span', 'who__role', x.role));
         row.appendChild(el('p', 'who__name', (x.dead ? '故 ' : '') + x.name));
-
-        const act = el('div', 'who__act');
-        if (x.phone && !x.dead) {
-          act.appendChild(telBtn('전화', x.phone, `${x.role} ${x.name}에게 전화`));
-        }
-        x.accounts.forEach(acc => {
-          const b = el('button', 'pill pill--sm', '계좌');
-          b.type = 'button';
-          b.setAttribute('aria-label', `${x.role} ${acc.name} 계좌번호 복사`);
-          b.addEventListener('click', () =>
-            copy([acc.bank, acc.number, acc.name].filter(Boolean).join(' '),
-                 '계좌번호를 복사했습니다'));
-          act.appendChild(b);
-        });
-        row.appendChild(act);
+        if (x.accounts[0]) fillAccount(row, x.accounts[0], x);
         group.appendChild(row);
+
+        // 한 분이 계좌를 여럿 두면 아래에 이름 없이 한 줄씩 잇습니다
+        x.accounts.slice(1).forEach(acc => {
+          const more = el('div', 'who');
+          more.appendChild(el('span', 'who__role'));
+          more.appendChild(el('p', 'who__name'));
+          fillAccount(more, acc, x);
+          group.appendChild(more);
+        });
       });
 
       box.appendChild(group);
     });
   }
 
-  function telBtn(text, phone, label) {
-    const a = el('a', 'pill pill--sm', text);
-    a.href = 'tel:' + phone;
-    a.setAttribute('aria-label', label || text);
-    return a;
+  /* 계좌번호는 숨기지 않고 이름 옆에 그대로 보여 줍니다.
+     오른쪽 끝 버튼은 그 번호를 복사합니다. */
+  function fillAccount(row, acc, who) {
+    row.appendChild(el('p', 'who__acc', [acc.bank, acc.number].filter(Boolean).join(' ')));
+
+    const b = el('button', 'pill pill--sm', '복사');
+    b.type = 'button';
+    b.setAttribute('aria-label', `${who.role} ${who.name} 계좌번호 복사`);
+    b.addEventListener('click', () =>
+      copy([acc.bank, acc.number, acc.name || who.name].filter(Boolean).join(' '),
+           '계좌번호를 복사했습니다'));
+    row.appendChild(b);
   }
 
   /* ── 사진 ───────────────────────────────────────────────

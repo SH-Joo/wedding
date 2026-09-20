@@ -468,6 +468,19 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 }
 .finale hr{border:0; height:1px; background:rgba(244,240,230,.3); margin:var(--s5) 0}
 
+/* 계좌를 말없이 늘어놓으면 받으러 온 것처럼 보입니다.
+   무엇인지, 왜 두었는지 먼저 밝힙니다. */
+.gift{
+  margin:0 0 var(--s2); flex:0 0 auto;
+  font-family:var(--myeongjo); font-weight:400; font-size:var(--t-lg);
+  line-height:var(--lh-tight); letter-spacing:var(--ls-ko-lg); color:var(--paper);
+}
+.gift__note{
+  margin:0 0 var(--gap-block, var(--s5)); flex:0 0 auto;
+  font-size:var(--t-sm); line-height:var(--lh-body);
+  letter-spacing:var(--ls-ko); color:#F3E6DB;
+}
+
 .side{text-align:left}
 .side + .side{
   margin-top:var(--s4); padding-top:var(--s4);
@@ -482,11 +495,21 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   flex:0 0 58px; font-size:var(--t-xs); color:#E3C3CA;
 }
 .who__name{
-  flex:1; margin:0; font-family:var(--myeongjo); font-size:var(--t-md);
+  flex:0 0 auto; margin:0; font-family:var(--myeongjo); font-size:var(--t-md);
   line-height:var(--lh-tight); letter-spacing:var(--ls-ko); color:var(--paper);
 }
-.who__act{display:flex; gap:var(--s1); flex:0 0 auto}
-.who__act .pill{font-size:var(--t-xs); padding:var(--s1) var(--s3); letter-spacing:0}
+/* 계좌번호 — 이름과 복사 버튼 사이. 오른쪽에 맞춰 줄마다 가지런합니다.
+   기능적인 숫자라 본문 글꼴을 쓰고, 자릿수를 고르게 둡니다. */
+.who__acc{
+  flex:1 1 auto; min-width:0; margin:0; text-align:right;
+  font-family:var(--sans); font-size:var(--t-xs);
+  letter-spacing:var(--ls-num); font-variant-numeric:tabular-nums;
+  color:#F0D9DE; overflow-wrap:anywhere;
+}
+.who .pill{
+  flex:0 0 auto; margin-left:auto;
+  font-size:var(--t-xs); padding:var(--s1) var(--s3); letter-spacing:0;
+}
 
 .btnrow{display:flex; gap:var(--s2); flex:0 0 auto}
 .btnrow .pill{flex:1; padding-inline:0}

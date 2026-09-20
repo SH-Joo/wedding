@@ -21,18 +21,16 @@ const CONTENT = {
     groom: {
       name: '주시헌',
       en: 'SIHEON',
-      phone: P.groomPhone || '',
       rank: '장남',                         // 장남 / 차남 / 아들 …
-      father: { name: '주윤홍', phone: P.groomFatherPhone || '', deceased: false },
-      mother: { name: '이현미', phone: P.groomMotherPhone || '', deceased: false },
+      father: { name: '주윤홍', deceased: false },
+      mother: { name: '이현미', deceased: false },
     },
     bride: {
       name: '황유나',
       en: 'YUNA',
-      phone: P.bridePhone || '',
       rank: '장녀',
-      father: { name: '황성국', phone: P.brideFatherPhone || '', deceased: false },
-      mother: { name: '한선미', phone: P.brideMotherPhone || '', deceased: false },
+      father: { name: '황성국', deceased: false },
+      mother: { name: '한선미', deceased: false },
     },
   },
 

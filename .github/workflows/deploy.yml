@@ -46,12 +46,6 @@ jobs:
         run: |
           cat > assets/js/private.js <<'EOF'
           const PRIVATE = {
-            groomPhone:       '${{ secrets.GROOM_PHONE }}',
-            bridePhone:       '${{ secrets.BRIDE_PHONE }}',
-            groomFatherPhone: '${{ secrets.GROOM_FATHER_PHONE }}',
-            groomMotherPhone: '${{ secrets.GROOM_MOTHER_PHONE }}',
-            brideFatherPhone: '${{ secrets.BRIDE_FATHER_PHONE }}',
-            brideMotherPhone: '${{ secrets.BRIDE_MOTHER_PHONE }}',
             account:          '${{ secrets.ACCOUNT }}',
             rsvpEndpoint:     '${{ secrets.RSVP_ENDPOINT }}',
             kakaoJsKey:       '${{ secrets.KAKAO_JS_KEY }}',
