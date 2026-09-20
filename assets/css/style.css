@@ -303,6 +303,16 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   line-height:var(--lh-tight); color:var(--muted); letter-spacing:var(--ls-ko);
 }
 .tab .t-what small::before{content:' · '; color:var(--faint)}
+/* 식순 줄 끝의 작은 버튼 — 설명에 이어 붙습니다 */
+.tab__btn{
+  appearance:none; cursor:pointer; vertical-align:middle;
+  margin-left:var(--s2); padding:2px var(--s2) 3px;
+  border:1px solid var(--accent); border-radius:999px; background:transparent;
+  font-family:var(--sans); font-size:var(--t-xs); line-height:1;
+  letter-spacing:0; color:var(--accent);
+}
+.tab__btn:hover{background:var(--accent); color:#fff}
+.tab__btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .tab tr.is-key .t-when{color:var(--accent)}
 .tab tr.is-key .t-what{font-weight:700}
 
@@ -392,6 +402,43 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   font-size:var(--t-xl); letter-spacing:var(--ls-ko-lg); line-height:1.2;
 }
 .sheet__text{margin:0; font-size:var(--t-md); line-height:var(--lh-body)}
+
+/* 식사 메뉴 — 코스 요리 차림표처럼. 가운데 맞춤, 영문은 Prata,
+   한글은 명조. 곁들임은 작고 옅게. 코스 사이는 가는 선 하나. */
+.modal[data-kind="menu"] .sheet__title{
+  font-family:var(--serif); font-size:var(--t-2xl);
+  letter-spacing:var(--ls-label); text-transform:uppercase;
+}
+.modal[data-kind="menu"] .modal__head{justify-content:center; position:relative; margin-bottom:0}
+.modal[data-kind="menu"] .modal__x{position:absolute; right:0; top:0}
+.menu__sub{
+  margin:var(--s2) 0 0; text-align:center;
+  font-family:var(--myeongjo); font-size:var(--t-sm);
+  letter-spacing:var(--ls-ko); color:var(--muted);
+}
+.menu{list-style:none; margin:var(--s5) 0 0; padding:0; text-align:center}
+.course{padding:var(--s4) 0}
+.course + .course{border-top:1px solid var(--line)}
+.course p{margin:0}
+.course__en{
+  font-family:var(--serif); font-size:var(--t-md); line-height:var(--lh-tight);
+  letter-spacing:.02em; color:var(--ink); text-wrap:balance;
+}
+.course__enSub{
+  margin-top:var(--s1) !important; font-family:var(--serif);
+  font-size:var(--t-xs); line-height:var(--lh-tight); letter-spacing:.02em;
+  color:var(--faint); text-wrap:balance;
+}
+.course__ko{
+  margin-top:var(--s2) !important; font-family:var(--myeongjo);
+  font-size:var(--t-sm); line-height:var(--lh-tight); letter-spacing:var(--ls-ko);
+  color:var(--ink);
+}
+.course__koSub{
+  margin-top:var(--s1) !important; font-size:var(--t-xs);
+  line-height:var(--lh-tight); letter-spacing:var(--ls-ko); color:var(--muted);
+  text-wrap:balance;
+}
 .sheet__leg{margin:var(--s4) 0 0; font-size:var(--t-sm); color:var(--muted)}
 .sheet__leg:first-child{margin-top:0}
 /* 본 안내에 덧붙이는 줄 */

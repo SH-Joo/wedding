@@ -127,6 +127,14 @@
       const what = el('td', 't-what');
       what.appendChild(document.createTextNode(t.title));
       if (t.desc) what.appendChild(el('small', null, t.desc));
+      if (t.menu && CONTENT.wedding.menu) {
+        const b = el('button', 'tab__btn', '메뉴');
+        b.type = 'button';
+        b.setAttribute('aria-haspopup', 'dialog');
+        b.setAttribute('aria-label', '식사 메뉴 보기');
+        b.addEventListener('click', openMenu);
+        what.appendChild(b);
+      }
       tr.appendChild(what);
       body.appendChild(tr);
     });
@@ -160,66 +168,96 @@
     });
   }
 
-  let wayReturn = null;
-  let wayPushed = false;
+  /* 안내 팝업 — 오시는 길과 식사 메뉴가 같은 판을 씁니다.
+     제목과 내용만 바꿔 끼웁니다. 뒤로가기로 닫히도록 기록을 한 칸 쌓습니다. */
+  let sheetReturn = null;
+  let sheetPushed = false;
 
-  function openWay(i) {
-    const w = CONTENT.wedding.ways[i];
-    const body = $('#waySheetBody');
+  function openSheet(kind, title, fill) {
+    const sheet = $('#sheet');
+    const body = $('#sheetBody');
     body.textContent = '';
+    fill(body);
 
-    if (w.text)  body.appendChild(el('p', 'sheet__text', w.text));
-    if (w.chips) body.appendChild(chipRow(w.chips));
-
-    // 덧붙일 안내가 있으면 이어서 보여주고,
-    // 다른 항목을 가리키면 바로 건너갈 수 있게 합니다.
-    if (w.note) {
-      const note = el('p', 'sheet__note', w.note);
-      if (w.seeAlso) {
-        const to = CONTENT.wedding.ways.findIndex(x => x.label === w.seeAlso);
-        if (to >= 0) {
-          const go = el('button', 'linkbtn', w.seeAlso + ' 안내 보기');
-          go.type = 'button';
-          go.addEventListener('click', () => openWay(to));
-          note.appendChild(document.createTextNode(' '));
-          note.appendChild(go);
-        }
-      }
-      body.appendChild(note);
-    }
-    (w.legs || []).forEach(leg => {
-      body.appendChild(el('p', 'sheet__leg', leg.text));
-      if (leg.chips) body.appendChild(chipRow(leg.chips));
-      if (leg.times) body.appendChild(timeRow(leg.times));
-    });
-
-    $('#waySheetTitle').textContent = w.label;
-    wayReturn = document.activeElement;
-    $('#waySheet').hidden = false;
+    sheet.dataset.kind = kind;
+    $('#sheetTitle').textContent = title;
+    sheetReturn = document.activeElement;
+    sheet.hidden = false;
     document.body.style.overflow = 'hidden';
-    $('[data-way-close]').focus({ preventScroll: true });
-    try { history.pushState({ overlay: 'way' }, ''); wayPushed = true; } catch (e) {}
+    $('[data-sheet-close]').focus({ preventScroll: true });
+    if (!sheetPushed) {
+      try { history.pushState({ overlay: 'sheet' }, ''); sheetPushed = true; } catch (e) {}
+    }
   }
 
-  function closeWay(fromHistory) {
-    $('#waySheet').hidden = true;
+  function closeSheet(fromHistory) {
+    $('#sheet').hidden = true;
     document.body.style.overflow = '';
-    if (wayReturn) wayReturn.focus({ preventScroll: true });
-    const was = wayPushed;
-    wayPushed = false;
+    if (sheetReturn) sheetReturn.focus({ preventScroll: true });
+    const was = sheetPushed;
+    sheetPushed = false;
     if (!fromHistory && was) history.back();
   }
 
-  function wireWaySheet() {
-    const sheet = $('#waySheet');
+  function wireSheet() {
+    const sheet = $('#sheet');
     sheet.addEventListener('click', e => {
-      if (e.target.closest('[data-way-close]')) closeWay();
+      if (e.target.closest('[data-sheet-close]')) closeSheet();
     });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && !sheet.hidden) closeWay();
+      if (e.key === 'Escape' && !sheet.hidden) closeSheet();
     });
     window.addEventListener('popstate', () => {
-      if (!sheet.hidden) closeWay(true);
+      if (!sheet.hidden) closeSheet(true);
+    });
+  }
+
+  function openWay(i) {
+    const w = CONTENT.wedding.ways[i];
+    openSheet('way', w.label, body => {
+      if (w.text)  body.appendChild(el('p', 'sheet__text', w.text));
+      if (w.chips) body.appendChild(chipRow(w.chips));
+
+      // 덧붙일 안내가 있으면 이어서 보여주고,
+      // 다른 항목을 가리키면 바로 건너갈 수 있게 합니다.
+      if (w.note) {
+        const note = el('p', 'sheet__note', w.note);
+        if (w.seeAlso) {
+          const to = CONTENT.wedding.ways.findIndex(x => x.label === w.seeAlso);
+          if (to >= 0) {
+            const go = el('button', 'linkbtn', w.seeAlso + ' 안내 보기');
+            go.type = 'button';
+            go.addEventListener('click', () => openWay(to));
+            note.appendChild(document.createTextNode(' '));
+            note.appendChild(go);
+          }
+        }
+        body.appendChild(note);
+      }
+      (w.legs || []).forEach(leg => {
+        body.appendChild(el('p', 'sheet__leg', leg.text));
+        if (leg.chips) body.appendChild(chipRow(leg.chips));
+        if (leg.times) body.appendChild(timeRow(leg.times));
+      });
+    });
+  }
+
+  /* 식사 메뉴 — 코스 순서대로. 영문 이름을 앞세우고 한글을 받칩니다.
+     코스 사이는 가는 선으로만 나눕니다. 번호나 상자는 두지 않습니다. */
+  function openMenu() {
+    const m = CONTENT.wedding.menu;
+    openSheet('menu', 'Menu', body => {
+      if (m.sub) body.appendChild(el('p', 'menu__sub', m.sub));
+      const list = el('ol', 'menu');
+      m.courses.forEach(c => {
+        const li = el('li', 'course');
+        li.appendChild(el('p', 'course__en', c.en));
+        if (c.enSub) li.appendChild(el('p', 'course__enSub', c.enSub));
+        li.appendChild(el('p', 'course__ko', c.ko));
+        if (c.koSub) li.appendChild(el('p', 'course__koSub', c.koSub));
+        list.appendChild(li);
+      });
+      body.appendChild(list);
     });
   }
 
@@ -984,7 +1022,7 @@
   primeKakao();
   wireCopy();
   wireLightbox();
-  wireWaySheet();
+  wireSheet();
   wireDeck();
   renderCover();
   wireBgm();

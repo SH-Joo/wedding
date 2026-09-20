@@ -46,11 +46,45 @@ const CONTENT = {
     // 식순 — 시각 순서대로 적으세요.
     // key: true 로 두면 크림슨으로 강조됩니다.
     // desc 는 꼭 필요한 곳에만 답니다. 여러 줄에 달면 표가 들쭉날쭉해집니다.
+    // 1부·2부로 나뉘는 보통의 예식이라, 순서 자체는 설명하지 않습니다.
+    // 하객이 미리 알아야 움직일 수 있는 것만 적습니다 —
+    // 몇 시에 오면 되는지, 식사는 어디서 어떻게 하는지, 끝나면 무엇을 받는지.
     timeline: [
-      { time: '18:00', title: '1부', desc: '본식이 진행됩니다', key: true },
-      { time: '18:30', title: '만찬', desc: '앉으신 자리에서 그대로 진행됩니다' },
-      { time: '19:00', title: '2부', desc: '케이크 커팅과 샴페인 건배가 있습니다', key: true },
+      { time: '17:30', title: '하객 입장' },
+      { time: '18:00', title: '본식', key: true },
+      { time: '18:30', title: '식사', desc: '앉으신 자리에서 그대로, 와인과 함께하는 코스 요리', menu: true },
+      { time: '19:00', title: '2부', desc: '마치고 꽃다발을 나눠 드립니다' },
     ],
+
+    // 식사 메뉴 — 식순의 [메뉴] 버튼을 누르면 뜹니다.
+    // 영문은 호텔이 준 이름 그대로, 한글은 그 아래에.
+    menu: {
+      sub: '와인과 함께하는 코스 요리',
+      courses: [
+        { en: 'Bread Basket and Butter',
+          ko: '브레드 바스켓과 버터' },
+        { en: 'Ripe Vine Tomato Tartare with Burrata Cheese',
+          enSub: 'Butter Poached Asparagus, Organic Cracker, Black Olive Crumble, Picual Olive Oil',
+          ko: '토마토 타르타르와 부라타 치즈',
+          koSub: '버터에 포칭한 아스파라거스, 올가닉 크래커, 블랙올리브 크럼블, 피쿠알 올리브 오일' },
+        { en: 'Aged Squash and Carrot Soup',
+          enSub: 'Apple Compote, Galangal, Cardamom, Red Sorrel',
+          ko: '늙은 호박과 당근 수프',
+          koSub: '사과 콤포트, 갈랑가, 카다몸, 레드 소렐' },
+        { en: 'Grilled Australian Black Angus MB2 Beef Tenderloin',
+          enSub: 'Potato Gratin, Half Dried Tomato, King Trumpet Mushroom, Asparagus, Red Wine Sauce',
+          ko: '그릴에 구운 호주산 블랙 앵거스 소고기 안심',
+          koSub: '감자 그라탕, 토마토, 새송이버섯, 아스파라거스, 레드와인 소스' },
+        { en: 'Wedding Noodle',
+          ko: '웨딩 국수' },
+        { en: 'Baked Cheese Cake',
+          enSub: 'Vanilla Chantilly Cream, Blueberry Sauce',
+          ko: '구운 치즈 케이크',
+          koSub: '바닐라 샹티 크림, 블루베리 소스' },
+        { en: 'Coffee or Tea',
+          ko: '커피 또는 차' },
+      ],
+    },
 
     // 오시는 길. chips 에 넣은 값은 알약 모양으로 표시됩니다.
     // 분류는 한글로 적습니다. 영문 레이블은 화면 제목에만 쓰고,
@@ -81,7 +115,7 @@ const CONTENT = {
   /* ── 마음 전하기 ──────────────────────────────────────────── */
   accounts: {
     groom: [
-      { role: '신랑', name: '주시헌', bank: '국민', number: P.account || '', kakaopay: '' },
+      { role: '신랑', name: '주시헌', bank: '기업', number: P.account || '', kakaopay: '' },
     ],
     bride: [],
   },
