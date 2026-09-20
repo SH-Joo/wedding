@@ -354,6 +354,12 @@
     setTimeout(() => { if (modal.hidden) openModal('form'); }, 650);
   };
 
+  // 마지막 화면에 올 때마다, 아직 응답하지 않았으면 바로 띄웁니다.
+  window.__rsvpNudge = function () {
+    if (store.get(KEY_MINE, null)) return;
+    setTimeout(() => { if (modal.hidden) openModal('form'); }, 450);
+  };
+
   showDeadline();
   wireInputs();
   wireForm();

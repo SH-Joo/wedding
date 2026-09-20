@@ -896,6 +896,8 @@
       window.addEventListener('resize', noteHeight, { passive: true });
     }
 
+    let painted = -1;   // 마지막으로 그린 장 — 같은 장을 다시 그릴 때 안내를 되풀이하지 않도록
+
     function paint(animate) {
       if (animate === false) inner.style.transition = 'none';
       inner.style.transform = 'translate3d(0,' + (-DECK.i * DECK.h) + 'px,0)';
@@ -908,8 +910,14 @@
                         : sc.classList.contains('scr--paper') ? 'paper' : 'bg';
       navBtns.forEach((b, j) => b.setAttribute('aria-current', String(j === DECK.i)));
 
-      // 인사말 화면(두 번째)에 닿으면 아직 응답하지 않은 분께 한 번 물어봅니다
-      if (DECK.i === 1 && window.__rsvpPrompt) window.__rsvpPrompt();
+      // 인사말 화면(두 번째)에 닿으면 아직 응답하지 않은 분께 한 번 물어봅니다.
+      // 마지막 화면에서는 올 때마다 물어봅니다 — 여기까지 다 보셨으면
+      // 응답을 남기고 나가시라는 뜻입니다. 같은 화면을 다시 그릴 때는 건너뜁니다.
+      if (DECK.i !== painted) {
+        painted = DECK.i;
+        if (DECK.i === 1 && window.__rsvpPrompt) window.__rsvpPrompt();
+        if (DECK.i === DECK.count - 1 && window.__rsvpNudge) window.__rsvpNudge();
+      }
     }
 
     function go(i, animate) {
