@@ -15,6 +15,7 @@ index.html 을 배포용으로 마무리합니다.
     화면이 밀립니다. 주소가 바뀌면 반드시 새로 받아갑니다.
 """
 
+import hashlib
 import html
 import re
 import sys
@@ -33,6 +34,21 @@ CONTENT = ROOT / "assets" / "js" / "content.js"
 DEFAULT_SITE = "https://sh-joo.github.io/wedding/"
 
 ASSET = re.compile(r'(assets/(?:css|js)/[A-Za-z0-9._-]+\.(?:css|js))(\?v=[A-Za-z0-9]+)?"')
+
+# 표지 사진과 링크 카드. 주소가 같으면 휴대폰이 옛 사진을 계속 보여주므로,
+# 파일 내용으로 만든 꼬리표를 붙입니다. 사진을 바꿀 때만 주소가 바뀝니다.
+PICTURE = re.compile(r'(assets/img/(?:title/[A-Za-z0-9._-]+\.webp|og\.jpg))(\?v=[A-Za-z0-9]+)?')
+APP_JS = ROOT / "assets" / "js" / "app.js"
+
+
+def stamp_pictures(text):
+    def tag(m):
+        f = ROOT / m.group(1)
+        if not f.is_file():
+            return m.group(0)
+        v = hashlib.md5(f.read_bytes()).hexdigest()[:8]
+        return f"{m.group(1)}?v={v}"
+    return PICTURE.subn(tag, text)
 
 
 def share_values():
@@ -85,14 +101,20 @@ def main():
         page = put_meta(page, sel, val)
 
     page, hits = ASSET.subn(lambda m: f"{m.group(1)}?v={version}\"", page)
+    page, pics = stamp_pictures(page)
 
     PAGE.write_text(page, encoding="utf-8")
+
+    # app.js 안의 표지 사진 주소에도 붙입니다
+    js = APP_JS.read_text(encoding="utf-8")
+    js, pics_js = stamp_pictures(js)
+    APP_JS.write_text(js, encoding="utf-8")
 
     print(f"  제목      {s['title']}")
     print(f"  설명      {s['description']}")
     print(f"  카드 이미지 {image}")
     print(f"  주소      {site}")
-    print(f"  버전 {version} — CSS·JS {hits}곳")
+    print(f"  버전 {version} — CSS·JS {hits}곳, 사진 주소 {pics + pics_js}곳")
     if hits == 0:
         sys.exit("CSS·JS 주소를 찾지 못했습니다. index.html 을 확인하세요.")
 
