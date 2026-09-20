@@ -129,15 +129,17 @@
       li.appendChild(el('span', 'prog__dot'));
 
       const body = el('div', 'prog__body');
-      body.appendChild(el('p', 'prog__title', t.title));
-      if (t.desc) body.appendChild(el('p', 'prog__desc', t.desc));
+      const title = el('p', 'prog__title', t.title);
       if (t.menu && CONTENT.wedding.menu) {
+        // 제목 바로 옆에 둡니다. 줄을 따로 쓰면 이 항목만 세 줄이 됩니다.
         const b = el('button', 'prog__link', '메뉴 보기');
         b.type = 'button';
         b.setAttribute('aria-haspopup', 'dialog');
         b.addEventListener('click', openMenu);
-        body.appendChild(b);
+        title.appendChild(b);
       }
+      body.appendChild(title);
+      if (t.desc) body.appendChild(el('p', 'prog__desc', t.desc));
       li.appendChild(body);
       list.appendChild(li);
     });
@@ -363,7 +365,17 @@
 
     // 인사말에서 신랑 혼주가 먼저 나오니, 여기서는 신부측을 앞에 둡니다
     [['bride', '신부측'], ['groom', '신랑측']].forEach(([side, label]) => {
-      const list = (CONTENT.accounts[side] || []).filter(a => a.number);
+      const p = CONTENT.couple[side];
+      const accts = (CONTENT.accounts[side] || []).filter(a => a.number);
+      // 본인 · 아버지 · 어머니 순. 계좌가 아직 없어도 이름은 둡니다.
+      const rows = [];
+      [[label.slice(0, 2), p.name, p.deceased], ['아버지', p.father.name, p.father.deceased], ['어머니', p.mother.name, p.mother.deceased]]
+        .forEach(([role, name, dead]) => {
+          if (!name) return;
+          const mine = accts.filter(a => a.role === role);
+          if (!mine.length) rows.push({ role, name: (dead ? '故 ' : '') + name });
+          mine.forEach((acc, i) => rows.push({ role: i ? '' : role, name: i ? '' : name, acc }));
+        });
 
       const fold = el('div', 'fold');
       const head = el('button', 'fold__head');
@@ -374,11 +386,12 @@
 
       const panel = el('div', 'fold__panel');
       const inner = el('div', 'fold__inner');
-      if (!list.length) inner.appendChild(el('p', 'fold__empty', '준비 중입니다'));
-      list.forEach(acc => {
+      rows.forEach(x => {
         const row = el('div', 'who');
-        row.appendChild(el('span', 'who__role', acc.role));
-        row.appendChild(el('p', 'who__name', acc.name));
+        row.appendChild(el('span', 'who__role', x.role));
+        row.appendChild(el('p', 'who__name', x.name));
+        if (!x.acc) { inner.appendChild(row); return; }
+        const acc = x.acc;
         row.appendChild(el('p', 'who__acc', [acc.bank, acc.number].filter(Boolean).join(' ')));
         const b = el('button', 'pill pill--sm', '복사');
         b.type = 'button';

@@ -52,8 +52,8 @@ const CONTENT = {
     timeline: [
       { time: '17:30', title: '하객 입장' },
       { time: '18:00', title: '본식', key: true },
-      { time: '18:30', title: '식사', desc: '앉으신 자리에서 그대로 이어집니다', menu: true },
-      { time: '19:00', title: '2부', desc: '마치고 꽃다발을 나눠 드립니다' },
+      { time: '18:30', title: '식사', desc: '앉으신 자리에서 그대로 진행되는 코스 요리입니다.', menu: true },
+      { time: '19:00', title: '2부', desc: '끝나고 꽃다발을 나눠 드립니다' },
     ],
 
     // 식사 메뉴 — 식순의 '메뉴 보기'를 누르면 뜹니다.
@@ -109,7 +109,10 @@ const CONTENT = {
     groom: [
       { role: '신랑', name: '주시헌', bank: '기업', number: P.account || '', kakaopay: '' },
     ],
-    bride: [],
+    bride: [
+      { role: '신부',   name: '황유나', bank: '토스', number: '1000-1240-5877', kakaopay: '' },
+      { role: '어머니', name: '한선미', bank: '토스', number: '1000-4299-8504', kakaopay: '' },
+    ],
   },
 
   /* ── 참석 의사 전달 ───────────────────────────────────────── */
