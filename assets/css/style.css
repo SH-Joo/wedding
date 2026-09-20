@@ -167,7 +167,8 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   color:var(--accent); flex:0 0 auto;
 }
 .eyebrow{margin:0 0 var(--gap-block, var(--s5))}
-.sub{margin:var(--gap-block, var(--s5)) 0 var(--s3)}
+/* 위 글과 조금 더 떨어뜨립니다 — 새 덩어리가 시작됨을 알립니다 */
+.sub{margin:calc(var(--gap-block, var(--s5)) + var(--s2)) 0 var(--s3)}
 .eyebrow i, .sub i{
   flex:1; height:1px; background:currentColor;
   opacity:.4; transform:translateY(-3px);
@@ -246,12 +247,12 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 
 /* ═══ 02 인사말 · 식순 ══════════════════════════════════════ */
 .poem{
-  margin:0; flex:0 0 auto; white-space:pre-line;
+  margin:0; flex:0 0 auto; white-space:pre-line; text-align:center;
   font-family:var(--myeongjo); font-weight:400;
   font-size:var(--t-lg); line-height:var(--lh-poem); letter-spacing:var(--ls-ko-lg);
 }
 .signoff{
-  margin:var(--gap-block, var(--s5)) 0 0; flex:0 0 auto; text-align:left;
+  margin:var(--gap-block, var(--s5)) 0 0; flex:0 0 auto; text-align:center;
   font-family:var(--myeongjo); font-size:var(--t-sm);
   line-height:var(--lh-body); color:var(--muted);
 }
@@ -272,7 +273,8 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 
 /* 인사말 아래 참석 버튼 */
 .cta{margin:var(--gap-cta, var(--s6)) 0 0; flex:0 0 auto; text-align:center}
-.cta .pill{border-color:var(--accent); color:var(--accent)}
+/* 마지막 장의 참석 버튼과 같은 비율 — 폭을 다 씁니다 */
+.cta .pill{display:block; width:100%; padding-inline:var(--s4); border-color:var(--accent); color:var(--accent)}
 .cta .pill:hover{background:var(--accent); color:#fff}
 .cta__note{margin:var(--s3) 0 0; font-size:var(--t-sm); color:var(--faint)}
 
