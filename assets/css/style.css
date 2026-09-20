@@ -538,14 +538,19 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
 /* 계좌 접이와 Thank you 사이 — 선 대신 여백만 둡니다 */
 .finale .folds{margin-bottom:var(--gap-cta, var(--s6))}
 /* 마지막에 한 번 더 — 응답이 있으면 rsvp.js 가 '응답 수정하기'로 바꿉니다 */
-/* 주된 행동 하나 — 아래 작은 테두리 버튼 셋과 헷갈리지 않게,
-   크림색으로 채운 넓은 버튼으로 둡니다. */
-.finale__rsvp{margin:var(--gap-block, var(--s5)) 0 var(--s3); flex:0 0 auto}
-.finale .finale__rsvp .pill{
-  display:block; width:100%; padding:var(--s3) var(--s4);
-  background:var(--paper); border-color:var(--paper); color:var(--accent);
+/* 참석 의사 — 공유 버튼 셋 아래에 테두리 없이 글자만.
+   밑줄 하나로 누를 수 있음을 알립니다. */
+.finale .btnrow{margin-top:var(--gap-block, var(--s5))}
+.finale__rsvp{margin:var(--s4) 0 0; flex:0 0 auto}
+.finale__link{
+  appearance:none; cursor:pointer; border:0; background:transparent;
+  padding:var(--s2) var(--s1) calc(var(--s2) - 1px);
+  font-family:var(--myeongjo); font-size:var(--t-md); letter-spacing:.08em;
+  color:var(--paper); border-bottom:1px solid rgba(244,240,230,.55);
+  transition:border-color .3s var(--ease);
 }
-.finale .finale__rsvp .pill:hover{background:#fff; border-color:#fff; color:var(--deep)}
+.finale__link:hover{border-bottom-color:var(--paper)}
+.finale__link:focus-visible{outline:2px solid var(--paper); outline-offset:3px}
 
 /* 계좌를 말없이 늘어놓으면 받으러 온 것처럼 보입니다.
    무엇인지, 왜 두었는지 먼저 밝힙니다. 제목이 크고 안내는 낮게. */
