@@ -535,7 +535,11 @@ button,input,select,textarea{font:inherit; color:inherit; letter-spacing:inherit
   margin:var(--s3) 0 0; font-family:var(--myeongjo);
   font-size:var(--t-md); letter-spacing:var(--ls-ko); color:var(--paper);
 }
-.finale hr{border:0; height:1px; background:rgba(244,240,230,.3); margin:var(--s5) 0}
+/* 계좌 접이와 Thank you 사이 — 선 대신 여백만 둡니다 */
+.finale .folds{margin-bottom:var(--gap-cta, var(--s6))}
+/* 마지막에 한 번 더 — 응답이 있으면 rsvp.js 가 '응답 수정하기'로 바꿉니다 */
+.finale__rsvp{margin:var(--gap-block, var(--s5)) 0 var(--s3); flex:0 0 auto}
+.finale__rsvp .pill{border-color:var(--paper); min-width:200px}
 
 /* 계좌를 말없이 늘어놓으면 받으러 온 것처럼 보입니다.
    무엇인지, 왜 두었는지 먼저 밝힙니다. 제목이 크고 안내는 낮게. */
