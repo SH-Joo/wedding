@@ -75,7 +75,7 @@ const CONTENT = {
           { en: 'Vanilla Chantilly Cream, Blueberry Sauce', ko: '바닐라 샹티 크림, 블루베리 소스' } ],
         [ { en: 'Coffee or Tea', ko: '커피 또는 차' } ],
       ],
-      note: '와인이 함께 나옵니다',
+      note: '레드와인이 제공됩니다',
     },
 
     // 오시는 길. chips 에 넣은 값은 알약 모양으로 표시됩니다.
