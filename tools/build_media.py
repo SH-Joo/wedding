@@ -117,8 +117,9 @@ def load(path: Path) -> Image.Image:
     im = ImageOps.exif_transpose(im)
     if im.mode not in ("RGB", "L"):
         im = im.convert("RGB")
-    clean = Image.new(im.mode, im.size)
-    clean.putdata(list(im.getdata()))
+    # 픽셀만 새 그림으로 옮깁니다. 메타데이터는 따라오지 않습니다.
+    # (픽셀을 파이썬 목록으로 옮기던 예전 방식은 큰 원본에서 장당 수십 초)
+    clean = Image.frombytes(im.mode, im.size, im.tobytes())
     return clean
 
 
@@ -129,7 +130,7 @@ def save_webp(im: Image.Image, dest: Path, width: int, quality: int = WEBP_Q) ->
         out = im.resize((width, h), Image.LANCZOS)
     else:
         out = im
-    out.save(dest, "WEBP", quality=quality, method=6)
+    out.save(dest, "WEBP", quality=quality, method=4)   # 6 은 용량 1~2% 줄이려고 몇 배 느립니다
     return out.size
 
 
