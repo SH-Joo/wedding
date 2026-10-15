@@ -623,8 +623,7 @@
 
      열자마자 틉니다. 브라우저가 소리 나는 자동 재생을 막으면
      (화면을 한 번도 누르기 전이라면 대개 막습니다) 첫 손짓에 틉니다.
-     끄신 분은 다시 들어오셔도 꺼진 채로 둡니다. */
-  const BGM_OFF = 'bgm-off';
+     끈 상태를 기억하지 않습니다 — 열 때마다 켜진 채로 시작합니다. */
 
   async function wireBgm() {
     let src = '';
@@ -642,10 +641,7 @@
     audio.volume = 0.39;      // 0.6 에서 65% 로 낮춤. 아이폰은 이 값을 무시합니다
 
     let want = true;
-    try { want = localStorage.getItem(BGM_OFF) !== '1'; } catch (e) {}
-    const remember = (off) => {
-      try { off ? localStorage.setItem(BGM_OFF, '1') : localStorage.removeItem(BGM_OFF); } catch (e) {}
-    };
+    try { localStorage.removeItem('bgm-off'); } catch (e) {}   // 예전 버전이 남긴 기억은 지웁니다
 
     // 버튼은 '지금 실제로 나오는지'를 보여줍니다
     const paint = () => {
@@ -658,7 +654,10 @@
     btn.hidden = false;
     paint();
 
-    const start = () => audio.play().then(() => true, () => false);
+    // 실패하면 이유를 적어 둡니다. 손짓 뒤에도 안 되면 화면에 띄웁니다.
+    let lastErr = '';
+    const start = () => audio.play().then(() => true, (err) => { lastErr = err && err.name || 'unknown'; return false; });
+    audio.addEventListener('error', () => { lastErr = 'media ' + (audio.error && audio.error.code); });
 
     // 자동 재생이 막혔으면 첫 손짓에 틉니다. 음악 버튼을 누른 경우는
     // 버튼이 처리합니다 — 둘 다 반응하면 켜자마자 꺼집니다.
@@ -668,15 +667,15 @@
     function onGesture(e) {
       if (e.target && e.target.closest && e.target.closest('#bgm')) return;
       if (!want || !audio.paused) return unhook();
-      start().then((ok) => { if (ok) unhook(); });
+      start().then((ok) => { if (ok) unhook(); else toast('음악 재생 실패: ' + lastErr); });
     }
 
     btn.addEventListener('click', () => {
       if (audio.paused) {
-        want = true; remember(false); unhook();
-        start().then((ok) => { if (!ok) toast('음악을 틀지 못했습니다. 다시 눌러 주세요'); });
+        want = true; unhook();
+        start().then((ok) => { if (!ok) toast('음악 재생 실패: ' + lastErr); });
       } else {
-        want = false; remember(true); audio.pause();
+        want = false; audio.pause();
       }
     });
 
