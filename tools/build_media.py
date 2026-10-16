@@ -210,15 +210,18 @@ def build_og(mag_src: Path):
 
 
 # 카카오톡 링크 카드로 쓸 사진을 직접 고를 수 있습니다.
-# images/ 에 이 이름 중 하나로 넣으면 포스터를 잘라 만드는 대신 그 사진을 씁니다.
-SHARE_NAMES = ("카톡", "share")
+# images/ 나 images/Title/ 에 이 이름 중 하나로 넣으면(확장자 무관)
+# 포스터를 잘라 만드는 대신 그 사진을 씁니다.
+SHARE_NAMES = ("썸네일", "카톡", "share")
 
 
 def find_share_image():
-    folder = ROOT / "images"
-    for f in sorted(folder.iterdir()) if folder.is_dir() else []:
-        if f.is_file() and f.suffix in PHOTO_EXT and f.stem.lower() in SHARE_NAMES:
-            return f
+    for folder in (ROOT / "images" / "Title", ROOT / "images"):
+        if not folder.is_dir():
+            continue
+        for f in sorted(folder.iterdir()):
+            if f.is_file() and f.suffix in PHOTO_EXT and f.stem.lower() in SHARE_NAMES:
+                return f
     return None
 
 
