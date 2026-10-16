@@ -777,6 +777,7 @@
      막아버립니다. 미리 준비해 두면 클릭 즉시 열립니다. */
 
   let kakaoReady = false;
+  let kakaoImg = null;   // 카카오 서버에 미리 올려 둔 카드 사진 { url, w, h }
 
   function primeKakao() {
     if (!CONTENT.kakaoJsKey) return;
@@ -787,6 +788,7 @@
       try {
         if (!window.Kakao.isInitialized()) window.Kakao.init(CONTENT.kakaoJsKey);
         kakaoReady = window.Kakao.isInitialized();
+        if (kakaoReady) uploadCardImage();
       } catch (err) {
         console.error('[카카오] 초기화 실패 — 앱키를 확인해 주세요', err);
       }
@@ -795,22 +797,49 @@
     document.head.appendChild(s);
   }
 
+  /* 카드 사진을 미리 카카오 서버에 올려 둡니다.
+     바깥 주소를 그대로 넘기면 카카오가 예전에 가져간 사진을 계속 쓰는
+     일이 있었습니다. 올려 둔 사진은 카카오가 새 주소를 줍니다.
+     공유 버튼을 누른 그 자리에서 올리면 기다리는 사이 창이 막히므로,
+     페이지를 열 때 미리 해 둡니다. */
+  function uploadCardImage() {
+    const og = document.querySelector('meta[property="og:image"]');
+    if (!og || !og.content) return;
+    window.Kakao.Share.scrapImage({ imageUrl: og.content })
+      .then((res) => {
+        const o = res && res.infos && res.infos.original;
+        if (o && o.url) kakaoImg = { url: o.url, w: o.width, h: o.height };
+      })
+      .catch((err) => console.warn('[카카오] 카드 사진을 올리지 못했습니다 — 링크 카드로 보냅니다', err));
+  }
+
   function shareKakao() {
     if (!kakaoReady) {
       copy(location.href, '카카오톡 공유가 준비되지 않아 링크를 복사했습니다');
       return;
     }
-    // 링크를 대화창에 붙여넣었을 때와 똑같은 카드로 보냅니다(스크랩).
-    // 카카오가 청첩장 주소를 읽어 제목·설명·사진을 가져갑니다.
-    // 사진 주소를 직접 넘기는 피드 카드는 새 사진이 늦게 반영되어
-    // 붙여넣은 카드와 달라지는 일이 있었습니다.
-    // 주소는 정식 주소(og:url)로 보냅니다 — #·?v= 같은 꼬리가 붙으면
-    // 카카오가 다른 주소로 여겨 카드를 따로 만듭니다.
+    // 정식 주소(og:url)로 보냅니다 — #·?v= 같은 꼬리를 떼어 냅니다
     const ogUrl = document.querySelector('meta[property="og:url"]');
     const url = (ogUrl && ogUrl.content) || location.origin + location.pathname;
     try {
       // await 없이 클릭 그 자리에서 호출해야 창이 열립니다
-      window.Kakao.Share.sendScrap({ requestUrl: url });
+      if (kakaoImg) {
+        // 카드 + '청첩장 열기' 버튼
+        window.Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: CONTENT.share.title,
+            description: CONTENT.share.description,
+            imageUrl: kakaoImg.url,
+            ...(kakaoImg.w && kakaoImg.h ? { imageWidth: kakaoImg.w, imageHeight: kakaoImg.h } : {}),
+            link: { mobileWebUrl: url, webUrl: url },
+          },
+          buttons: [{ title: '청첩장 열기', link: { mobileWebUrl: url, webUrl: url } }],
+        });
+      } else {
+        // 사진을 아직 못 올렸으면, 붙여넣기와 같은 링크 카드로
+        window.Kakao.Share.sendScrap({ requestUrl: url });
+      }
     } catch (err) {
       // 대부분 developers.kakao.com 에 도메인이 등록되지 않은 경우입니다
       console.error('[카카오 공유 실패]', err, '현재 주소:', location.origin);
