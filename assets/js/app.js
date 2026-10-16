@@ -800,25 +800,17 @@
       copy(location.href, '카카오톡 공유가 준비되지 않아 링크를 복사했습니다');
       return;
     }
-    const url = location.href;
-    const ogImg = document.querySelector('meta[property="og:image"]');
-    const img = (ogImg && ogImg.content) || new URL(CONTENT.share.image, location.href).href;
-    // 카드 사진 비율을 알려 주면 카카오가 그 비율대로 보여 줍니다
-    const meta = (k) => +((document.querySelector('meta[property="' + k + '"]') || {}).content || 0);
-    const ogW = meta('og:image:width'), ogH = meta('og:image:height');
+    // 링크를 대화창에 붙여넣었을 때와 똑같은 카드로 보냅니다(스크랩).
+    // 카카오가 청첩장 주소를 읽어 제목·설명·사진을 가져갑니다.
+    // 사진 주소를 직접 넘기는 피드 카드는 새 사진이 늦게 반영되어
+    // 붙여넣은 카드와 달라지는 일이 있었습니다.
+    // 주소는 정식 주소(og:url)로 보냅니다 — #·?v= 같은 꼬리가 붙으면
+    // 카카오가 다른 주소로 여겨 카드를 따로 만듭니다.
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    const url = (ogUrl && ogUrl.content) || location.origin + location.pathname;
     try {
       // await 없이 클릭 그 자리에서 호출해야 창이 열립니다
-      window.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: CONTENT.share.title,
-          description: CONTENT.share.description,
-          imageUrl: img,
-          ...(ogW && ogH ? { imageWidth: ogW, imageHeight: ogH } : {}),
-          link: { mobileWebUrl: url, webUrl: url },
-        },
-        buttons: [{ title: '청첩장 열기', link: { mobileWebUrl: url, webUrl: url } }],
-      });
+      window.Kakao.Share.sendScrap({ requestUrl: url });
     } catch (err) {
       // 대부분 developers.kakao.com 에 도메인이 등록되지 않은 경우입니다
       console.error('[카카오 공유 실패]', err, '현재 주소:', location.origin);
