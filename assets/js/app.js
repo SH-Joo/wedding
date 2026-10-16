@@ -801,7 +801,11 @@
       return;
     }
     const url = location.href;
-    const img = new URL(CONTENT.share.image, location.href).href;
+    const ogImg = document.querySelector('meta[property="og:image"]');
+    const img = (ogImg && ogImg.content) || new URL(CONTENT.share.image, location.href).href;
+    // 카드 사진 비율을 알려 주면 카카오가 그 비율대로 보여 줍니다
+    const meta = (k) => +((document.querySelector('meta[property="' + k + '"]') || {}).content || 0);
+    const ogW = meta('og:image:width'), ogH = meta('og:image:height');
     try {
       // await 없이 클릭 그 자리에서 호출해야 창이 열립니다
       window.Kakao.Share.sendDefault({
@@ -810,6 +814,7 @@
           title: CONTENT.share.title,
           description: CONTENT.share.description,
           imageUrl: img,
+          ...(ogW && ogH ? { imageWidth: ogW, imageHeight: ogH } : {}),
           link: { mobileWebUrl: url, webUrl: url },
         },
         buttons: [{ title: '청첩장 열기', link: { mobileWebUrl: url, webUrl: url } }],

@@ -209,6 +209,34 @@ def build_og(mag_src: Path):
     log(f"  og.jpg  1200x630  {kb(OUT_OG)}")
 
 
+# 카카오톡 링크 카드로 쓸 사진을 직접 고를 수 있습니다.
+# images/ 에 이 이름 중 하나로 넣으면 포스터를 잘라 만드는 대신 그 사진을 씁니다.
+SHARE_NAMES = ("카톡", "share")
+
+
+def find_share_image():
+    folder = ROOT / "images"
+    for f in sorted(folder.iterdir()) if folder.is_dir() else []:
+        if f.is_file() and f.suffix in PHOTO_EXT and f.stem.lower() in SHARE_NAMES:
+            return f
+    return None
+
+
+def build_og_own(src: Path):
+    """직접 고른 사진을 자르지 않고 크기만 맞춰 카드로 씁니다.
+    가로 1200px 를 넘으면 줄이고, 비율은 그대로 둡니다."""
+    im = load(src)
+    if im.width > 1200:
+        im = im.resize((1200, round(im.height * 1200 / im.width)), Image.LANCZOS)
+    if im.mode != "RGB":
+        im = im.convert("RGB")
+    OUT_OG.parent.mkdir(parents=True, exist_ok=True)
+    im.save(OUT_OG, "JPEG", quality=88, optimize=True, progressive=True)
+    log(f"  og.jpg  <- {src.name}  {im.width}x{im.height} (가로:세로 {im.width / im.height:.2f}:1)  {kb(OUT_OG)}")
+    if im.width < 800:
+        log("  ! 가로 800px 보다 작으면 카카오톡이 작은 카드로 보여줄 수 있습니다")
+
+
 def read_coords():
     """content.js 에서 좌표와 예식장 이름을 읽습니다."""
     src = (ROOT / "assets" / "js" / "content.js").read_text(encoding="utf-8")
@@ -491,7 +519,10 @@ def main():
     titles = build_title()
 
     log("\n[링크 카드]")
-    if "mag" in titles:
+    own = find_share_image()
+    if own:
+        build_og_own(own)
+    elif "mag" in titles:
         build_og(titles["mag"])
     else:
         log("  ! 잡지 표지가 없어 og.jpg 를 건너뜁니다")

@@ -129,7 +129,7 @@ const CONTENT = {
   share: {
     title: '주시헌 ♥ 황유나 결혼합니다',
     description: '2026년 11월 28일 토요일 오후 6시 · 더블트리 바이 힐튼 서울 판교',
-    image: 'assets/img/og.jpg',   // build_media.py 가 포스터에서 만들어 냅니다
+    image: 'assets/img/og.jpg',   // images/카톡.jpg 가 있으면 그 사진, 없으면 포스터를 잘라 만듭니다
   },
 
   /* ── 연결 설정 ────────────────────────────────────────────── */

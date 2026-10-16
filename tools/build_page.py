@@ -89,6 +89,17 @@ def main():
     page = re.sub(r"<title>.*?</title>",
                   "<title>" + html.escape(s["title"]) + "</title>", page, count=1, flags=re.S)
 
+    # 카드 사진의 실제 크기를 적습니다. 직접 고른 사진은 비율이 제각각입니다.
+    og_file = ROOT / s["image"].split("?")[0]
+    if og_file.is_file():
+        try:
+            from PIL import Image
+            with Image.open(og_file) as im:
+                page = put_meta(page, "og:image:width", str(im.width))
+                page = put_meta(page, "og:image:height", str(im.height))
+        except ImportError:
+            pass
+
     for sel, val in [
         ("og:title", s["title"]),
         ("og:description", s["description"]),
